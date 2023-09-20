@@ -1,4 +1,4 @@
-;; inline-anki.el -- oneliner flashcards -*- lexical-binding: t; -*-
+;; inline-anki.el -- One-liner flashcards -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2023 Martin Edström <meedstrom91@gmail.com>
 ;;
@@ -115,6 +115,7 @@ Set this to '(bold), '(italic), or '(underline)."
                                      (buffer-substring begin end))))))))
 
 (defun inline-anki--set-note-id (id)
+  "Assign the id ID to the unlabeled note at point."
   (unless id
     (error "Note creation failed for unknown reason"))
   (goto-char (line-beginning-position))

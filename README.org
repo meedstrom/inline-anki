@@ -1,21 +1,10 @@
 #+TITLE: Inline Anki
 
-* Intro
 For nearly a decade I've daydreamed of writing [[https://en.wikipedia.org/wiki/Spaced_repetition#Software][SRS]] flashcards as if they were body text, flowing as part of any text I write in any of my files, so that the same text can serve as a single-source-of-truth.
 
 The other SRS programs in the Emacs ecosystem ([[https://github.com/l3kn/org-fc][org-fc]], [[https://gitlab.com/phillord/org-drill][org-drill]], [[https://github.com/eyeinsky/org-anki][org-anki]], [[https://github.com/abo-abo/pamparam][pamparam]], [[https://github.com/louietan/anki-editor][anki-editor]]) all share a fatal flaw: *they separate the flashcards from normal text* by way of shoving them under a dedicated headline.
 
 I don't want to awkwardly append flashcards to the end of an Org section as a kind of paraphrasis or summary of that section, but to let the flashcards serve /as/ paragraphs in their own right!
-
------
-
-In my opinion, three non-negotiable features in a SRS program:
-
-1. let me store & edit flashcards as plaintext (instead of Anki's SQL database)
-2. let me write flashcards as if they were just paragraphs in wider notes on the same topic
-3. let me study those flashcards on-the-go, on a mobile device
-
-[[https://docs.ankiweb.net/background.html][Anki]] itself only fulfils #3.  All Emacs packages have only fulfilled #1, except for anki-editor/org-anki which fulfill #1 and #3.  Now inline-anki fulfils #1, #2 and #3!
 
 * Demonstration
 ** As list items
@@ -60,20 +49,21 @@ There are *three minor flaws* which will never go away:
   - This means you can't make small corrections on-the-fly while reviewing.  Bit annoying, but at least you won't face sync conflicts (and I won't have to write sync code, I hear it's a nightmare).
   - Fortunately, this is less of a problem in the paradigm of inline-anki as part of an [[https://github.com/org-roam/org-roam][org-roam]]-like knowledge base, because you will often directly see and refine the text of the flashcard, in contrast with bare Anki when study-time is the only time you see it.
 - The format is constrained -- you can't express every kind of flashcard possible in Anki.
-  - For me this is a good trade, because flashcards never stayed long in my life due to clumsy systems.   Better simple flashcards than no flashcards.
+  - For me this is a good trade, if that means they stick.  Flashcards never stayed long in my life due to clumsy systems.   Better simple flashcards than no flashcards.
 
 ------
 
-Be aware: this fork of anki-editor REMOVES some features you might've expected:
+Be aware: while this borrows code from anki-editor, it REMOVES some features you might expect:
 
 - It uses only one deck ("Default")
 - It uses only one note type ("Cloze"), with only one field ("Text")
-- You cannot set tags per card, but they will inherit them from the local Org subtree
+- You cannot set tags per card, but the cards will inherit tags from the local Org subtree
   - Note that Anki tags have lost much of their organizational purpose if all your notes live in Org files anyway -- you'll be organizing from within Org-roam or the like, not from within Anki.  However, at least two use-cases of tags remain:
     - You can display the tags inside cards as a contextual hint, if you code this in the card template
     - You can use the tags to set up Custom Study sessions on a filtered subset of notes
 - It does not notice when Anki flags a card with =marked= or =leech=
-- It does not send pictures or media to Anki (I might add this back in once I implement multiline flashcards inside =:anki:= drawers)
+- It does not send pictures or media to Anki
+  - I aim to add this back, after I implement multiline flashcards as :drawers:
 
 ** Syntax of a flashcard
 
