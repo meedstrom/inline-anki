@@ -86,18 +86,24 @@ Set this to '(bold), '(italic), or '(underline)."
 (defun inline-anki-bulk-push ()
   "Run `inline-anki-push-notes' from every file in `inline-anki-directory'."
   (interactive)
-  (setq inline-anki--file-list
-        (directory-files inline-anki-directory t "\\.org$"))
   (asyncloop-run
     (list
+     (lambda (_loop)
+       (setq inline-anki--file-list
+             (directory-files inline-anki-directory t "\\.org$")))
      (defun inline-anki--scan-next-file (loop)
        (let* ((path (pop inline-anki--file-list))
               (visiting (find-buffer-visiting path)))
          ;; (asyncloop-log loop "Scanning for flashcards in: %s" path)
          (with-current-buffer (or visiting (find-file-noselect path))
-           (inline-anki-push-notes)
+           (if (buffer-modified-p)
+               (asyncloop-log loop
+                 "Unsaved changes in file, skipping it")
+             (inline-anki-push-notes)
+             (save-buffer))
            (when inline-anki--file-list
              (push #'inline-anki--scan-next-file (asyncloop-remainder loop)))
+           ;; Wasn't visiting before, so kill buffer
            (unless visiting
              (kill-buffer (current-buffer))))
          path)))
@@ -107,7 +113,7 @@ Set this to '(bold), '(italic), or '(underline)."
 (defun inline-anki-note-at-point ()
   "Construct an alist representing a note at point."
   (let* (
-         ;; Flag at start of list item? Exclude it from note text.
+         ;; A flag at start of list item? Exclude it from note text.
          (begin (save-excursion
                   ;; Org's magic puts us at at start of the list item after the
                   ;; bullet point
@@ -119,17 +125,20 @@ Set this to '(bold), '(italic), or '(underline)."
                                        t))
                   (point)))
 
-         ;; Flag at end of line?  Exclude it from note text.
+         ;; A flag at end of line?  Exclude it from note text.
          (end (save-excursion
                 ;; Alas, (org-element-property :contents-end) jumps past all
                 ;; sub-items of a list-item.  So we just line-orient and hope
                 ;; that the user doesn't hard-wrap.
-                (goto-char (line-end-position))
-                (unless (re-search-backward (rx "@anki" (*? space) eol) begin t)
-                  (re-search-backward (rx (?? "@") "^{" (*? alnum) "}" (*? space) eol)
-                                      begin
-                                      t))
-                (point))))
+                (goto-char (line-beginning-position))
+                (if (or (re-search-forward (rx "@anki" (*? space) eol)
+                                           (line-end-position)
+                                           t)
+                        (re-search-forward (rx (?? "@") "^{" (*? alnum) "}" (*? space) eol)
+                                           (line-end-position)
+                                           t))
+                    (match-beginning 0)
+                  (line-end-position)))))
 
     (list (cons 'deck inline-anki-deck)
           (cons 'note-id (inline-anki-thing-id))
@@ -204,12 +213,16 @@ infinite loop."
     (let ((n 0))
       (while (setq prop (text-property-search-forward
                          'face inline-anki-emphasis-type t))
+        (when org-hide-emphasis-markers
+          (cl-decf (prop-match-beginning prop))
+          (cl-incf (prop-match-end prop)))
         (let ((num (number-to-string (cl-incf n))))
           (goto-char (prop-match-beginning prop))
-          (delete-char -1)
-          (insert "{{c" num "::")
-          (goto-char (+ (prop-match-end prop) 4 (length num)))
           (delete-char 1)
+          (insert "{{c" num "::")
+          ;; 4 because {{c:: adds 5 and we deleted 1 char
+          (goto-char (+ (prop-match-end prop) 4 (length num)))
+          (delete-char -1)
           (insert "}}")))
       (when (= n 0)
         (error "No clozes in note: %s" text)))
