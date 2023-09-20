@@ -101,10 +101,7 @@ Set this to '(bold), '(italic), or '(underline)."
                   (re-search-backward (rx (?? "@") "^{" (*? alnum) "}" (*? space) eol)
                                       begin
                                       t))
-                (point)))
-
-
-         )
+                (point))))
 
     (list (cons 'deck inline-anki-deck)
           (cons 'note-id (inline-anki-thing-id))

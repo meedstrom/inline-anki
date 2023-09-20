@@ -7,8 +7,6 @@ The other SRS programs in the Emacs ecosystem ([[https://github.com/l3kn/org-fc]
 
 I don't want to awkwardly append flashcards to the end of an Org section as a kind of paraphrasis or summary of that section, but to let the flashcards serve /as/ paragraphs in their own right!
 
-When I heard "flashcards in Emacs", that was always the idea!  The dream!  The reason we'd even bother!
-
 -----
 
 In my opinion, three non-negotiable features in a SRS program:
@@ -17,7 +15,7 @@ In my opinion, three non-negotiable features in a SRS program:
 2. let me write flashcards as if they were just paragraphs in wider notes on the same topic
 3. let me study those flashcards on-the-go, on a mobile device
 
-[[https://apps.ankiweb.net/][Anki]] itself only fulfils #3.  All Emacs packages have only fulfilled #1, except for anki-editor/org-anki which fulfill #1 and #3.  Now inline-anki fulfils #1, #2 and #3!
+[[https://docs.ankiweb.net/background.html][Anki]] itself only fulfils #3.  All Emacs packages have only fulfilled #1, except for anki-editor/org-anki which fulfill #1 and #3.  Now inline-anki fulfils #1, #2 and #3!
 
 * Demonstration
 ** As list items
@@ -94,7 +92,7 @@ Be aware: this fork of anki-editor REMOVES some features you might've expected:
 3. Visit an Org file that contains some inline-anki cards, and type =M-x inline-anki-push-notes RET=
 
 You may like to know that:
-- When you update a note, it overwrites what was previously in that note in Anki.  Any edits made inside Anki will be forgotten.  Anki isn't responsible over anything except the review schedule.
+- When you update a note, it overwrites what was previously in that note in Anki.  Any edits made inside Anki will be forgotten.  Anki isn't responsible for anything except the review schedule.
 - There's a bit of a gimmick: if a note has 3 cloze fields, and you study it a bit, and later you remove the first cloze field, the second and third field will *inherit the scheduling of the first and second fields*.  The third field's original scheduling will be attached to an empty card (which you can clean up with "Check database..." in Anki).  So technically, you can have cards that aren't scheduled truly to the algorithm, and failure statistics may be referring to a cloze card that you've removed.
   - Up to you what you do with this knowledge.  My two cents: it affects nothing in my life.
 
