@@ -38,6 +38,7 @@
   :group 'org)
 
 (require 'inline-anki-anki-editor-fork)
+(require 'asyncloop)
 
 (defcustom inline-anki-deck "Default"
   "Name of deck to upload to."
@@ -68,12 +69,39 @@ Set this to '(bold), '(italic), or '(underline)."
     (error "Inline-anki relies on `org-fontify-emphasized-text'"))
   (inline-anki-map-note-things
    (lambda ()
-     (message "Processing notes in buffer \"%s\", wait a moment..." (buffer-name))
+     (message "Processing notes in buffer \"%s\"..." (buffer-name))
      (condition-case-unless-debug err
          (inline-anki--push-note (inline-anki-note-at-point))
        (error (message "Note at point %d failed: %s"
                        (point)
                        (error-message-string err)))))))
+
+(defvar inline-anki-directory
+  (if (bound-and-true-p org-roam-directory)
+      org-roam-directory
+    org-directory))
+
+(defvar inline-anki--file-list nil)
+
+(defun inline-anki-bulk-push ()
+  "Run `inline-anki-push-notes' from every file in `inline-anki-directory'."
+  (interactive)
+  (setq inline-anki--file-list
+        (directory-files inline-anki-directory t "\\.org$"))
+  (asyncloop-run
+    (list
+     (defun inline-anki--scan-next-file (loop)
+       (let* ((path (pop inline-anki--file-list))
+              (visiting (find-buffer-visiting path)))
+         ;; (asyncloop-log loop "Scanning for flashcards in: %s" path)
+         (with-current-buffer (or visiting (find-file-noselect path))
+           (inline-anki-push-notes)
+           (when inline-anki--file-list
+             (push #'inline-anki--scan-next-file (asyncloop-remainder loop)))
+           (unless visiting
+             (kill-buffer (current-buffer))))
+         path)))
+    :debug-buffer-name "*inline-anki bulk worker*"))
 
 ;; TODO: send breadcrumbs as an extra field
 (defun inline-anki-note-at-point ()
