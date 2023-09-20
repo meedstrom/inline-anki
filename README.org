@@ -2,33 +2,23 @@
 #+options: toc:t
 
 * Intro
-For nearly a decade I've daydreamed of writing [[https://en.wikipedia.org/wiki/Spaced_repetition#Software][SRS]] flashcards as if they were body text, flowing as part of any text I write in any of my files, so that the same text can serve as a single-source-of-truth and I don't need to repeat myself.
+For nearly a decade I've daydreamed of writing [[https://en.wikipedia.org/wiki/Spaced_repetition#Software][SRS]] flashcards as if they were body text, flowing as part of any text I write in any of my files, so that the same text can serve as a single-source-of-truth.
 
-The other SRS programs in the Emacs ecosystem ([[https://github.com/l3kn/org-fc][org-fc]], [[https://gitlab.com/phillord/org-drill][org-drill]], [[https://github.com/eyeinsky/org-anki][org-anki]], [[https://github.com/abo-abo/pamparam][pamparam]], [[https://github.com/louietan/anki-editor][anki-editor]]) all share what I see as an unacceptable design flaw: *they separate the flashcards from normal text* by way of shoving them under a dedicated headline.
+The other SRS programs in the Emacs ecosystem ([[https://github.com/l3kn/org-fc][org-fc]], [[https://gitlab.com/phillord/org-drill][org-drill]], [[https://github.com/eyeinsky/org-anki][org-anki]], [[https://github.com/abo-abo/pamparam][pamparam]], [[https://github.com/louietan/anki-editor][anki-editor]]) all share a fatal flaw: *they separate the flashcards from normal text* by way of shoving them under a dedicated headline.
 
 I don't want to awkwardly append flashcards to the end of an Org section as a kind of paraphrasis or summary of that section, but to let the flashcards serve /as/ paragraphs in their own right!
 
-When I heard "flashcards in Emacs", that was always the idea! The dream!  The whole reason you would even bother!
+When I heard "flashcards in Emacs", that was always the idea!
 
 -----
 
 In my opinion, three non-negotiable features in a SRS program:
 
-1. let me store flashcards as plaintext inside my other text files on the same topics
-2. let me write flashcards as if they were just paragraphs in those notes
+1. let me store & edit flashcards as plaintext (instead of Anki's SQL database)
+2. let me write flashcards as if they were just paragraphs in wider notes on the same topic
 3. let me study those flashcards on-the-go, on a mobile device
 
 [[https://apps.ankiweb.net/][Anki]] itself only fulfils #3.  All Emacs packages have only fulfilled #1, except for anki-editor/org-anki which fulfill #1 and #3.  Now inline-anki fulfils #1, #2 and #3!
-
-There are still *three minor flaws* which will never go away:
-
-- Like anki-editor, inline-anki does not let you review inside Emacs.  You have to whip out your phone and review there.
-  - To me this is a non-issue since the bus is the only place I want to review anyway.
-- Like with anki-editor, you cannot edit the notes from within Anki.  You have to return to your computer and edit there.
-  - This means you can't make small corrections on-the-fly while reviewing.  Bit annoying, but at least you won't face sync conflicts (and I won't have to write sync code, I hear it's a nightmare).
-  - Less of a problem in the paradigm of inline-anki as part of an [[https://github.com/org-roam/org-roam][org-roam]]-like knowledge base, because you will often directly see and refine the text of the flashcard, in contrast with bare Anki when study-time is the only time you see it.
-- The format is constrained -- you can't express every kind of flashcard Anki supports.  More on that later.
-  - For me this is a good trade, because flashcards never stayed part of my life for long due to clumsy systems.   Better simple flashcards than no flashcards.
 
 * Demonstration
 ** As list items
@@ -60,15 +50,20 @@ A gotcha for inline-anki: you must use =visual-line-mode= or some other *soft-wr
 
 In English, we have the word-pair truth and lying.  We also have the word-pair *rational* and rationalization: it's as if lying was called *truthization*.^{16900030021}
 
-** As drawers (for multiline flashcards) :noexport:
-One Anki note can be found below.  If you're reading this in a browser, note that this is source Org syntax; normally when exporting to HTML, the drawer boundaries disappear.
-
-: :anki-169232020:
-: TODO
-: :end:
-
 * Usage
 ** Limitations
+
+There are *three minor flaws* which will never go away:
+
+- Like anki-editor, inline-anki does not let you review inside Emacs.  You have to whip out your phone and review there, in your Anki app.
+  - To me this is a non-issue since the bus is the only place I want to review anyway.
+- Like with anki-editor, you cannot edit the notes from within Anki.  You have to return to your computer and edit there, in Emacs.
+  - This means you can't make small corrections on-the-fly while reviewing.  Bit annoying, but at least you won't face sync conflicts (and I won't have to write sync code, I hear it's a nightmare).
+  - Fortunately, this is less of a problem in the paradigm of inline-anki as part of an [[https://github.com/org-roam/org-roam][org-roam]]-like knowledge base, because you will often directly see and refine the text of the flashcard, in contrast with bare Anki when review-time is the only time you see it.
+- The format is constrained -- you can't express every kind of flashcard Anki supports.
+  - For me this is a good trade, because flashcards never stayed part of my life for long due to clumsy systems.   Better simple flashcards than no flashcards.
+
+------
 
 Be aware: this fork of anki-editor REMOVES some features you might've expected:
 
@@ -81,15 +76,13 @@ Be aware: this fork of anki-editor REMOVES some features you might've expected:
 - It does not sync back a =marked= tag when you flag a card in Anki
 - It does not send pictures or media to Anki (I might add this back in once I implement multiline flashcards inside =:anki:= drawers)
 
-
-
 ** Syntax of a flashcard
 
 - To identify a flashcard, inline-anki looks for one of the following things:
-  - A magic string at the *start* of a *list item*: =@anki=.  When Anki assigns it an ID, it becomes a =@= glyph followed by a 13-digit number in superscript, like this: =@^{1693535436701}=.
+  - A magic string at the *start of a list item*: =@anki=.  When Anki assigns it an ID, it becomes a =@= glyph followed by a 13-digit number in superscript, like this: =@^{1693535436701}=.
   - A magic string at the *end of a line*: =@anki= or =^{anki}=.  Same as above, except that you can omit the =@= glyph and inline-anki won't add one.  This works with paragraphs as well as list items.
 - Clozes are marked by *bold text*, or you can configure =inline-anki-emphasis-type= if you prefer italic or underline.
-  - Bear in mind that inline-anki won't edit your preexisting cards for you when you change that variable.
+  - Bear in mind that if you change to italic or underline, you'll have to edit all your cards to match.
   - You can, if necessary, write Anki's regular ={{c1::}}= syntax directly.  Mainly useful for writing math equations.
 #  - a drawer named =:anki:=, which is renamed to something like =:anki-16900001:= when the Anki note ID has been assigned.
 
@@ -110,10 +103,10 @@ You may like to know that:
 ** Config variables
 
 - =inline-anki-deck=
-  - Default ="Default"=.
+  - Default "Default".
 
 - =inline-anki-note-type=
-  - Default ="Cloze"=.
+  - Default "Cloze".
 
 - =inline-anki-note-fields=
   - Default =("Text")=.
