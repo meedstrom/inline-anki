@@ -115,3 +115,24 @@ First configure =inline-anki-directory=, then you can run =M-x inline-anki-bulk-
 
 - =inline-anki-directory=
   - Defaults to the value of =org-roam-directory= or =org-directory=.
+
+* Installation
+
+If you have [[https://github.com/raxod502/straight.el][straight.el]], you can install the package like so:
+#+begin_src elisp
+(use-package asyncloop
+  :straight (asyncloop   :type git :host github :repo "meedstrom/asyncloop"))
+(use-package inline-anki
+  :straight (inline-anki :type git :host github :repo "meedstrom/inline-anki"))
+#+end_src
+
+Alternatively with Doom Emacs, this goes in =packages.el=:
+#+begin_src elisp
+(package! asyncloop   :recipe (:host github :repo "meedstrom/asyncloop"))
+(package! inline-anki :recipe (:host github :repo "meedstrom/inline-anki"))
+#+end_src
+
+Elpaca riders and other folk, you know what to do.
+
+* Warning
+This package relies on the fontification in Org buffers to work correctly.  So if you're dragging along a half-broken Org setup -- best debug it.

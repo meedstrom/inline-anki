@@ -29,7 +29,11 @@
 ;; - curl
 ;; - Anki with AnkiConnect add-on
 
-;; TODO: make a command to auto-push an entire directory
+;; TODO: give a way to skip `org-get-tags' and see if that makes a speed
+;; difference
+
+;; TODO: refactor to do as few regexp searches as possible -- not for speed,
+;;       but for preventing bugs
 
 ;;; Code:
 
@@ -63,16 +67,19 @@ Set this to '(bold), '(italic), or '(underline)."
 
 (defun inline-anki-push-notes ()
   (interactive)
-  (unless (eq major-mode 'org-mode)
-    (error "Not org-mode"))
-  (unless org-fontify-emphasized-text
-    (error "Inline-anki relies on `org-fontify-emphasized-text'"))
+  (unless (derived-mode-p 'org-mode)
+    (error "Not org-mode: %s" buffer-file-name))
+  ;; (unless org-fontify-emphasized-text
+  ;; (error "Inline-anki relies on `org-fontify-emphasized-text'"))
+  (setq truncate-lines t)
   (inline-anki-map-note-things
    (lambda ()
-     (message "Processing notes in buffer \"%s\"..." (buffer-name))
+     (message "Scanning buffer for Anki notes: \"%s\"..." (buffer-name))
      (condition-case-unless-debug err
-         (inline-anki--push-note (inline-anki-note-at-point))
-       (error (message "Note at point %d failed: %s"
+         (if-let ((note (inline-anki-note-at-point)))
+             (inline-anki--push-note note)
+           (error "-map-note-things found magic string, but note-at-point found no clozes"))
+       (error (message "Flashcard export at point %d failed: %s"
                        (point)
                        (error-message-string err)))))))
 
@@ -83,37 +90,69 @@ Set this to '(bold), '(italic), or '(underline)."
 
 (defvar inline-anki--file-list nil)
 
+;; WIP: Experimental.
+;;
+;; Theory: Maybe it works better if I use find-file instead of
+;; with-current-buffer, and force redisplay before proceeding.  If that makes a
+;; difference, we know what the problem is.
+;;
+;; Theory: it's those org-element cache bugs behind it
+;;
+;; Theory: it's the fact i'm using with-temp-buffer that prevents normal
+;; fontification (but apparently less often a problem when i just interactively
+;; call push-notes)
 (defun inline-anki-bulk-push ()
   "Run `inline-anki-push-notes' from every file in `inline-anki-directory'."
   (interactive)
-  (asyncloop-run
-    (list
-     (lambda (_loop)
-       (setq inline-anki--file-list
-             (directory-files inline-anki-directory t "\\.org$")))
-     (defun inline-anki--scan-next-file (loop)
-       (let* ((path (pop inline-anki--file-list))
-              (visiting (find-buffer-visiting path)))
-         ;; (asyncloop-log loop "Scanning for flashcards in: %s" path)
-         (with-current-buffer (or visiting (find-file-noselect path))
-           (if (buffer-modified-p)
-               (asyncloop-log loop
-                 "Unsaved changes in file, skipping it")
-             (inline-anki-push-notes)
-             (save-buffer))
-           (when inline-anki--file-list
-             (push #'inline-anki--scan-next-file (asyncloop-remainder loop)))
-           ;; Wasn't visiting before, so kill buffer
-           (unless visiting
-             (kill-buffer (current-buffer))))
-         path)))
-    :debug-buffer-name "*inline-anki bulk worker*"))
+  (require 'asyncloop-debug)
+  (let ((modes-to-reenable nil))
+    (when (bound-and-true-p git-auto-commit-mode)
+      (git-auto-commit-mode 0)
+      (push 'git-auto-commit-mode modes-to-reenable))
+    (when (bound-and-true-p my-auto-commit-mode)
+      (my-auto-commit-mode 0)
+      (push 'my-auto-commit-mode modes-to-reenable))
+    (asyncloop-run
+      (list
+       (lambda (_loop)
+         (setq inline-anki--file-list
+               (directory-files inline-anki-directory t "\\.org$")))
+       (defun inline-anki--scan-next-file (loop)
+         (let* ((path (pop inline-anki--file-list))
+                (visiting (find-buffer-visiting path)))
+           ;; (asyncloop-log loop "Scanning for flashcards in: %s" path)
+           (with-current-buffer (or visiting (find-file-noselect path))
+             (if (buffer-modified-p)
+                 (asyncloop-log loop
+                   "Unsaved changes in file, skipping it")
+               (inline-anki-push-notes)
+               ;; REVIEW: `inline-anki--anki-connect-invoke-queue' works asynchronously?
+               ;;         maybe can't save at this point
+               (save-buffer))
+             (when inline-anki--file-list
+               (push #'inline-anki--scan-next-file (asyncloop-remainder loop)))
+             ;; Wasn't visiting before, so kill buffer
+             (unless (or visiting (buffer-modified-p))
+               (kill-buffer (current-buffer))))
+           (format "%d files to go; was in %s" (length inline-anki--file-list) path)))
+       ;; `(lambda (_loop)
+       ;;   (dolist (mode ,modes-to-reenable)
+       ;;     (funcall mode)))
+       )
+      :debug-buffer-name "*inline-anki bulk worker*"))
+  (delete-other-windows)
+  (switch-to-buffer "*inline-anki bulk worker*")
+  (split-window)
+  (switch-to-buffer "*Messages*")
+  (split-window))
 
-;; TODO: send breadcrumbs as an extra field
+
+;; TODO: send filename, breadcrumbs, outline path, or all of them as extra fields.
+;; and one day, we might be able to linkify the filepath and open with emacsclient
 (defun inline-anki-note-at-point ()
   "Construct an alist representing a note at point."
   (let* (
-         ;; A flag at start of list item? Exclude it from note text.
+         ;; An @anki at start of list item? Exclude it from note text.
          (begin (save-excursion
                   ;; Org's magic puts us at at start of the list item after the
                   ;; bullet point
@@ -125,20 +164,21 @@ Set this to '(bold), '(italic), or '(underline)."
                                        t))
                   (point)))
 
-         ;; A flag at end of line?  Exclude it from note text.
+         ;; An @anki at end of line?  Exclude it from note text.
          (end (save-excursion
                 ;; Alas, (org-element-property :contents-end) jumps past all
                 ;; sub-items of a list-item.  So we just line-orient and hope
                 ;; that the user doesn't hard-wrap.
                 (goto-char (line-beginning-position))
-                (if (or (re-search-forward (rx "@anki" (*? space) eol)
-                                           (line-end-position)
-                                           t)
-                        (re-search-forward (rx (?? "@") "^{" (*? alnum) "}" (*? space) eol)
-                                           (line-end-position)
-                                           t))
-                    (match-beginning 0)
-                  (line-end-position)))))
+                (save-match-data
+                  (if (or (re-search-forward (rx "@anki" (*? space) eol)
+                                             (line-end-position)
+                                             t)
+                          (re-search-forward (rx (?? "@") "^{" (*? alnum) "}" (*? space) eol)
+                                             (line-end-position)
+                                             t))
+                      (match-beginning 0)
+                    (line-end-position))))))
 
     (list (cons 'deck inline-anki-deck)
           (cons 'note-id (inline-anki-thing-id))
@@ -182,7 +222,7 @@ Set this to '(bold), '(italic), or '(underline)."
         -1))))
 
 ;; TOOD: detect if a line is a comment, and ignore
-;; TODO: detect if there is more than one flag on the same line (run all
+;; TODO: detect if there is more than one magic string on the same line (run all
 ;; searches upfront, record the line numbers, then check for duplicates among
 ;; the recorded line numbers)
 (defun inline-anki-map-note-things (func)
@@ -208,9 +248,14 @@ infinite loop."
 
 (defun inline-anki-convert-implicit-clozes (text)
   (with-temp-buffer
+    ;; (org-mode)
     (insert text)
     (goto-char (point-min))
-    (let ((n 0))
+    (let ((org-fontify-emphasized-text t)
+          (n 0))
+      (org-restart-font-lock)
+      (org-do-emphasis-faces (point-max))
+      (goto-char (point-min))
       (while (setq prop (text-property-search-forward
                          'face inline-anki-emphasis-type t))
         (when org-hide-emphasis-markers
