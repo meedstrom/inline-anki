@@ -47,7 +47,7 @@
   "Name of your note type."
   :type 'string)
 
-(defcustom inline-anki-note-fields '("Text")
+(defcustom inline-anki-note-fields '("Text" "Extra")
   "Names of fields in your note type."
   :type '(repeat string))
 
@@ -78,28 +78,33 @@ Set this to '(bold), '(italic), or '(underline)."
 ;; TODO: send breadcrumbs as an extra field
 (defun inline-anki-note-at-point ()
   "Construct an alist representing a note at point."
-  (let (;; Flag at start of list item? Exclude it from note text.
-        (begin (save-excursion
-                 ;; Org's magic puts us at at start of the list item after the
-                 ;; bullet point
-                 (goto-char (org-element-property
-                             :contents-begin (org-element-at-point)))
-                 (unless (search-forward "@anki" (+ 6 (point)) t)
-                   (re-search-forward (rx "@^{" (= 13 digit) "}")
-                                      (+ 18 (point))
+  (let* (
+         ;; Flag at start of list item? Exclude it from note text.
+         (begin (save-excursion
+                  ;; Org's magic puts us at at start of the list item after the
+                  ;; bullet point
+                  (goto-char (org-element-property
+                              :contents-begin (org-element-at-point)))
+                  (unless (search-forward "@anki" (+ 6 (point)) t)
+                    (re-search-forward (rx "@^{" (= 13 digit) "}")
+                                       (+ 18 (point))
+                                       t))
+                  (point)))
+
+         ;; Flag at end of line?  Exclude it from note text.
+         (end (save-excursion
+                ;; Alas, (org-element-property :contents-end) jumps past all
+                ;; sub-items of a list-item.  So we just line-orient and hope
+                ;; that the user doesn't hard-wrap.
+                (goto-char (line-end-position))
+                (unless (re-search-backward (rx "@anki" (*? space) eol) begin t)
+                  (re-search-backward (rx (?? "@") "^{" (*? alnum) "}" (*? space) eol)
+                                      begin
                                       t))
-                 (point)))
-        ;; Flag at end of line?  Exclude it from note text.
-        (end (save-excursion
-               ;; Alas, (org-element-property :contents-end) jumps past all
-               ;; sub-items of a list-item.  So we just line-orient and hope
-               ;; that the user doesn't hard-wrap.
-               (goto-char (line-end-position))
-               (unless (re-search-backward (rx "@anki" (*? space) eol) begin t)
-                 (re-search-backward (rx (?? "@") "^{" (*? alnum) "}" (*? space) eol)
-                                     begin
-                                     t))
-               (point))))
+                (point)))
+
+
+         )
 
     (list (cons 'deck inline-anki-deck)
           (cons 'note-id (inline-anki-thing-id))
@@ -123,7 +128,7 @@ Set this to '(bold), '(italic), or '(underline)."
       (insert "^{" (number-to-string id) "}"))
 
      ((re-search-forward eol-flag (line-end-position) t)
-       (replace-match (number-to-string id) t t nil 1))
+      (replace-match (number-to-string id) t t nil 1))
 
      (t
       (error "Inline-anki magic string not found on line")))))
