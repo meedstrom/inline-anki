@@ -60,10 +60,6 @@
 Set this to '(bold), '(italic), or '(underline)."
   :type 'sexp)
 
-(defcustom inline-anki-subscript-new-notes nil
-  "Whether to subscript instead of superscript."
-  :type 'boolean)
-
 (defun inline-anki-push-notes ()
   (interactive)
   (unless (eq major-mode 'org-mode)
@@ -89,7 +85,7 @@ Set this to '(bold), '(italic), or '(underline)."
                  (goto-char (org-element-property
                              :contents-begin (org-element-at-point)))
                  (unless (search-forward "@anki" (+ 6 (point)) t)
-                   (re-search-forward (rx "@" (any "_^") "{" (= 13 digit) "}")
+                   (re-search-forward (rx "@^{" (= 13 digit) "}")
                                       (+ 18 (point))
                                       t))
                  (point)))
@@ -100,7 +96,7 @@ Set this to '(bold), '(italic), or '(underline)."
                ;; that the user doesn't hard-wrap.
                (goto-char (line-end-position))
                (unless (re-search-backward (rx "@anki" (*? space) eol) begin t)
-                 (re-search-backward (rx (?? "@") (any "_^") "{" (*? nonl) "}" (*? space) eol)
+                 (re-search-backward (rx (?? "@") "^{" (*? nonl) "}" (*? space) eol)
                                      begin
                                      t))
                (point))))
@@ -120,7 +116,7 @@ Set this to '(bold), '(italic), or '(underline)."
   (unless id
     (error "Note creation failed for unknown reason"))
   (goto-char (line-beginning-position))
-  (let ((eol-flag (rx (any "_^") "{" (group "anki") "}" (*? space) eol)))
+  (let ((eol-flag (rx "^{" (group "anki") "}" (*? space) eol)))
     (cond
      ((search-forward "@anki" (line-end-position) t)
       (delete-char -4)
@@ -141,7 +137,7 @@ Set this to '(bold), '(italic), or '(underline)."
                      (org-forward-paragraph))
                    (point))))
       (goto-char beg)
-      (if (re-search-forward (rx (any "_^") "{" (group (= 13 digit)) "}") bound t)
+      (if (re-search-forward (rx "^{" (group (= 13 digit)) "}") bound t)
           (string-to-number (match-string 1))
         -1))))
 
@@ -155,10 +151,10 @@ Note: FUNC should not move point backwards, or you can get an
 infinite loop."
   (let* ((ctr 0)
          (list-bullet (rx (or (any "-+*") (seq (*? digit) (any ".)")))))
-         (card@item-start&has-id (rx bol (*? space) (regexp list-bullet) (+? space) "@" (any "_^") "{" (= 13 digit) "}"))
+         (card@item-start&has-id (rx bol (*? space) (regexp list-bullet) (+? space) "@^{" (= 13 digit) "}"))
          (card@item-start&new (rx bol (*? space) (regexp list-bullet) (+? space) "@anki"))
-         (card@eol&has-id (rx (? "@") (any "_^") "{" (= 13 digit) "}" (*? space) eol))
-         (card@eol&new (rx (or "@anki" "_{anki}" "^{anki}") (*? space) eol)))
+         (card@eol&has-id (rx (? "@") "^{" (= 13 digit) "}" (*? space) eol))
+         (card@eol&new (rx (or "@anki" "^{anki}") (*? space) eol)))
     (dolist (regexp (list card@item-start&has-id
                           card@item-start&new
                           card@eol&has-id

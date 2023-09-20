@@ -84,8 +84,8 @@ Be aware: this fork of anki-editor REMOVES some features you might've expected:
 ** Syntax of a flashcard
 
 - To identify a flashcard, inline-anki looks for one of the following things:
-  - A magic string at the *start* of a *list item*: =@anki=.  When Anki assigns it an ID, it becomes a =@= glyph followed by a 13-digit number in superscript, like this: =@^{1693535436701}=.  You can change it to subscript after the fact, or have it always subscript by enabling =inline-anki-subscript-new-notes=.
-  - A magic string at the *end of a line*: =@anki=, =_{anki}=, or =^{anki}=.  Same as above, except that you can omit the =@= glyph and write in either subscript or superscript from the beginning.  This works with paragraphs as well as list items.
+  - A magic string at the *start* of a *list item*: =@anki=.  When Anki assigns it an ID, it becomes a =@= glyph followed by a 13-digit number in superscript, like this: =@^{1693535436701}=.
+  - A magic string at the *end of a line*: =@anki= or =^{anki}=.  Same as above, except that you can omit the =@= glyph.  This works with paragraphs as well as list items.
 - Clozes are marked by *bold text*, or you can configure =inline-anki-emphasis-type= if you prefer italic or underline.
   - Bear in mind that inline-anki won't edit your preexisting cards for you when you change that variable.
   - You can, if necessary, write Anki's regular ={{c1::}}= syntax directly.  Mainly useful for writing math equations.
