@@ -4,11 +4,11 @@
 * Intro
 For nearly a decade I've daydreamed of writing [[https://en.wikipedia.org/wiki/Spaced_repetition#Software][SRS]] flashcards as if they were body text, flowing as part of any text I write in any of my files, so that the same text can serve as a single-source-of-truth and I don't need to repeat myself.
 
-The other SRS programs in the Emacs ecosystem ([[https://github.com/l3kn/org-fc][org-fc]], [[https://gitlab.com/phillord/org-drill][org-drill]], [[https://github.com/abo-abo/pamparam][pamparam]], [[https://github.com/louietan/anki-editor][anki-editor]]) all share what I see as an unacceptable design flaw: *they separate the flashcards from normal text* by way of shoving them under a dedicated headline.
+The other SRS programs in the Emacs ecosystem ([[https://github.com/l3kn/org-fc][org-fc]], [[https://gitlab.com/phillord/org-drill][org-drill]], [[https://github.com/eyeinsky/org-anki][org-anki]], [[https://github.com/abo-abo/pamparam][pamparam]], [[https://github.com/louietan/anki-editor][anki-editor]]) all share what I see as an unacceptable design flaw: *they separate the flashcards from normal text* by way of shoving them under a dedicated headline.
 
 I don't want to awkwardly append flashcards to the end of an Org section as a kind of paraphrasis or summary of that section, but to let the flashcards serve /as/ paragraphs in their own right!
 
-When I heard about "flashcards in Emacs", that was always the idea! The dream!  The whole reason you would even bother!
+When I heard "flashcards in Emacs", that was always the idea! The dream!  The whole reason you would even bother!
 
 -----
 
@@ -18,15 +18,15 @@ In my opinion, three non-negotiable features in a SRS program:
 2. let me write flashcards as if they were just paragraphs in those notes
 3. let me study those flashcards on-the-go, on a mobile device
 
-[[https://apps.ankiweb.net/][Anki]] itself only fulfils #3.  All Emacs packages have only fulfilled #1, except for anki-editor which fulfils #1 and #3.  Now inline-anki fulfils #1, #2 and #3!
+[[https://apps.ankiweb.net/][Anki]] itself only fulfils #3.  All Emacs packages have only fulfilled #1, except for anki-editor/org-anki which fulfill #1 and #3.  Now inline-anki fulfils #1, #2 and #3!
 
-There are still *three minor flaws:*
+There are still *three minor flaws* which will never go away:
 
-- Like anki-editor, inline-anki does not let you study inside Emacs.  You have to whip out your phone and study there.
-  - To me this is a non-issue since the bus is the only place I want to study anyway.
-- You cannot edit the notes from within Anki.  You have to return to your computer and edit there.
-  - This means you can't make small edits on-the-fly while studying.  Bit annoying, but at least you won't face sync conflicts.
-    - Less of a problem in the paradigm of inline-anki as part of an [[https://github.com/org-roam/org-roam][org-roam]]-like knowledge base, because you will often directly see and refine the text of the flashcard, in contrast with bare Anki when study-time is the only time you see it.
+- Like anki-editor, inline-anki does not let you review inside Emacs.  You have to whip out your phone and review there.
+  - To me this is a non-issue since the bus is the only place I want to review anyway.
+- Like with anki-editor, you cannot edit the notes from within Anki.  You have to return to your computer and edit there.
+  - This means you can't make small corrections on-the-fly while reviewing.  Bit annoying, but at least you won't face sync conflicts (and I won't have to write sync code, I hear it's a nightmare).
+  - Less of a problem in the paradigm of inline-anki as part of an [[https://github.com/org-roam/org-roam][org-roam]]-like knowledge base, because you will often directly see and refine the text of the flashcard, in contrast with bare Anki when study-time is the only time you see it.
 - The format is constrained -- you can't express every kind of flashcard Anki supports.  More on that later.
   - For me this is a good trade, because flashcards never stayed part of my life for long due to clumsy systems.   Better simple flashcards than no flashcards.
 
@@ -34,14 +34,14 @@ There are still *three minor flaws:*
 ** As list items
 Here are four Anki cloze notes, expressed in just four list items:
 
-- @^{169000421} DRY is short for *Don't Repeat Yourself*
-- @^{169000404} 🇫🇷 *legerdemain*  🇬🇧 *sleight-of-hand*
-- @^{169000402} 🇫🇷 *maison*  🇬🇧 *house*
-- @^{169000403} 🇫🇷 *reunion*  🇬🇧 *meeting*
+- @^{1690003421} DRY is short for *Don't Repeat Yourself*
+- @^{1690300404} 🇫🇷 *legerdemain*  🇬🇧 *sleight-of-hand*
+- @^{1693000402} 🇫🇷 *maison*  🇬🇧 *house*
+- @^{1693000403} 🇫🇷 *reunion*  🇬🇧 *meeting*
 
 The starting @^{number} uniquely identifies the note.  Think of @ as encircling an "a" for "Anki". ;-)
 
-There are no hidden property drawers, no subtrees, anything.  The number is literally the only metadata.
+There are no hidden property drawers.  That number is the only metadata.
 
 ** As list items, with the anki note ID at the end
 You have the freedom to place the note ID either at the beginning /or/ the end of a list item.  If it's at the end, you don't need the @ glyph.  I find it more aesthetic for lists that aren't a pure list of flashcards---lists that mix and match flashcards and non-flashcard things.
@@ -74,33 +74,38 @@ Be aware: this fork of anki-editor REMOVES some features you might've expected:
 
 - It uses only one deck ("Default")
 - It uses only one note type ("Cloze"), with only one field ("Text")
-- Tags cannot be set per individual card, but they are inherited from the subtree
-  - Note that Anki tags have lost much of their organizational purpose if all your notes live in Org files anyway -- you'll be organizing from within Org-roam or the like, not from within Anki.  However, at least two use cases of tags remain:
-    - The tags can be displayed inside cards as a contextual hint (if you code this in the card template)
-    - The tags can be used for Custom Study sessions on a filtered subset of notes
+- You cannot set tags per card, but they will inherit them from the local Org subtree
+  - Note that Anki tags have lost much of their organizational purpose if all your notes live in Org files anyway -- you'll be organizing from within Org-roam or the like, not from within Anki.  However, at least two use-cases of tags remain:
+    - You can display the tags inside cards as a contextual hint, if you code this in the card template
+    - You can use the tags to set up Custom Study sessions on a filtered subset of notes
 - It does not sync back a =marked= tag when you flag a card in Anki
 - It does not send pictures or media to Anki (I might add this back in once I implement multiline flashcards inside =:anki:= drawers)
+
+
 
 ** Syntax of a flashcard
 
 - To identify a flashcard, inline-anki looks for one of the following things:
   - A magic string at the *start* of a *list item*: =@anki=.  When Anki assigns it an ID, it becomes a =@= glyph followed by a 13-digit number in superscript, like this: =@^{1693535436701}=.
-  - A magic string at the *end of a line*: =@anki= or =^{anki}=.  Same as above, except that you can omit the =@= glyph.  This works with paragraphs as well as list items.
+  - A magic string at the *end of a line*: =@anki= or =^{anki}=.  Same as above, except that you can omit the =@= glyph and inline-anki won't add one.  This works with paragraphs as well as list items.
 - Clozes are marked by *bold text*, or you can configure =inline-anki-emphasis-type= if you prefer italic or underline.
   - Bear in mind that inline-anki won't edit your preexisting cards for you when you change that variable.
   - You can, if necessary, write Anki's regular ={{c1::}}= syntax directly.  Mainly useful for writing math equations.
 #  - a drawer named =:anki:=, which is renamed to something like =:anki-16900001:= when the Anki note ID has been assigned.
 
+
+
 ** To push cards
 
-1. Make sure Anki has the AnkiConnect addon installed
+1. Make sure Anki has the AnkiConnect addon installed and you have curl installed too
 2. Make sure Anki is running in the background
 3. Visit an Org file that contains some inline-anki cards, and type =M-x inline-anki-push-notes RET=
 
 You may like to know that:
-- When you update a note, it overwrites what was previously in that note in Anki; the only responsibility of Anki is scheduling.  Do not bother making any edits inside Anki; they will be forgotten.
-- If a note has 3 cloze fields, and you study it a bit, and later you remove the first cloze field, the second and third field will *inherit the scheduling of the first and second fields*.  The third field will be an empty card (which you can clean up with "Check database..." in Anki).  So technically, you can have cards that aren't scheduled true to the algorithm, and failure statistics may be talking about a different card.
-  - Up to you what you do with this knowledge, but for my two cents, it changes nothing about your life.
+- When you update a note, it overwrites what was previously in that note in Anki.  Any edits made inside Anki will be forgotten.  Anki isn't responsible over anything except the review schedule.
+- There's a bit of a gimmick: if a note has 3 cloze fields, and you study it a bit, and later you remove the first cloze field, the second and third field will *inherit the scheduling of the first and second fields*.  The third field's original scheduling will be attached to an empty card (which you can clean up with "Check database..." in Anki).  So technically, you can have cards that aren't scheduled truly to the algorithm, and failure statistics may be referring to a cloze card that you've removed.
+  - Up to you what you do with this knowledge.  My two cents: it affects nothing in my life.
+
 
 ** Config variables
 

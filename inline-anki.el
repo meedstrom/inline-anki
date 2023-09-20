@@ -96,7 +96,7 @@ Set this to '(bold), '(italic), or '(underline)."
                ;; that the user doesn't hard-wrap.
                (goto-char (line-end-position))
                (unless (re-search-backward (rx "@anki" (*? space) eol) begin t)
-                 (re-search-backward (rx (?? "@") "^{" (*? nonl) "}" (*? space) eol)
+                 (re-search-backward (rx (?? "@") "^{" (*? alnum) "}" (*? space) eol)
                                      begin
                                      t))
                (point))))
