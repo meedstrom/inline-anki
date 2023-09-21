@@ -61,10 +61,42 @@
 Set this to '(bold), '(italic), or '(underline)."
   :type 'sexp)
 
-(defvar inline-anki-directory
+(defcustom inline-anki-directory
   (if (bound-and-true-p org-roam-directory)
       org-roam-directory
-    org-directory))
+    org-directory)
+  "Directory for `inline-anki-bulk-push' to look up."
+  :type 'string)
+
+(defcustom inline-anki-use-tags t
+  "Whether to send Org tags along to Anki.
+A value of nil should let `inline-anki-bulk-push' work faster if
+you have hundreds of files.
+
+If you merely want to exclude parent tags, see
+`org-use-tag-inheritance' instead."
+  :type 'boolean)
+
+(defconst inline-anki-rx:list-bullet
+  (rx (or (any "-+*") (seq (*? digit) (any ").") " "))))
+
+(defconst inline-anki-rx:item-start:new
+  (rx bol (*? space) (regexp inline-anki-rx:list-bullet) (*? space) "@anki "))
+
+(defconst inline-anki-rx:item-start
+  (rx bol (*? space) (regexp inline-anki-rx:list-bullet) (*? space) "@^{" (group (= 13 digit)) "}"))
+
+(defconst inline-anki-rx:eol:new
+  (rx (or "@anki" "^{anki}") (*? space) eol))
+
+(defconst inline-anki-rx:eol
+  (rx (? "@") "^{" (group (= 13 digit)) "}" (*? space) eol))
+
+(defconst inline-anki-rx:drawer:new
+  (rx bol ":anki:"))
+
+(defconst inline-anki-rx:drawer
+  (rx bol ":anki-" (group (= 13 digit)) ":"))
 
 (defvar inline-anki--file-list nil)
 
@@ -269,5 +301,53 @@ Set this to '(bold), '(italic), or '(underline)."
       (if (= n 0)
           nil ;; Nil signals that no clozes found
         (buffer-substring-no-properties (point-min) (point-max))))))
+
+;; trivial
+(defun inline-anki-count-flashcards-in-buffer ()
+  (interactive)
+  (message "%d flashcard(s) in buffer"
+   (save-excursion
+     (save-match-data
+       (goto-char (point-min))
+       (+ (cl-loop while (re-search-forward inline-anki-rx:item-start nil t) count t)
+          (cl-loop while (re-search-forward inline-anki-rx:item-start:new nil t) count t)
+          (cl-loop while (re-search-forward inline-anki-rx:eol nil t) count t)
+          (cl-loop while (re-search-forward inline-anki-rx:eol:new nil t) count t)
+          (cl-loop while (re-search-forward inline-anki-rx:drawer nil t) count t)
+          (cl-loop while (re-search-forward inline-anki-rx:drawer:new nil t) count t))))))
+
+(defun inline-anki-list-flashcards-in-buffer ()
+  (interactive)
+  (let ((cards-found
+         (save-mark-and-excursion
+           (cl-loop
+            for regex in (list inline-anki-rx:drawer
+                               inline-anki-rx:drawer:new
+                               inline-anki-rx:eol
+                               inline-anki-rx:eol:new
+                               inline-anki-rx:item-start
+                               inline-anki-rx:item-start:new)
+            append (progn
+                     (goto-char (point-min))
+                     (cl-loop
+                      while (re-search-forward regex nil t)
+                      collect (concat (number-to-string (line-number-at-pos))
+                                      ": "
+                                      (buffer-substring-no-properties
+                                       (line-beginning-position)
+                                       (line-end-position)))))))))
+    (if cards-found
+        (message "%s" (string-join cards-found "\n"))
+      (message "No cards found"))))
+
+(defun inline-anki-occur-flashcards-in-buffer ()
+  (interactive)
+  (occur (rx (or (regexp inline-anki-rx:drawer)
+                 (regexp inline-anki-rx:drawer:new)
+                 (regexp inline-anki-rx:eol)
+                 (regexp inline-anki-rx:eol:new)
+                 (regexp inline-anki-rx:item-start)
+                 (regexp inline-anki-rx:item-start:new)))))
+
 
 (provide 'inline-anki)
