@@ -12,39 +12,50 @@ There are four ways to express flashcards.
 ** As list items
 Here are four Anki cloze notes, expressed in just four list items:
 
-- @^{1693000402} 🇫🇷 *maison*  🇬🇧 *house*
+#+begin_quote
 - @^{1693000403} 🇫🇷 *reunion*  🇬🇧 *meeting*
+- @^{1693000402} 🇫🇷 *maison*  🇬🇧 *house*
 - @^{1690300404} 🇫🇷 *legerdemain*  🇬🇧 *sleight-of-hand*
 - @^{1690003421} DRY is short for *Don't Repeat Yourself*
+#+end_quote
+
+There are no hidden property drawers!  The source Org looks like this:
+
+#+begin_src org
+- @^{1693000403} 🇫🇷 *reunion*  🇬🇧 *meeting*
+- @^{1693000402} 🇫🇷 *maison*  🇬🇧 *house*
+- @^{1690300404} 🇫🇷 *legerdemain*  🇬🇧 *sleight-of-hand*
+- @^{1690003421} DRY is short for *Don't Repeat Yourself*
+#+end_src
 
 The starting @^{number} uniquely identifies the note.  Think of @ as encircling an "a" for "Anki". ;-)
 
 The bold parts define cloze deletions.
 
-There are no hidden property drawers.
-
 ** As running paragraphs
 The following two paragraphs express two Anki cloze notes.
 
+#+begin_quote
 In English, we have the word-pair truth and lying.  We also have the word-pair *rational* and rationalization: it's as if lying was called *truthization*.^{16900030021}
 
 A gotcha for inline-anki: you must not *hard-wrap* paragraphs.  If you do, inline-anki will only grab *the last line* of the paragraph.^{1690986753420}
+#+end_quote
 
 ** As list items, with trailing ID
-Instead of placing the Anki note ID at the beginning of the list item, you can place it at the end.
-
-At the end of a list item or a line, *you don't need the @ glyph.*
+Instead of placing the Anki note ID at the beginning of the list item, you can place it *at the end. Then you don't need the @ glyph!*
 
 I find it more aesthetic to put the ID at the end for lists that aren't a pure list of flashcards---lists that mix and match flashcards and non-flashcard things.
 
 This list expresses, among other things, three Anki notes:
 
+#+begin_quote
 - "The third virtue is lightness. Let the winds of evidence blow you about as though you are a leaf, with no direction of your own.  Beware lest you fight a rearguard retreat against the evidence, grudgingly conceding each foot of ground only when forced, feeling cheated.  Surrender to the truth as quickly as you can.  Do this the instant you realize what you are resisting, the instant you can see from which quarter the winds of evidence are blowing against you.  Be faithless to your cause and betray it to a stronger enemy."
 - Do not think that fairness to all sides means balancing yourself evenly between positions; truth is not handed out *in equal portions* before the start of a debate.^{1695193247566}
 - If you are equally good at explaining *any outcome*, you have zero knowledge.^{1695193247617}
 - That which can be destroyed by the truth should be.  (P. C. Hodgell)
   - Corollary: That which the truth nourishes should thrive.
     - If the multiverse is real, I desire to *believe the multiverse is real*, and if the multiverse is not real, I desire to believe the multiverse is not real.  Let me not become attached to beliefs I may not want. (application of the *Litany of Tarski*)^{1695193247518}
+#+end_quote
   
 ** As drawers
 One flashcard follows.  If you're reading this in a web browser, note that this is what it'll look like in an org-mode buffer.  I had to show it this way because on export to the web, the drawer boundaries disappear.
