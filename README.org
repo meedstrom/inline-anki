@@ -41,12 +41,11 @@ In English, we have the word-pair truth and lying.  We also have the word-pair *
 A gotcha for inline-anki: you must not *hard-wrap* paragraphs.  If you do, inline-anki will only grab *the last line* of the paragraph.^{1690986753420}
 #+end_quote
 
-As you can see, we can even omit the @ glyph.
+As you can see, I omitted the @ glyph.  This is possible on line endings.
 
 ** As list items, with trailing ID
-Instead of placing the Anki note ID at the beginning of the list item, you can place it *at the end. Then you don't need the @ glyph!*
 
-I find it more aesthetic to put the ID at the end for lists that aren't a pure list of flashcards---lists that mix and match flashcards and non-flashcard things.
+I find it more aesthetic to put the Anki note ID at the end of a list item, when that list item is in a longer list of non-flashcard things.
 
 This list expresses, among other things, three Anki notes:
 
@@ -60,7 +59,7 @@ This list expresses, among other things, three Anki notes:
 #+end_quote
   
 ** As drawers
-One flashcard follows.  If you're reading this in a web browser, note that this is what it'll look like in an org-mode buffer.  I had to show it this way because on export to the web, the drawer boundaries disappear.
+One Anki cloze note is expressed below.  If you're reading this in a web browser, note that this is what it'll look like in an org-mode buffer.  I had to show it this way because on export to the web, the drawer boundaries disappear.
 
 #+begin_src org
 :anki-1694048375012:
@@ -129,11 +128,15 @@ You may like to know that:
 - When you update a note, it overwrites what was previously in that note in Anki.  Any edits made inside Anki will be forgotten.  Anki isn't responsible for anything except the review schedule.
 - There's a bit of a gimmick: if a note has 3 cloze fields, and you study it a bit, and later you remove the first cloze field, the second and third field will *inherit the scheduling of the first and second fields*.  So technically, you can have cards that aren't scheduled in full faithfulness to the algorithm, and failure statistics may be referring to a cloze card that you've removed.
   - Up to you what you do with this knowledge.  If you want my two cents, it affects nothing in my life.
-  - The third field's original scheduling will be attached to an empty card, which won't surprise experienced Anki-users.  You can clean up empty cards in Anki with "Check database...".
+  - No surprise to experienced Anki-users, but the third field's original scheduling will be attached to an empty card.  Clean up empty cards with the menu option "Check database...".
 
-** To push cards from a whole directory
+*** Push cards from the whole directory
 
-First configure =inline-anki-directory=, then you can run =M-x inline-anki-bulk-push RET= anytime.  The command is largely untested as of [2023-09-20], so it may be a bit janky.
+If you have =inline-anki-directory= configured correctly, then you can run this command anytime:
+
+: M-x inline-anki-bulk-push RET
+
+It may be a bit janky as of [2023-09-20].
 
 ** Config variables
 
@@ -174,13 +177,16 @@ Alternatively with Doom Emacs, this goes in =packages.el=:
 * Warning
 To detect clozes, this package relies on correct fontification in Org-mode.  So if you've been dragging along a half-broken Org setup, now may be the time to debug it.
 
+A gotcha: you must not *hard-wrap* your text (e.g. with =fill-paragraph=) if you want Anki to receive the whole flashcard.
+
 * Roadmap
 - [X] A command to search for flashcards
 - [ ] Send a field to Anki containing the file path and instruct the user to set up Anki such that clicking this path opens it with emacsclient
 - [ ] Export pictures and media
   - not super useful since we are restricted to clozes for now
   - [ ] Let drawer-style flashcards use a front-back template instead of cloze
+- [ ] Allow hard-wrapping
 
 * Q&A
 - Can I continue using my [org-drill/org-anki/...] notes?
-  - Yes.  All those packages look at subtrees as their "data objects", so there is no risk of conflict.  You can even have an inline-anki card /inside/ an org-drill subtree.
+  - Yes.  There is no risk of conflict because all those packages look at Org subtrees as their "data objects", and this package does not.  You can even have an inline-anki card /inside/ an org-drill subtree.
