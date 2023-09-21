@@ -7,6 +7,8 @@ The other SRS programs in the Emacs ecosystem ([[https://github.com/l3kn/org-fc]
 I don't want to awkwardly append flashcards to the end of an Org section as a kind of paraphrasis or summary of that section, but to let the flashcards serve /as/ paragraphs in their own right!
 
 * Demonstration
+There are four ways to express flashcards.
+
 ** As list items
 Here are four Anki cloze notes, expressed in just four list items:
 
@@ -22,15 +24,17 @@ The bold parts define cloze deletions.
 There are no hidden property drawers.
 
 ** As list items, with trailing ID
-You have the freedom to place the Anki note ID at either the beginning /or/ the end of a list item.  If it's at the end, you don't need the @ glyph.
+Instead of placing the Anki note ID at the beginning of the list item, you can place it at the end.
 
-I find it more aesthetic to have the ID at the end for lists that aren't a pure list of flashcards---lists that mix and match flashcards and non-flashcard things.
+At the end of a list item (or a line), *you don't need the @ glyph.*
 
-The following list expresses four Anki cloze notes, among other unrelated text:
+I find it more aesthetic to put the ID at the end for lists that aren't a pure list of flashcards---lists that mix and match flashcards and non-flashcard things.
+
+This list expresses, among other things, four Anki notes:
 
 - When a muscle feels tight after exercise, DON'T *stretch*.^{1690000201}
 - Good relationships aren't built on two halves, but two *wholes*.^{1690000210}
-- Most people are willing to bet money in the lab that they are superior to *most people* on most desirable traits.^{1690000013}
+- Most people are willing to bet *real money* in a controlled setting that they are superior to *most people* on most desirable traits.^{1690000013}
 - Here is a non-card...
   - Just some text unrelated to anki...
     - Favorite trick of fitness program gurus: babysit *genetic freaks* and bask in their performance.^{1690006401}
@@ -55,7 +59,7 @@ There are *three flaws* which will never go away:
 - *Flaw 3:* The note format is constrained -- you can't express every kind of flashcard possible in Anki.
   - For me this is a good trade, if that means the flashcards stay in my life.  Until now, they never stayed long due to clumsy systems.   Better simple flashcards than no flashcards.
 
-** Limitations vs. anki-editor
+** Limitations vs. anki-editor/org-anki
 
 Many traditional features are ABSENT in inline-anki:
 
@@ -65,11 +69,11 @@ Many traditional features are ABSENT in inline-anki:
   - Note that Anki tags lose much of their organizational purpose if all your notes live in Org files anyway -- you'll be organizing from within [[https://github.com/org-roam/org-roam][org-roam]] or the like, not from within Anki.  However, at least two use-cases remain:
     - You can display the tags inside cards as a contextual hint, [[https://edstrom.dev/posts/qix2Q4W/how-to-display-tags-as-hint-in-all-anki-cards][if you code this in the card template]]
     - You can use the tags to set up Custom Study sessions on a filtered subset of notes
-      - Useful when you're shoving everything into one deck
+      - Useful when have no separate decks
   - Finally, inline-anki always sends a tag named after the sync date in this style: "from-emacs-2023-09-20".  This helps both with figuring out if you have long stale notes, and letting you filter for notes that came from inline-anki as opposed to your own crafts.
-- It does not notice when Anki flags a card with =marked= or =leech=
+- It doesn't signal in any way that Anki has tagged a card as =marked= or =leech= (but you can still see this in Anki's own card browser)
 - It does not send pictures or media to Anki
-  - I aim to add this back, after I implement multiline flashcards as :drawers:
+  - On the roadmap though!
 
 ** Syntax of a flashcard
 
@@ -116,7 +120,7 @@ First configure =inline-anki-directory=, then you can run =M-x inline-anki-bulk-
 
 * Installation
 
-If you have [[https://github.com/raxod502/straight.el][straight.el]], you can install the package like so:
+If you have [[https://github.com/raxod502/straight.el][straight.el]], you can install the package with this initfile snippet:
 #+begin_src elisp
 (use-package asyncloop
   :straight (asyncloop   :type git :host github :repo "meedstrom/asyncloop"))
@@ -133,4 +137,14 @@ Alternatively with Doom Emacs, this goes in =packages.el=:
 Elpaca riders and other folk, you know what to do.
 
 * Warning
-This package relies on the fontification in Org buffers to work correctly.  So if you're dragging along a half-broken Org setup -- best debug it.
+This package relies on correct fontification in Org buffers in order to detect clozes.  So if you're dragging along a half-broken Org setup, now's the time to debug it.
+
+* Roadmap
+- [ ] A command to search for flashcards
+  # just use the same
+- [ ] Send a field to Anki containing the file path and instruct the user to set up Anki such that clicking this path opens it with emacsclient
+- [ ] Export pictures and media  (for drawer-style flashcards)
+
+* Q&A
+- Can I keep using [other flashcard package] at the same time?
+  - Yes.  That's one reason why this package doesn't know of any subtree syntax, so it can be mutually exclusive with them.
