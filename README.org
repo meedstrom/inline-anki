@@ -23,28 +23,43 @@ The bold parts define cloze deletions.
 
 There are no hidden property drawers.
 
-** As list items, with trailing ID
-Instead of placing the Anki note ID at the beginning of the list item, you can place it at the end.
-
-At the end of a list item (or a line), *you don't need the @ glyph.*
-
-I find it more aesthetic to put the ID at the end for lists that aren't a pure list of flashcards---lists that mix and match flashcards and non-flashcard things.
-
-This list expresses, among other things, four Anki notes:
-
-- When a muscle feels tight after exercise, DON'T *stretch*.^{1690000201}
-- Good relationships aren't built on two halves, but two *wholes*.^{1690000210}
-- Most people are willing to bet *real money* in a controlled setting that they are superior to *most people* on most desirable traits.^{1690000013}
-- Here is a non-card...
-  - Just some text unrelated to anki...
-    - Favorite trick of fitness program gurus: babysit *genetic freaks* and bask in their performance.^{1690006401}
-  
 ** As running paragraphs
 The following two paragraphs express two Anki cloze notes.
 
+In English, we have the word-pair truth and lying.  We also have the word-pair *rational* and rationalization: it's as if lying was called *truthization*.^{16900030021}
+
 A gotcha for inline-anki: you must not *hard-wrap* paragraphs.  If you do, inline-anki will only grab *the last line* of the paragraph.^{1690986753420}
 
-In English, we have the word-pair truth and lying.  We also have the word-pair *rational* and rationalization: it's as if lying was called *truthization*.^{16900030021}
+** As list items, with trailing ID
+Instead of placing the Anki note ID at the beginning of the list item, you can place it at the end.
+
+At the end of a list item or a line, *you don't need the @ glyph.*
+
+I find it more aesthetic to put the ID at the end for lists that aren't a pure list of flashcards---lists that mix and match flashcards and non-flashcard things.
+
+This list expresses, among other things, three Anki notes:
+
+- "The third virtue is lightness. Let the winds of evidence blow you about as though you are a leaf, with no direction of your own.  Beware lest you fight a rearguard retreat against the evidence, grudgingly conceding each foot of ground only when forced, feeling cheated.  Surrender to the truth as quickly as you can.  Do this the instant you realize what you are resisting, the instant you can see from which quarter the winds of evidence are blowing against you.  Be faithless to your cause and betray it to a stronger enemy."
+- Do not think that fairness to all sides means balancing yourself evenly between positions; truth is not handed out *in equal portions* before the start of a debate.^{1695193247566}
+- If you are equally good at explaining *any outcome*, you have zero knowledge.^{1695193247617}
+- That which can be destroyed by the truth should be.  (P. C. Hodgell)
+  - Corollary: That which the truth nourishes should thrive.
+    - If the multiverse is real, I desire to *believe the multiverse is real*, and if the multiverse is not real, I desire to believe the multiverse is not real.  Let me not become attached to beliefs I may not want. (application of the *Litany of Tarski*)^{1695193247518}
+  
+** As drawers
+One flashcard follows.  If you're reading this in a web browser, note that this is what it'll look like in an org-mode buffer.  I had to show it this way because on export to the web, the drawer boundaries disappear.
+
+#+begin_src org
+:anki-1694048375012:
+The *Litany of Tarski* goes:
+
+1. If the box contains a diamond,
+2. *I desire to believe that the box contains a diamond*;
+3. *If the box does not contain a diamond*,
+4. I desire to believe that the box does not contain a diamond;
+5. Let me not become attached to beliefs I may not want.
+:end:
+#+end_src
 
 * Usage
 ** Permanent limitations
@@ -122,7 +137,7 @@ First configure =inline-anki-directory=, then you can run =M-x inline-anki-bulk-
 
 If you have [[https://github.com/raxod502/straight.el][straight.el]], you can install the package with this initfile snippet:
 #+begin_src elisp
-(use-package asyncloop
+(use-package asyncloop ;; dependency
   :straight (asyncloop   :type git :host github :repo "meedstrom/asyncloop"))
 (use-package inline-anki
   :straight (inline-anki :type git :host github :repo "meedstrom/inline-anki"))
@@ -130,20 +145,19 @@ If you have [[https://github.com/raxod502/straight.el][straight.el]], you can in
 
 Alternatively with Doom Emacs, this goes in =packages.el=:
 #+begin_src elisp
-(package! asyncloop   :recipe (:host github :repo "meedstrom/asyncloop"))
+(package! asyncloop   :recipe (:host github :repo "meedstrom/asyncloop")) ;; dependency
 (package! inline-anki :recipe (:host github :repo "meedstrom/inline-anki"))
 #+end_src
 
-Elpaca riders and other folk, you know what to do.
-
 * Warning
-This package relies on correct fontification in Org buffers in order to detect clozes.  So if you're dragging along a half-broken Org setup, now's the time to debug it.
+To detect clozes, this package relies on correct fontification in Org-mode.  So if you've been dragging along a half-broken Org setup, now may be the time to debug it.
 
 * Roadmap
-- [ ] A command to search for flashcards
-  # just use the same
+- [X] A command to search for flashcards
 - [ ] Send a field to Anki containing the file path and instruct the user to set up Anki such that clicking this path opens it with emacsclient
-- [ ] Export pictures and media  (for drawer-style flashcards)
+- [ ] Export pictures and media
+  - not super useful since we are restricted to clozes for now
+  - [ ] Let drawer-style flashcards use a front-back template instead of cloze
 
 * Q&A
 - Can I keep using [other flashcard package] at the same time?
