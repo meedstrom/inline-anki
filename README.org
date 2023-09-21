@@ -66,6 +66,7 @@ Many traditional features are ABSENT in inline-anki:
     - You can display the tags inside cards as a contextual hint, [[https://edstrom.dev/posts/qix2Q4W/how-to-display-tags-as-hint-in-all-anki-cards][if you code this in the card template]]
     - You can use the tags to set up Custom Study sessions on a filtered subset of notes
       - Useful when you're shoving everything into one deck
+  - Finally, inline-anki always sends a tag named after the sync date in this style: "from-emacs-2023-09-20".  This helps both with figuring out if you have long stale notes, and letting you filter for notes that came from inline-anki as opposed to your own crafts.
 - It does not notice when Anki flags a card with =marked= or =leech=
 - It does not send pictures or media to Anki
   - I aim to add this back, after I implement multiline flashcards as :drawers:
@@ -106,9 +107,6 @@ First configure =inline-anki-directory=, then you can run =M-x inline-anki-bulk-
 
 - =inline-anki-note-fields=
   - Default =("Text" "Extra")=.
-
-- =inline-anki-default-tags=
-  - List of strings, default =()=.
 
 - =inline-anki-emphasis-type=
   - Default =(bold)=.  Can be set to either =(italic)= or =(underline)= instead.

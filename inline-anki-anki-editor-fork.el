@@ -229,19 +229,13 @@ CONTENTS is nil.  INFO is a plist holding contextual information."
 
 ;;; Core Functions
 
-(defun inline-anki--push-note (note)
-  "Request AnkiConnect for updating or creating NOTE."
-  (if (= (alist-get 'note-id note) -1)
-      (inline-anki--create-note note)
-    (inline-anki--update-note note)))
-
 (defun inline-anki--create-note (note)
   "Request AnkiConnect for creating NOTE."
   (let ((queue (inline-anki--anki-connect-invoke-queue)))
     (funcall queue
              'addNote
              `((note . ,(inline-anki--anki-connect-map-note note)))
-             #'inline-anki--set-note-id)
+             #'inline-anki--dangerously-write-id)
 
     (funcall queue)))
 
@@ -270,12 +264,12 @@ CONTENTS is nil.  INFO is a plist holding contextual information."
                  (when tags-to-add
                    (funcall tag-queue
                             'addTags `((notes . (,(alist-get 'note-id note)))
-                                       (tags . ,(mapconcat #'identity tags-to-add " ")))))
+                                       (tags . ,(string-join tags-to-add " ")))))
 
                  (when tags-to-remove
                    (funcall tag-queue
                             'removeTags `((notes . (,(alist-get 'note-id note)))
-                                          (tags . ,(mapconcat #'identity tags-to-remove " ")))))
+                                          (tags . ,(string-join tags-to-remove " ")))))
 
                  (funcall tag-queue))))
 

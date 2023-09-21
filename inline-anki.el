@@ -56,32 +56,10 @@
   "Names of fields in your note type."
   :type '(repeat string))
 
-(defcustom inline-anki-default-tags nil
-  "Tags to always include."
-  :type '(repeat string))
-
 (defcustom inline-anki-emphasis-type '(bold)
   "Which emphasis type to parse as implicit clozes.
 Set this to '(bold), '(italic), or '(underline)."
   :type 'sexp)
-
-(defun inline-anki-push-notes ()
-  (interactive)
-  (unless (derived-mode-p 'org-mode)
-    (error "Not org-mode: %s" buffer-file-name))
-  ;; (unless org-fontify-emphasized-text
-  ;; (error "Inline-anki relies on `org-fontify-emphasized-text'"))
-  (setq truncate-lines t)
-  (inline-anki-map-note-things
-   (lambda ()
-     (message "Scanning buffer for Anki notes: \"%s\"..." (buffer-name))
-     (condition-case-unless-debug err
-         (if-let ((note (inline-anki-note-at-point)))
-             (inline-anki--push-note note)
-           (error "-map-note-things found magic string, but note-at-point found no clozes"))
-       (error (message "Flashcard export at point %d failed: %s"
-                       (point)
-                       (error-message-string err)))))))
 
 (defvar inline-anki-directory
   (if (bound-and-true-p org-roam-directory)
@@ -90,172 +68,191 @@ Set this to '(bold), '(italic), or '(underline)."
 
 (defvar inline-anki--file-list nil)
 
-;; WIP: Experimental.
-;;
-;; Theory: Maybe it works better if I use find-file instead of
-;; with-current-buffer, and force redisplay before proceeding.  If that makes a
-;; difference, we know what the problem is.
-;;
-;; Theory: it's those org-element cache bugs behind it
-;;
-;; Theory: it's the fact i'm using with-temp-buffer that prevents normal
-;; fontification (but apparently less often a problem when i just interactively
-;; call push-notes)
+;;;###autoload
 (defun inline-anki-bulk-push ()
-  "Run `inline-anki-push-notes' from every file in `inline-anki-directory'."
+  "Push notes from every file in `inline-anki-directory'."
   (interactive)
   (require 'asyncloop-debug)
-  (let ((modes-to-reenable nil))
-    (when (bound-and-true-p git-auto-commit-mode)
-      (git-auto-commit-mode 0)
-      (push 'git-auto-commit-mode modes-to-reenable))
-    (when (bound-and-true-p my-auto-commit-mode)
-      (my-auto-commit-mode 0)
-      (push 'my-auto-commit-mode modes-to-reenable))
-    (asyncloop-run
-      (list
-       (lambda (_loop)
-         (setq inline-anki--file-list
-               (directory-files inline-anki-directory t "\\.org$")))
-       (defun inline-anki--scan-next-file (loop)
-         (let* ((path (pop inline-anki--file-list))
-                (visiting (find-buffer-visiting path)))
-           ;; (asyncloop-log loop "Scanning for flashcards in: %s" path)
-           (with-current-buffer (or visiting (find-file-noselect path))
-             (if (buffer-modified-p)
-                 (asyncloop-log loop
-                   "Unsaved changes in file, skipping it")
-               (inline-anki-push-notes)
-               ;; REVIEW: `inline-anki--anki-connect-invoke-queue' works asynchronously?
-               ;;         maybe can't save at this point
-               (save-buffer))
-             (when inline-anki--file-list
-               (push #'inline-anki--scan-next-file (asyncloop-remainder loop)))
-             ;; Wasn't visiting before, so kill buffer
-             (unless (or visiting (buffer-modified-p))
-               (kill-buffer (current-buffer))))
-           (format "%d files to go; was in %s" (length inline-anki--file-list) path)))
-       ;; `(lambda (_loop)
-       ;;   (dolist (mode ,modes-to-reenable)
-       ;;     (funcall mode)))
-       )
-      :debug-buffer-name "*inline-anki bulk worker*"))
-  (delete-other-windows)
-  (switch-to-buffer "*inline-anki bulk worker*")
-  (split-window)
-  (switch-to-buffer "*Messages*")
-  (split-window))
+  (asyncloop-run
+    (list
+     (lambda (_loop)
+       (setq inline-anki--file-list
+             (directory-files inline-anki-directory t "\\.org$")))
+     (defun inline-anki--scan-next-file (loop)
+       (let* ((path (pop inline-anki--file-list))
+              (visiting (find-buffer-visiting path)))
+         ;; (asyncloop-log loop "Scanning for flashcards in: %s" path)
+         (if visiting
+             (with-current-buffer visiting
+               (if (buffer-modified-p)
+                   (asyncloop-log loop
+                     "Unsaved changes in file, skipping %s" visiting)
+                 (inline-anki-push-notes)))
+           (find-file-literally path) ;; whooo fast
+           (when (= 0 (inline-anki-push-notes))
+             (cl-assert (not (buffer-modified-p)))
+             (kill-buffer)))
+         ;; Eat the file list, one item at a time
+         (when inline-anki--file-list
+           (push #'inline-anki--scan-next-file (asyncloop-remainder loop)))
+         (format "%d files to go; was in %s"
+                 (length inline-anki--file-list) path))))
+    :debug-buffer-name "*inline-anki bulk worker*")
+  (display-buffer "*inline-anki bulk worker*"))
 
-
-;; TODO: send filename, breadcrumbs, outline path, or all of them as extra fields.
-;; and one day, we might be able to linkify the filepath and open with emacsclient
-(defun inline-anki-note-at-point ()
-  "Construct an alist representing a note at point."
-  (let* (
-         ;; An @anki at start of list item? Exclude it from note text.
-         (begin (save-excursion
-                  ;; Org's magic puts us at at start of the list item after the
-                  ;; bullet point
-                  (goto-char (org-element-property
-                              :contents-begin (org-element-at-point)))
-                  (unless (search-forward "@anki" (+ 6 (point)) t)
-                    (re-search-forward (rx "@^{" (= 13 digit) "}")
-                                       (+ 18 (point))
-                                       t))
-                  (point)))
-
-         ;; An @anki at end of line?  Exclude it from note text.
-         (end (save-excursion
-                ;; Alas, (org-element-property :contents-end) jumps past all
-                ;; sub-items of a list-item.  So we just line-orient and hope
-                ;; that the user doesn't hard-wrap.
-                (goto-char (line-beginning-position))
-                (save-match-data
-                  (if (or (re-search-forward (rx "@anki" (*? space) eol)
-                                             (line-end-position)
-                                             t)
-                          (re-search-forward (rx (?? "@") "^{" (*? alnum) "}" (*? space) eol)
-                                             (line-end-position)
-                                             t))
-                      (match-beginning 0)
-                    (line-end-position))))))
-
-    (list (cons 'deck inline-anki-deck)
-          (cons 'note-id (inline-anki-thing-id))
-          (cons 'note-type inline-anki-note-type)
-          (cons 'tags (append inline-anki-default-tags
-                              (mapcar #'substring-no-properties (org-get-tags))
-                              (list (format-time-string "from-emacs-%F"))))
-          ;; Drop text into the first field, however that's labeled
-          (cons 'fields (list (cons (car inline-anki-note-fields)
-                                    (inline-anki-convert-implicit-clozes
-                                     (buffer-substring begin end))))))))
-
-(defun inline-anki--set-note-id (id)
-  "Assign the id ID to the unlabeled note at point."
+;; this needs to do regexp searches by itself because it's used as a callback
+;; and given no context
+(defun inline-anki--dangerously-write-id (id)
+  "Assign the label ID to the unlabeled note at point."
   (unless id
     (error "Note creation failed for unknown reason"))
   (goto-char (line-beginning-position))
-  (let ((eol-flag (rx "^{" (group "anki") "}" (*? space) eol)))
-    (cond
-     ((search-forward "@anki" (line-end-position) t)
-      (delete-char -4)
-      (insert "^{" (number-to-string id) "}"))
+  (cond
+   ((search-forward "@anki" (line-end-position) t)
+    (delete-char -4)
+    (insert "^{" (number-to-string id) "}"))
 
-     ((re-search-forward eol-flag (line-end-position) t)
-      (replace-match (number-to-string id) t t nil 1))
+   ((re-search-forward (rx "^{" (group "anki") "}" (*? space) eol)
+                       (line-end-position)
+                       t)
+    (replace-match (number-to-string id) nil nil nil 1))
 
-     (t
-      (error "Inline-anki magic string not found on line")))))
+   ((re-search-forward (rx (*? space) ":anki:") (line-end-position) t)
+    (forward-char -1)
+    (insert "-" (number-to-string id)))
 
-(defun inline-anki-thing-id ()
-  (save-excursion
-    (let ((beg (line-beginning-position))
-          (bound (progn
-                   (if (org-at-item-p)
-                       (org-end-of-item)
-                     (org-forward-paragraph))
-                   (point))))
-      (goto-char beg)
-      (if (re-search-forward (rx "^{" (group (= 13 digit)) "}") bound t)
-          (string-to-number (match-string 1))
-        -1))))
+   (t
+    (error "No inline-anki magic string found"))))
 
-;; TOOD: detect if a line is a comment, and ignore
-;; TODO: detect if there is more than one magic string on the same line (run all
-;; searches upfront, record the line numbers, then check for duplicates among
-;; the recorded line numbers)
-(defun inline-anki-map-note-things (func)
-  "Run FUNC with point on each flashcard in the buffer.
-Note: FUNC should not move point backwards, or you can get an
-infinite loop."
-  (let* ((ctr 0)
-         (list-bullet (rx (or (any "-+*") (seq (*? digit) (any ".)")))))
-         (card@item-start&has-id (rx bol (*? space) (regexp list-bullet) (+? space) "@^{" (= 13 digit) "}"))
-         (card@item-start&new (rx bol (*? space) (regexp list-bullet) (+? space) "@anki"))
-         (card@eol&has-id (rx (? "@") "^{" (= 13 digit) "}" (*? space) eol))
-         (card@eol&new (rx (or "@anki" "^{anki}") (*? space) eol)))
-    (dolist (regexp (list card@item-start&has-id
-                          card@item-start&new
-                          card@eol&has-id
-                          card@eol&new))
-      (goto-char (point-min))
-      (while (re-search-forward regexp nil t)
-        (forward-char -1)
-        (cl-incf ctr)
-        (funcall func)))
+
+;; TODO: send filename, breadcrumbs, outline path, or all of them as extra
+;; fields.  and one day... we might be able to linkify the filepath in anki and
+;; have anki open with emacsclient when you click the link
+;;
+;; for me, i could even add a web link to the source file as represented on my
+;; website, so i can look (but not edit) on the phone
+
+(cl-defun inline-anki-push (&key text-beg text-end note-id)
+  (let ((this-line (line-number-at-pos)))
+    (if (member this-line inline-anki-known-flashcard-places)
+        (error "Two magic strings on same line: %d" this-line)
+      (push this-line inline-anki-known-flashcard-places)))
+
+  (if-let* ((text (buffer-substring text-beg text-end))
+            (clozed (inline-anki-convert-implicit-clozes text)))
+      (prog1 t
+        (funcall
+         (if (= -1 note-id)
+             #'inline-anki--create-note
+           #'inline-anki--update-note)
+         (list (cons 'deck inline-anki-deck)
+               (cons 'note-type inline-anki-note-type)
+               (cons 'note-id note-id)
+               (cons 'tags (cons (format-time-string "from-emacs-%F")
+                                 (mapcar #'substring-no-properties (org-get-tags))))
+               ;; Drop text into the note's first field
+               (cons 'fields (list (cons (car inline-anki-note-fields) clozed))))))
+    (message "No implicit clozes found, skipping:  %s" text)
+    nil))
+
+(defvar inline-anki-known-flashcard-places nil)
+
+;; TODO: check upfront if implicit clozes are absent?
+;; TODO: detect if a line is a comment, and ignore
+;;;###autoload
+(defun inline-anki-push-notes ()
+  (interactive)
+  ;; (unless (derived-mode-p 'org-mode)
+    ;; (error "Not org-mode: %s" buffer-file-name))
+  (unless org-fontify-emphasized-text
+    (error "To use inline-anki, restart Emacs with `org-fontify-emphasized-text' t"))
+  (let* ((list-bullet (rx (or (any "-+*") (seq (*? digit) (any ").") " "))))
+         (item-start&new (rx bol (*? space) (regexp list-bullet) (*? space) "@anki "))
+         (item-start&has-id (rx bol (*? space) (regexp list-bullet) (*? space) "@^{" (group (= 13 digit)) "}"))
+         (eol&new (rx (or "@anki" "^{anki}") (*? space) eol))
+         (eol&has-id (rx (? "@") "^{" (group (= 13 digit)) "}" (*? space) eol))
+         (drawer&new (rx bol ":anki:"))
+         (drawer&has-id (rx bol ":anki-" (group (= 13 digit)) ":"))
+         (list-or-paragraph-start (rx bol (*? space) (? (regexp list-bullet))))
+         (ctr 0))
+    (setq inline-anki-known-flashcard-places nil)
+
+    ;; NOTE: scan for the has-id flashcards first, otherwise you waste compute
+    ;; cycles because the new ones get an id which would then be picked up again
+
+    (goto-char (point-min))
+    (while (re-search-forward item-start&has-id nil t)
+      (when (inline-anki-push
+           :text-beg (point)
+           :text-end (line-end-position)
+           :note-id (string-to-number (match-string 1)))
+        (cl-incf ctr)))
+
+    (goto-char (point-min))
+    (while (re-search-forward item-start&new nil t)
+      (when (inline-anki-push
+             :text-beg (point)
+             :text-end (line-end-position)
+             :note-id -1)
+        (cl-incf ctr)))
+
+    (goto-char (point-min))
+    (while (re-search-forward eol&has-id nil t)
+      (when (inline-anki-push
+             :text-beg (save-excursion
+                         (save-match-data
+                           (goto-char (line-beginning-position))
+                           (re-search-forward list-or-paragraph-start
+                                              (line-end-position))))
+             :text-end (match-beginning 0)
+             :note-id (string-to-number (match-string 1)))
+        (cl-incf ctr)))
+
+    (goto-char (point-min))
+    (while (re-search-forward eol&new nil t)
+      (when (inline-anki-push
+             :text-beg (save-excursion
+                         (save-match-data
+                           (goto-char (line-beginning-position))
+                           (re-search-forward list-or-paragraph-start
+                                              (line-end-position))))
+             :text-end (match-beginning 0)
+             :note-id -1)
+        (cl-incf ctr)))
+
+    (goto-char (point-min))
+    (while (re-search-forward drawer&has-id nil t)
+      (when (inline-anki-push
+             :text-beg (1+ (line-end-position))
+             :text-end (save-excursion
+                         (save-match-data
+                           (search-forward "\n:end:")
+                           (1- (line-beginning-position))))
+             :note-id (string-to-number (match-string 1)))
+        (cl-incf ctr)))
+
+    (goto-char (point-min))
+    (while (re-search-forward drawer&new nil t)
+      (when (inline-anki-push
+             :text-beg (1+ (line-end-position))
+             :text-end (save-excursion
+                         (search-forward "\n:end:")
+                         (1- (line-beginning-position)))
+             :note-id -1)
+        (cl-incf ctr)))
+
+    (setq inline-anki-known-flashcard-places nil)
     ctr))
 
+;; FIXME
 (defun inline-anki-convert-implicit-clozes (text)
   (with-temp-buffer
-    ;; (org-mode)
+    (org-mode)
     (insert text)
     (goto-char (point-min))
-    (let ((org-fontify-emphasized-text t)
-          (n 0))
-      (org-restart-font-lock)
-      (org-do-emphasis-faces (point-max))
-      (goto-char (point-min))
+    (org-do-emphasis-faces (point-max))
+    (goto-char (point-min))
+    (let ((n 0))
       (while (setq prop (text-property-search-forward
                          'face inline-anki-emphasis-type t))
         (when org-hide-emphasis-markers
@@ -269,8 +266,8 @@ infinite loop."
           (goto-char (+ (prop-match-end prop) 4 (length num)))
           (delete-char -1)
           (insert "}}")))
-      (when (= n 0)
-        (error "No clozes in note: %s" text)))
-    (buffer-substring-no-properties (point-min) (point-max))))
+      (if (= n 0)
+          nil ;; Nil signals that no clozes found
+        (buffer-substring-no-properties (point-min) (point-max))))))
 
 (provide 'inline-anki)
