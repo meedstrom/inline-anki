@@ -19,7 +19,7 @@ Here are four Anki cloze notes, expressed in just four list items:
 - @^{1690003421} DRY is short for *Don't Repeat Yourself*
 #+end_quote
 
-There are no hidden property drawers!  The source Org looks like this:
+There are no hidden property drawers!  The source Org syntax is also just four lines:
 
 #+begin_src org
 - @^{1693000403} 🇫🇷 *reunion*  🇬🇧 *meeting*
@@ -28,9 +28,9 @@ There are no hidden property drawers!  The source Org looks like this:
 - @^{1690003421} DRY is short for *Don't Repeat Yourself*
 #+end_src
 
-The starting @^{number} uniquely identifies the note.  Think of @ as encircling an "a" for "Anki". ;-)
+The starting @^{number} uniquely identifies the note.  Think of the @ glyph as encircling an "a" for "Anki". ;-)
 
-The bold parts define cloze deletions.
+As you've guessed, the bold parts define cloze deletions.
 
 ** As running paragraphs
 The following two paragraphs express two Anki cloze notes.
@@ -40,6 +40,8 @@ In English, we have the word-pair truth and lying.  We also have the word-pair *
 
 A gotcha for inline-anki: you must not *hard-wrap* paragraphs.  If you do, inline-anki will only grab *the last line* of the paragraph.^{1690986753420}
 #+end_quote
+
+As you can see, we can even omit the @ glyph.
 
 ** As list items, with trailing ID
 Instead of placing the Anki note ID at the beginning of the list item, you can place it *at the end. Then you don't need the @ glyph!*
@@ -98,30 +100,36 @@ Many traditional features are ABSENT in inline-anki:
       - Useful when have no separate decks
   - Finally, inline-anki always sends a tag named after the sync date in this style: "from-emacs-2023-09-20".  This helps both with figuring out if you have long stale notes, and letting you filter for notes that came from inline-anki as opposed to your own crafts.
 - It doesn't signal in any way that Anki has tagged a card as =marked= or =leech= (but you can still see this in Anki's own card browser)
-- It does not send pictures or media to Anki
-  - On the roadmap though!
 
 ** Syntax of a flashcard
 
 - To identify a flashcard, inline-anki looks for one of the following things:
-  - A magic string at the *start of a list item*: =@anki=.  When Anki assigns it an ID, it becomes a =@= glyph followed by a 13-digit number in superscript, like this: =@^{1693535436701}=.
-  - A magic string at the *end of a line*: =@anki= or =^{anki}=.  Same as above, except that you can omit the =@= glyph and inline-anki won't add one.  This works with paragraphs as well as list items.
-- Clozes are marked by *bold text*, or you can configure =inline-anki-emphasis-type= if you prefer italic or underline.
-  - Bear in mind that if you change to italic or underline, you'll have to edit all your cards to match.
-  - You can, if necessary, write Anki's regular ={{c1::}}= syntax directly.  Mainly useful for writing math equations.
+  - A magic string at the *start of a list item*: =@anki=.
+    - When Anki assigns it an ID, it becomes a =@= glyph followed by a 13-digit number in superscript, like this: =@^{1693535436701}=.
+  - A magic string at the *end of a line*: =@anki= or =^{anki}=.
+    - Same as above, except that you can omit the =@= glyph and inline-anki won't add one.  This works with paragraphs as well as list items.
+  - A drawer named =:anki:=.
+    - When Anki assigns it an ID, the drawer is renamed to include it like this: =:anki-1693535436702:=.
+- Clozes are marked by *bold text*.  If you prefer italic or underline, configure =inline-anki-emphasis-type=.
+  - Worried that you'll have unintentional flashcards everywhere because you like to bold things?  Don't worry, it won't be a flashcard if there's not a magic string as above.
+  - Bear in mind that if you change to italic or underline, you'll have to edit all your cards to match.  To help with this, type =M-x inline-anki-occur-flashcards RET=.
+  - If necessary, you can write Anki's regular ={{c1::}}= syntax directly.  Mainly useful for writing math equations.
+    - A card that has such syntax should not have any bold, else there will be double-clozes.
 #  - a drawer named =:anki:=, which is renamed to something like =:anki-16900001:= when the Anki note ID has been assigned.
 
 ** To push cards
 
 
-1. Make sure Anki has the AnkiConnect add-on installed, and you have =curl= available too
-2. Make sure Anki is running in the background
-3. Visit an Org file that contains some inline-anki cards, and type =M-x inline-anki-push-notes RET=
+1. Make sure Anki has the AnkiConnect add-on installed
+2. Make sure you have =curl= installed
+3. Start Anki
+4. From your Org file, type =M-x inline-anki-push-notes RET=
 
 You may like to know that:
 - When you update a note, it overwrites what was previously in that note in Anki.  Any edits made inside Anki will be forgotten.  Anki isn't responsible for anything except the review schedule.
-- There's a bit of a gimmick: if a note has 3 cloze fields, and you study it a bit, and later you remove the first cloze field, the second and third field will *inherit the scheduling of the first and second fields*.  The third field's original scheduling will be attached to an empty card (which you can clean up with "Check database..." in Anki).  So technically, you can have cards that aren't scheduled truly to the algorithm, and failure statistics may be referring to a cloze card that you've removed.
-  - Up to you what you do with this knowledge.  My two cents: it affects nothing in my life.
+- There's a bit of a gimmick: if a note has 3 cloze fields, and you study it a bit, and later you remove the first cloze field, the second and third field will *inherit the scheduling of the first and second fields*.  So technically, you can have cards that aren't scheduled in full faithfulness to the algorithm, and failure statistics may be referring to a cloze card that you've removed.
+  - Up to you what you do with this knowledge.  If you want my two cents, it affects nothing in my life.
+  - The third field's original scheduling will be attached to an empty card, which won't surprise experienced Anki-users.  You can clean up empty cards in Anki with "Check database...".
 
 ** To push cards from a whole directory
 
@@ -142,14 +150,17 @@ First configure =inline-anki-directory=, then you can run =M-x inline-anki-bulk-
   - Default =(bold)=.  Can be set to either =(italic)= or =(underline)= instead.
 
 - =inline-anki-directory=
-  - Defaults to the value of =org-roam-directory= or =org-directory=.
+  - Defaults to the value of =org-roam-directory=, falling back to =org-directory=.
+
+- =inline-anki-use-tags=
+  - Default =t=.  See docstring.
 
 * Installation
 
 If you have [[https://github.com/raxod502/straight.el][straight.el]], you can install the package with this initfile snippet:
 #+begin_src elisp
 (use-package asyncloop ;; dependency
-  :straight (asyncloop   :type git :host github :repo "meedstrom/asyncloop"))
+  :straight (asyncloop :type git :host github :repo "meedstrom/asyncloop"))
 (use-package inline-anki
   :straight (inline-anki :type git :host github :repo "meedstrom/inline-anki"))
 #+end_src
@@ -171,5 +182,5 @@ To detect clozes, this package relies on correct fontification in Org-mode.  So 
   - [ ] Let drawer-style flashcards use a front-back template instead of cloze
 
 * Q&A
-- Can I keep using [other flashcard package] at the same time?
-  - Yes.  That's one reason why this package doesn't know of any subtree syntax, so it can be mutually exclusive with them.
+- Can I continue using my [org-drill/org-anki/...] notes?
+  - Yes.  All those packages look at subtrees as their "data objects", so there is no risk of conflict.  You can even have an inline-anki card /inside/ an org-drill subtree.
