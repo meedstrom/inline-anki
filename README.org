@@ -9,7 +9,7 @@ I don't want to awkwardly append flashcards to the end of an Org section as a ki
 * Demonstration
 We provide four ways to express flashcards.
 
-** As list items
+** Way 1: As list items
 Here are five Anki cloze notes (totalling nine clozes), expressed in just five list items:
 
 #+begin_quote
@@ -34,7 +34,7 @@ The starting @^{number} uniquely identifies the note.  Think of the @ glyph as e
 
 As you've guessed, the bold parts define cloze deletions.
 
-** As running paragraphs
+** Way 2: As running paragraphs
 The following two paragraphs express two Anki cloze notes (totalling four clozes).
 
 #+begin_quote
@@ -45,7 +45,7 @@ A gotcha for inline-anki: you must not *hard-wrap* paragraphs.  If you do, inlin
 
 As you can see, I omitted the @ glyph.  You can do that on line endings.
 
-** As list items, with trailing ID
+** Way 3: As list items, with trailing ID
 
 I find it more aesthetic to put the Anki note ID at the end of a list item, when that list item is a member of a longer list of non-flashcard things.
 
@@ -60,7 +60,7 @@ This list expresses, among other things, three Anki cloze notes:
     - If the multiverse is real, I desire to *believe the multiverse is real*, and if the multiverse is not real, I desire to believe the multiverse is not real.  Let me not become attached to beliefs I may not want. (application of the *Litany of Tarski*)^{1695193247518}
 #+end_quote
   
-** As drawers
+** Way 4: As drawers
 The drawer below expresses one Anki cloze note (totalling three clozes).  If you're reading this in a web browser, note that this is what it'll look like in an org-mode buffer.  I had to show it this way because upon export to the web, the drawer boundaries normally disappear.
 
 #+begin_src org
@@ -84,7 +84,7 @@ There are *three flaws* which will never go away:
   - To me this is a non-issue since the bus is the only place I want to review anyway.
 - *Flaw 2:* Like anki-editor, inline-anki takes ownership -- you cannot edit the cards from within Anki.  You have to return to your computer and edit there, in Emacs.
   - This means you can't make small corrections on-the-fly while reviewing.  Bit annoying, but at least you won't face sync conflicts (and I won't have to write sync code, I hear it's a nightmare).
-  - Fortunately, this is less of a problem in our paradigm, since the flashcards are serving double duty.  You will often directly see and refine the text of the flashcard, in contrast with other SRS when you only see it during review.
+  - Fortunately, this is less of a problem in our paradigm, since the flashcards are serving double duty as body text.  You will often directly see and refine the text of the flashcard, in contrast with other SRS when you only see it during review.
 - *Flaw 3:* The note format is constrained -- you can't express every kind of flashcard possible in Anki.
   - For me this is a good trade, if that means the flashcards stay in my life.  Until now, they never stayed long due to clumsy systems.   Better simple flashcards than no flashcards.
 
@@ -97,11 +97,13 @@ Many traditional features are ABSENT in inline-anki.
 - It clozes only one deletion at a time
 - You cannot set tags on a per-card basis
   - The cards will still inherit tags from the local Org context (i.e. subtree or file-level tags)
-    - Note that Anki tags lose much of their organizational purpose if all your notes live in Org files anyway -- you'll be organizing from within [[https://github.com/org-roam/org-roam][org-roam]] or the like, not from within Anki.  However, at least two use-cases remain:
+    - Note that Anki tags lose much of their organizational purpose if all your notes live in Org files anyway -- you'll be organizing from within [[https://github.com/org-roam/org-roam][org-roam]] or whichever system you have, not from within Anki.  However, at least two use-cases remain:
       - You can display the tags inside cards as a contextual hint, [[https://edstrom.dev/posts/qix2Q4W/how-to-display-tags-as-hint-in-all-anki-cards][if you code this in the card template]]
       - You can use the tags to set up Custom Study sessions on a filtered subset of notes
-        - Useful when have no separate decks
-    - Finally, inline-anki always sends a tag named after the sync date in this style: "from-emacs-2023-09-20".  This helps both with figuring out if you have long stale notes, and letting you filter for notes that came from inline-anki as opposed to your own crafts.
+        - Useful since we don't separate decks
+    - Finally, even if you disable =inline-anki-use-tags=, inline-anki always attaches one tag named after the date, in this style: "from-emacs-2023-09-20"
+      - This lets you see in Anki if you have stale notes that aren't being updated
+      - This lets you separate your handmade notes from those that came from inline-anki
 - It doesn't signal in any way that Anki has tagged a card as =marked= or =leech= (but you can still see this in Anki's own card browser)
 
 ** Syntax of a flashcard
@@ -129,7 +131,7 @@ Many traditional features are ABSENT in inline-anki.
 2. Make sure you have =curl= installed
 3. Start Anki
 4. From your Org file, type =M-x inline-anki-push-notes-in-buffer RET=
-   - Or push entire directory by typing =M-x inline-anki-push-notes-in-directory RET=.
+   - Or push entire directory by typing =M-x inline-anki-push-notes-in-directory RET=
 
 You may like to know that:
 - When you update a note, it overwrites what was previously in that note in Anki.  Any edits made inside Anki will be forgotten.  Anki isn't responsible for anything except the review schedule.
@@ -177,10 +179,10 @@ You must not *hard-wrap* your text (e.g. with =fill-paragraph=) if you want Anki
 - [ ] Allow hard-wrapping
 - [ ] Export pictures and media
   - Not super useful as long as we are restricted to clozes
-  - [ ] Create a fifth note expression: a drawer named, say, =:anki-frontback:= expresing a traditional front-back note-type instead of cloze-deletion.
+  - [ ] Create a fifth note expression: a drawer named, say, =:anki-frontback:= expresing a traditional front-back note-type instead of cloze-deletion
 - [ ] Make so that commenting-out a flashcard expression also suspends it from review in Anki
 - [ ] Include the file path as an extra field and instruct the user to set up Anki such that clicking this path opens it with emacsclient
-- [ ] For myself, I'd like a way to include any extra field based on anything in the buffer, so I can send an URL to the web-published version of the source file (I publish many notes on [[https://edstrom.dev][edstrom.dev]]).  This would let me tap that URL when I'm reviewing on the phone.
+- [ ] For myself, I'd like a programamble way to include any extra field, so I can send an URL to my web-published version of the same source file.  Then I could tap that URL while reviewing on the phone.
 
 * Q&A
 - Can I continue using my [org-drill/org-anki/...] notes?
