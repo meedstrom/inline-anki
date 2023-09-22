@@ -1,11 +1,11 @@
-;; inline-anki.el -- One-liner flashcards -*- lexical-binding: t; -*-
+;;; inline-anki.el --- One-liner flashcards -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2023 Martin Edström <meedstrom91@gmail.com>
 ;;
 ;; Description: One-liner flashcards
 ;; Author: Martin Edström
 ;; Version: 0.1.1-pre
-;; Package-Requires: ((emacs "28") (asyncloop "0.3.0-pre") (pcre2el "1.12") (request "0.3.0") (dash "2.12.0"))
+;; Package-Requires: ((emacs "28") (asyncloop "0.3.2") (pcre2el "1.12") (request "0.3.0") (dash "2.12.0"))
 ;; URL: https://github.com/meedstrom/inline-anki
 
 ;; This file is not part of GNU Emacs.
@@ -28,8 +28,6 @@
 ;; External requirements:
 ;; - curl
 ;; - Anki with AnkiConnect add-on
-
-;; Won't work on MS Windows without WSL!
 
 ;;; Code:
 
@@ -63,7 +61,7 @@ can only be one character long."
 Setting it to nil lets `inline-anki-push-notes-in-directory' work faster if
 you have hundreds of files.
 
-If you merely want to exclude parent tags, leave this at `t' and
+If you merely want to exclude parent tags, leave this at t and
 see `org-use-tag-inheritance' instead."
   :type 'boolean)
 
@@ -106,7 +104,9 @@ see `org-use-tag-inheritance' instead."
                  (regexp inline-anki-rx:item-start)
                  (regexp inline-anki-rx:item-start:new)))))
 
-(defun inline-anki-grep ()
+;;;###autoload
+(defun inline-anki-rgrep ()
+  "Recursively search for flashcards in current directory."
   (interactive)
   (require 'pcre2el)
   ;; Override rgrep's command to add -P for PCRE
@@ -121,9 +121,10 @@ see `org-use-tag-inheritance' instead."
            "*.org")))
 
 ;; This does its own regexp searches because it's used as a callback with no
-;; context.  But it'd be possible to pass another argument to `inline-anki--create-note'
-;; that could let it choose one of 3 different callbacks.  Then we'd basically
-;; be telling it "hey, go ahead and assume point is already on an @anki string".
+;; context.  But it'd be possible to pass another argument to
+;; `inline-anki--create-note' that could let it choose one of 3 different
+;; callbacks.  Then we'd basically be telling it "hey, go ahead and assume point
+;; is already on an @anki string".
 (defun inline-anki--dangerously-write-id (id)
   "Assign ID to the unlabeled flashcard at point."
   (unless id
@@ -211,12 +212,16 @@ value of -1), create it."
                                    (mapcar #'substring-no-properties
                                            (org-get-tags)))))
                ;; Drop text into the note's first field
-               (cons 'fields (list (cons (car inline-anki-cloze-note-fields) clozed))))))
+               (cons 'fields (list (cons (car inline-anki-cloze-note-fields)
+                                         clozed))))))
     (message "No implicit clozes found, skipping:  %s" text)
     nil))
 
 ;;;###autoload
 (defun inline-anki-push-notes-in-buffer (&optional called-interactively)
+  "Push all flashcards in the buffer to Anki.
+Argument CALLED-INTERACTIVELY is automatically set if this
+command was called interactively."
   (interactive "p")
   (if (string-empty-p (shell-command-to-string "ps -e | grep anki"))
       (message "Anki doesn't seem to be running")
@@ -226,7 +231,10 @@ value of -1), create it."
         pushed))))
 
 (defun inline-anki--push-notes-in-buffer ()
-  (setq inline-anki-known-flashcard-places nil)
+  "Worker for `inline-anki-push-notes-in-buffer' and
+`inline-anki-push-notes-in-directory'.
+Skips some checks.  Fine to call directly from a Lisp program."
+  (setq inline-anki--known-flashcard-places nil)
   (and inline-anki-use-tags
        (not (derived-mode-p 'org-mode))
        (cl-letf ((org-mode-hook nil))
@@ -296,7 +304,7 @@ value of -1), create it."
 
 ;;;###autoload
 (defun inline-anki-push-notes-in-directory ()
-  "Push notes from every file in the current directory."
+  "Push notes from every file under the current directory tree."
   (interactive)
   (require 'asyncloop)
   (if (string-empty-p (shell-command-to-string "ps -e | grep anki"))
@@ -305,7 +313,7 @@ value of -1), create it."
       (list
        (lambda (_)
          (setq inline-anki--file-list
-               (directory-files default-directory t "\\.org$"))
+               (directory-files-recursively default-directory "\\.org$" nil t))
          (format "Will push from %d files in %s"
                  (length inline-anki--file-list)
                  default-directory))
@@ -334,3 +342,5 @@ value of -1), create it."
     (display-buffer "*inline-anki bulk worker*")))
 
 (provide 'inline-anki)
+
+;;; inline-anki.el ends here

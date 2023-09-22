@@ -121,7 +121,7 @@ Many traditional features are ABSENT in inline-anki.
   - Worried that you'll have unintentional flashcards everywhere because you like to bold things?  Don't worry.  Without a magic string as above, it won't become a flashcard.
   - If you switch to italic or underline, remember to *edit all your cards*.
     - To search the buffer for flashcards, try =M-x inline-anki-occur RET=.
-    - To search the whole directory, try =M-x inline-anki-grep RET=.  Then you can edit with [[http://github.com/mhayashi1120/Emacs-wgrep][wgrep]] or a keyboard macro.
+    - To search the whole directory, try =M-x inline-anki-rgrep RET=.  Then you can edit with [[http://github.com/mhayashi1120/Emacs-wgrep][wgrep]] or a keyboard macro.
   - If necessary, you can write Anki's own ={{c1::}}= syntax directly.  Mainly useful for writing math equations.
     - A card with such syntax should not have any bold, or there will be double-clozes.
 
@@ -180,6 +180,7 @@ You must not *hard-wrap* your text (e.g. with =fill-paragraph=) if you want Anki
 - [ ] Export pictures and media
   - Not super useful as long as we are restricted to clozes
   - [ ] Create a fifth note expression: a drawer named, say, =:anki-frontback:= expresing a traditional front-back note-type instead of cloze-deletion
+- [ ] Create a sixth note expression: rows in an Org table
 - [ ] Make so that commenting-out a flashcard expression also suspends it from review in Anki
 - [ ] Include the file path as an extra field and instruct the user to set up Anki such that clicking this path opens it with emacsclient
 - [ ] For myself, I'd like a programamble way to include any extra field, so I can send an URL to my web-published version of the same source file.  Then I could tap that URL while reviewing on the phone.
