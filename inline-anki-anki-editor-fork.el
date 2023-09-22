@@ -275,23 +275,6 @@ CONTENTS is nil.  INFO is a plist holding contextual information."
 
     (funcall queue)))
 
-;;; Commands
-
-(defun inline-anki-anki-connect-upgrade ()
-  "Upgrade AnkiConnect to the latest version.
-
-This will display a confirmation dialog box in Anki asking if you
-want to continue.  The upgrading is done by downloading the latest
-code in the master branch of its Github repo.
-
-This is useful when new version of this package depends on the
-bugfixes or new features of AnkiConnect."
-  (interactive)
-  (when (yes-or-no-p "NOTE: This will download the latest codebase of AnkiConnect to your system, which is not guaranteed to be safe or stable. Generally, you don't need this command, this is useful only when new version of this package requires the updates of AnkiConnect that are not released yet. Do you still want to continue?")
-    (let ((result (inline-anki--anki-connect-invoke-result "upgrade")))
-      (when (and (booleanp result) result)
-        (message "AnkiConnect has been upgraded, you might have to restart Anki to make it in effect.")))))
-
 
 (provide 'inline-anki-anki-editor-fork)
 
