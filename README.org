@@ -127,21 +127,14 @@ Many traditional features are ABSENT in inline-anki:
 1. Make sure Anki has the AnkiConnect add-on installed
 2. Make sure you have =curl= installed
 3. Start Anki
-4. From your Org file, type =M-x inline-anki-push-notes RET=
+4. From your Org file, type =M-x inline-anki-push-notes-in-buffer RET=
+   - Or push entire directory by typing =M-x inline-anki-push-notes-in-directory RET=.
 
 You may like to know that:
 - When you update a note, it overwrites what was previously in that note in Anki.  Any edits made inside Anki will be forgotten.  Anki isn't responsible for anything except the review schedule.
 - There's a bit of a gimmick: if a note has 3 cloze fields, and you study it a bit, and later you remove the first cloze field, the second and third field will *inherit the scheduling of the first and second fields*.  So technically, you can have cards that aren't scheduled in full faithfulness to the algorithm, and failure statistics may be referring to a cloze card that you've removed.
   - Up to you whether to care, but in my opinion, it changes nothing.
-  - No surprise to experienced Anki-users, but the third field's original scheduling will be attached to an empty card.  Clean up empty cards with the menu option "Check database...".
-
-*** Push cards from the whole directory
-
-If =inline-anki-directory= points to the correct place, then you can run this command anytime:
-
-: M-x inline-anki-bulk-push RET
-
-It may be a bit janky as of [2023-09-20].
+  - No surprise to experienced Anki-users, but the third field's original scheduling will be attached to an empty card.  You can clean up empty cards with the menu option "Check database...".
 
 ** Config variables
 
@@ -155,10 +148,7 @@ It may be a bit janky as of [2023-09-20].
   - Default =("Text" "Extra")=.
 
 - =inline-anki-emphasis-type=
-  - Default =(bold)=.  Can be set to either =(italic)= or =(underline)= instead.
-
-- =inline-anki-directory=
-  - Defaults to the value of =org-roam-directory=, falling back to =org-directory=.
+  - Default "*", can be changed to "/", "_" or other things you find in =org-emphasis-alist=.
 
 - =inline-anki-use-tags=
   - Default =t=.  See docstring.
@@ -185,18 +175,18 @@ To detect clozes, this package relies on correct fontification in Org-mode.  So 
 A gotcha: you must not *hard-wrap* your text (e.g. with =fill-paragraph=) if you want Anki to receive the whole flashcard.
 
 * Roadmap
-- [ ] Send a field to Anki containing the file path and instruct the user to set up Anki such that clicking this path opens it with emacsclient
+- [ ] Allow hard-wrapping
 - [ ] Export pictures and media
   - not super useful since we are restricted to clozes for now
   - [ ] Let drawer-style flashcards use a front-back template instead of cloze
-- [ ] Allow hard-wrapping
-- [ ] Include filename/breadcrumbs as an extra field?
-- [ ] For myself, I'd like a way to include any extra field based on anything in the buffer, so I can send an URL to the web-published version of the source file (I publish many notes on [[https://edstrom.dev][edstrom.dev]]).  This would let me tap that URL when I'm on the phone.
+- [ ] Include the file path as an extra field and instruct the user to set up Anki such that clicking this path opens it with emacsclient
+- [ ] For myself, I'd like a way to include any extra field based on anything in the buffer, so I can send an URL to the web-published version of the source file (I publish many notes on [[https://edstrom.dev][edstrom.dev]]).  This would let me tap that URL when I'm reviewing on the phone.
 
 * Q&A
 - Can I continue using my [org-drill/org-anki/...] notes?
   - Yes!  There is no conflict because those packages look at Org subtrees as their "data objects", and this package does not.  You can even have an inline-anki card /inside/ an org-anki subtree.
-    - I guess it would be a way to have big notes composed of smaller notes.  Then a CSS rule could eliminate inline-anki's IDs in the big note.
+- It still sends flashcards that are commented out -- can you fix?
+  - Well, that flashcard will still be in Anki regardless, so commenting-out is false comfort.
 
 * Thanks
 Thanks a lot to @louietan who wrote https://github.com/louietan/anki-editor.  The fact I could rely on its AnkiConnect-interfacing code lowered the barrier for me to get started.
