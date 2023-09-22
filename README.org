@@ -1,8 +1,8 @@
 #+TITLE: Inline Anki
 
-For nearly a decade I've daydreamed of writing [[https://en.wikipedia.org/wiki/Spaced_repetition#Software][SRS]] flashcards as if they were body text, flowing as part of any text I write in any of my files, so that the same text can serve as a single-source-of-truth.
+For nearly a decade I've daydreamed of writing [[https://en.wikipedia.org/wiki/Spaced_repetition#Software][SRS]] flashcards in a way that flows together with longer "body text" in any of my files, so that the texts serve as a [[https://en.wikipedia.org/wiki/Single_source_of_truth][single-source-of-truth]].
 
-The other SRS programs in the Emacs ecosystem ([[https://github.com/l3kn/org-fc][org-fc]], [[https://gitlab.com/phillord/org-drill][org-drill]], [[https://github.com/eyeinsky/org-anki][org-anki]], [[https://github.com/abo-abo/pamparam][pamparam]], [[https://github.com/louietan/anki-editor][anki-editor]]) all share a fatal flaw: *they separate the flashcards from normal text* by way of shoving them under a dedicated headline.  Org-anki improved on this by using the heading as the card front, you are still limited in where you can place it: you can't place a heading in between two paragraphs.
+The other SRS programs in the Emacs ecosystem ([[https://github.com/l3kn/org-fc][org-fc]], [[https://gitlab.com/phillord/org-drill][org-drill]], [[https://github.com/eyeinsky/org-anki][org-anki]], [[https://github.com/abo-abo/pamparam][pamparam]], [[https://github.com/louietan/anki-editor][anki-editor]]) all share a fatal flaw: *they separate the flashcards from normal text* by way of shoving them under a dedicated headline.
 
 I don't want to awkwardly append flashcards to the end of an Org section as a kind of paraphrasis or summary of that section, but to let the flashcards serve /as/ paragraphs in their own right!
 
@@ -90,11 +90,11 @@ There are *three flaws* which will never go away:
 
 ** Limitations vs. anki-editor/org-anki
 
-Many traditional features are ABSENT in inline-anki:
+Many traditional features are ABSENT in inline-anki.
 
 - It uses only one deck ("Default")
 - It uses only one note type ("Cloze"), with only one field ("Text")
-  - It clozes only one field at a time
+- It clozes only one deletion at a time
 - You cannot set tags on a per-card basis
   - The cards will still inherit tags from the local Org context (i.e. subtree or file-level tags)
     - Note that Anki tags lose much of their organizational purpose if all your notes live in Org files anyway -- you'll be organizing from within [[https://github.com/org-roam/org-roam][org-roam]] or the like, not from within Anki.  However, at least two use-cases remain:
@@ -116,11 +116,12 @@ Many traditional features are ABSENT in inline-anki:
     - When Anki assigns it an ID, the drawer will be renamed to include the ID, giving you something like =:anki-1693535436702:=.
       - Think about this if you customize the Org setting =org-export-with-drawers=.
 - Clozes are marked by *bold text*.  If you prefer italic or underline, configure =inline-anki-emphasis-type=.
-  - Worried that you'll have unintentional flashcards everywhere because you like to bold things?  Don't worry.  Without a magic string as above, it won't be a flashcard.
-  - Bear in mind that if you change to italic or underline, you'll have to edit all your preexisting cards.  You can look for them with =M-x inline-anki-occur RET=.
-    - For the entire directory, you can look with =M-x inline-anki-grep RET=, and then edit with =M-x wgrep-change-to-wgrep-mode RET=.  Just read about wgrep first.
+  - Worried that you'll have unintentional flashcards everywhere because you like to bold things?  Don't worry.  Without a magic string as above, it won't become a flashcard.
+  - If you switch to italic or underline, remember to *edit all your cards*.
+    - To search the buffer for flashcards, try =M-x inline-anki-occur RET=.
+    - To search the whole directory, try =M-x inline-anki-grep RET=.  Then you can edit with [[http://github.com/mhayashi1120/Emacs-wgrep][wgrep]] or a keyboard macro.
   - If necessary, you can write Anki's own ={{c1::}}= syntax directly.  Mainly useful for writing math equations.
-    - A card that has such syntax should not have any bold, or there will be double-clozes.
+    - A card with such syntax should not have any bold, or there will be double-clozes.
 
 ** To push cards
 
@@ -177,13 +178,13 @@ You must not *hard-wrap* your text (e.g. with =fill-paragraph=) if you want Anki
 - [ ] Export pictures and media
   - Not super useful as long as we are restricted to clozes
   - [ ] Create a fifth note expression: a drawer named, say, =:anki-frontback:= expresing a traditional front-back note-type instead of cloze-deletion.
+- [ ] Make so that commenting-out a flashcard expression also suspends it from review in Anki
 - [ ] Include the file path as an extra field and instruct the user to set up Anki such that clicking this path opens it with emacsclient
 - [ ] For myself, I'd like a way to include any extra field based on anything in the buffer, so I can send an URL to the web-published version of the source file (I publish many notes on [[https://edstrom.dev][edstrom.dev]]).  This would let me tap that URL when I'm reviewing on the phone.
-- [ ] Make so that commenting-out a flashcard expression also suspends it from review in Anki
 
 * Q&A
 - Can I continue using my [org-drill/org-anki/...] notes?
   - Yes!  They don't conflict because those packages treat Org subtrees as their "data objects", and this package does not.  You can even have an inline-anki card /inside/ an org-anki subtree.
 
 * Thanks
-Thanks a lot to @louietan who wrote https://github.com/louietan/anki-editor.  I could rely on its AnkiConnect-interfacing code, and that lowered the barrier for me to get started.
+Thanks a lot to @louietan who wrote https://github.com/louietan/anki-editor.  I could rely on its AnkiConnect-interfacing code, which lowered the barrier for me to get started.
