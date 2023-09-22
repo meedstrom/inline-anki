@@ -88,12 +88,16 @@ see `org-use-tag-inheritance' instead."
 (defconst inline-anki-rx:drawer
   (rx bol ":anki-" (group (= 13 digit)) ":"))
 
-(defvar inline-anki--file-list nil)
-(defvar inline-anki-known-flashcard-places nil)
+(defvar inline-anki--file-list nil
+  "Internal use only.")
+
+(defvar inline-anki--known-flashcard-places nil
+  "Internal use only.")
 
 ;; TODO: make a version that Vertico&Helm can make interactive
 ;;;###autoload
 (defun inline-anki-occur ()
+  "Use `occur' to show all flashcards in the buffer."
   (interactive)
   (occur (rx (or (regexp inline-anki-rx:drawer)
                  (regexp inline-anki-rx:drawer:new)
@@ -145,29 +149,52 @@ see `org-use-tag-inheritance' instead."
    (t
     (error "No inline-anki magic string found"))))
 
+(defun inline-anki-dots-for-letters (text)
+  "Return TEXT with all letters replaced by dots.
+Useful as placeholder in a cloze-deletion, so you can still see
+how long the clozed part is."
+  (with-temp-buffer
+    (insert text)
+    (goto-char (point-min))
+    (while (re-search-forward "[[:word:]]" nil t)
+      (replace-match "."))
+    (buffer-string)))
+
 (defun inline-anki-convert-implicit-clozes (text)
+  "Return TEXT with emphasis replaced by Anki {{c::}} syntax."
+  (require 'org)
   (cl-assert (member inline-anki-emphasis-type (map-keys org-emphasis-alist)))
   (with-temp-buffer
+    (insert " ") ;; workaround bug where the regexp misses bold @ BoL
     (insert (substring-no-properties text))
+    (insert " ")
     (goto-char (point-min))
     (let ((n 0))
       (while (re-search-forward org-emph-re nil t)
         (when (equal (match-string 3) inline-anki-emphasis-type)
-          (replace-match (concat "{{c"
-                                 (number-to-string (cl-incf n))
-                                 "::"
-                                 (match-string 4)
-                                 "}}")
-                         nil nil nil 2)))
+          (let ((text (match-string 4)))
+            (replace-match (concat "{{c"
+                                   (number-to-string (cl-incf n))
+                                   "::"
+                                   text
+                                   "::"
+                                   (inline-anki-dots-for-letters text)
+                                   "}}")
+                           nil nil nil 2))))
       (if (= n 0)
           nil ;; Nil signals that no clozes found
-        (buffer-string)))))
+        (string-trim (buffer-string))))))
 
 (cl-defun inline-anki-push (&key field-beg field-end note-id)
+  "Push a flashcard to Anki, identified by NOTE-ID.
+Use the buffer substring delimited by FIELD-BEG and FIELD-END.
+
+If a flashcard doesn't exist (indicated by passing a NOTE-ID
+value of -1), create it."
   (let ((this-line (line-number-at-pos)))
-    (if (member this-line inline-anki-known-flashcard-places)
+    (if (member this-line inline-anki--known-flashcard-places)
         (error "Two magic strings on same line: %d" this-line)
-      (push this-line inline-anki-known-flashcard-places)))
+      (push this-line inline-anki--known-flashcard-places)))
 
   (if-let* ((text (buffer-substring field-beg field-end))
             (clozed (inline-anki-convert-implicit-clozes text)))
