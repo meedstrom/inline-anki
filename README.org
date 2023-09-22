@@ -2,28 +2,30 @@
 
 For nearly a decade I've daydreamed of writing [[https://en.wikipedia.org/wiki/Spaced_repetition#Software][SRS]] flashcards as if they were body text, flowing as part of any text I write in any of my files, so that the same text can serve as a single-source-of-truth.
 
-The other SRS programs in the Emacs ecosystem ([[https://github.com/l3kn/org-fc][org-fc]], [[https://gitlab.com/phillord/org-drill][org-drill]], [[https://github.com/eyeinsky/org-anki][org-anki]], [[https://github.com/abo-abo/pamparam][pamparam]], [[https://github.com/louietan/anki-editor][anki-editor]]) all share a fatal flaw: *they separate the flashcards from normal text* by way of shoving them under a dedicated headline.
+The other SRS programs in the Emacs ecosystem ([[https://github.com/l3kn/org-fc][org-fc]], [[https://gitlab.com/phillord/org-drill][org-drill]], [[https://github.com/eyeinsky/org-anki][org-anki]], [[https://github.com/abo-abo/pamparam][pamparam]], [[https://github.com/louietan/anki-editor][anki-editor]]) all share a fatal flaw: *they separate the flashcards from normal text* by way of shoving them under a dedicated headline.  Org-anki improved on this by using the heading as the card front, you are still limited in where you can place it: you can't place a heading in between two paragraphs.
 
 I don't want to awkwardly append flashcards to the end of an Org section as a kind of paraphrasis or summary of that section, but to let the flashcards serve /as/ paragraphs in their own right!
 
 * Demonstration
-There are four ways to express flashcards.
+We provide four ways to express flashcards.
 
 ** As list items
-Here are four Anki cloze notes, expressed in just four list items:
+Here are five Anki cloze notes (totalling nine clozes), expressed in just five list items:
 
 #+begin_quote
-- @^{1693000403} 🇫🇷 *reunion*  🇬🇧 *meeting*
+- @^{1693000409} 🇫🇷 *chien*  🇬🇧 *dog*
 - @^{1693000402} 🇫🇷 *maison*  🇬🇧 *house*
+- @^{1693000403} 🇫🇷 *reunion*  🇬🇧 *meeting*
 - @^{1690300404} 🇫🇷 *legerdemain*  🇬🇧 *sleight-of-hand*
 - @^{1690003421} DRY is short for *Don't Repeat Yourself*
 #+end_quote
 
-There are no hidden property drawers!  The source Org syntax is also just four lines:
+No hidden property drawers, anywhere!  The source Org syntax is also just five lines:
 
 #+begin_src org
-- @^{1693000403} 🇫🇷 *reunion*  🇬🇧 *meeting*
+- @^{1693000409} 🇫🇷 *chien*  🇬🇧 *dog*
 - @^{1693000402} 🇫🇷 *maison*  🇬🇧 *house*
+- @^{1693000403} 🇫🇷 *reunion*  🇬🇧 *meeting*
 - @^{1690300404} 🇫🇷 *legerdemain*  🇬🇧 *sleight-of-hand*
 - @^{1690003421} DRY is short for *Don't Repeat Yourself*
 #+end_src
@@ -33,7 +35,7 @@ The starting @^{number} uniquely identifies the note.  Think of the @ glyph as e
 As you've guessed, the bold parts define cloze deletions.
 
 ** As running paragraphs
-The following two paragraphs express two Anki cloze notes.
+The following two paragraphs express two Anki cloze notes (totalling four clozes).
 
 #+begin_quote
 In English, we have the word-pair truth and lying.  We also have the word-pair *rational* and rationalization: it's as if lying was called *truthization*.^{16900030021}
@@ -41,13 +43,13 @@ In English, we have the word-pair truth and lying.  We also have the word-pair *
 A gotcha for inline-anki: you must not *hard-wrap* paragraphs.  If you do, inline-anki will only grab *the last line* of the paragraph.^{1690986753420}
 #+end_quote
 
-As you can see, I omitted the @ glyph.  This is possible on line endings.
+As you can see, I omitted the @ glyph.  You can do that on line endings.
 
 ** As list items, with trailing ID
 
-I find it more aesthetic to put the Anki note ID at the end of a list item, when that list item is in a longer list of non-flashcard things.
+I find it more aesthetic to put the Anki note ID at the end of a list item, when that list item is a member of a longer list of non-flashcard things.
 
-This list expresses, among other things, three Anki notes:
+This list expresses, among other things, three Anki cloze notes:
 
 #+begin_quote
 - "The third virtue is lightness. Let the winds of evidence blow you about as though you are a leaf, with no direction of your own.  Beware lest you fight a rearguard retreat against the evidence, grudgingly conceding each foot of ground only when forced, feeling cheated.  Surrender to the truth as quickly as you can.  Do this the instant you realize what you are resisting, the instant you can see from which quarter the winds of evidence are blowing against you.  Be faithless to your cause and betray it to a stronger enemy."
@@ -59,7 +61,7 @@ This list expresses, among other things, three Anki notes:
 #+end_quote
   
 ** As drawers
-One Anki cloze note is expressed below.  If you're reading this in a web browser, note that this is what it'll look like in an org-mode buffer.  I had to show it this way because on export to the web, the drawer boundaries disappear.
+The drawer below expresses one Anki cloze note (totalling three clozes).  If you're reading this in a web browser, note that this is what it'll look like in an org-mode buffer.  I had to show it this way because upon export to the web, the drawer boundaries normally disappear.
 
 #+begin_src org
 :anki-1694048375012:
@@ -92,32 +94,35 @@ Many traditional features are ABSENT in inline-anki:
 
 - It uses only one deck ("Default")
 - It uses only one note type ("Cloze"), with only one field ("Text")
-- You cannot set tags on a per-card basis, but the cards will inherit tags from the local Org context (i.e. subtree or file-level tags)
-  - Note that Anki tags lose much of their organizational purpose if all your notes live in Org files anyway -- you'll be organizing from within [[https://github.com/org-roam/org-roam][org-roam]] or the like, not from within Anki.  However, at least two use-cases remain:
-    - You can display the tags inside cards as a contextual hint, [[https://edstrom.dev/posts/qix2Q4W/how-to-display-tags-as-hint-in-all-anki-cards][if you code this in the card template]]
-    - You can use the tags to set up Custom Study sessions on a filtered subset of notes
-      - Useful when have no separate decks
-  - Finally, inline-anki always sends a tag named after the sync date in this style: "from-emacs-2023-09-20".  This helps both with figuring out if you have long stale notes, and letting you filter for notes that came from inline-anki as opposed to your own crafts.
+  - It clozes only one field at a time
+- You cannot set tags on a per-card basis
+  - The cards will still inherit tags from the local Org context (i.e. subtree or file-level tags)
+    - Note that Anki tags lose much of their organizational purpose if all your notes live in Org files anyway -- you'll be organizing from within [[https://github.com/org-roam/org-roam][org-roam]] or the like, not from within Anki.  However, at least two use-cases remain:
+      - You can display the tags inside cards as a contextual hint, [[https://edstrom.dev/posts/qix2Q4W/how-to-display-tags-as-hint-in-all-anki-cards][if you code this in the card template]]
+      - You can use the tags to set up Custom Study sessions on a filtered subset of notes
+        - Useful when have no separate decks
+    - Finally, inline-anki always sends a tag named after the sync date in this style: "from-emacs-2023-09-20".  This helps both with figuring out if you have long stale notes, and letting you filter for notes that came from inline-anki as opposed to your own crafts.
 - It doesn't signal in any way that Anki has tagged a card as =marked= or =leech= (but you can still see this in Anki's own card browser)
 
 ** Syntax of a flashcard
 
 - To identify a flashcard, inline-anki looks for one of the following things:
   - A magic string at the *start of a list item*: =@anki=.
-    - When Anki assigns it an ID, it becomes a =@= glyph followed by a 13-digit number in superscript, like this: =@^{1693535436701}=.
-  - A magic string at the *end of a line*: =@anki= or =^{anki}=.
-    - Same as above, except that you can omit the =@= glyph and inline-anki won't add one.  This works with paragraphs as well as list items.
+    - When Anki assigns it an ID, this will become a @ glyph followed by a 13-digit number in superscript, such as =@^{1693535436701}=.
+  - A magic string at the *end of a line*: =@anki= OR =^{anki}=.
+    - Same as above, except that you can omit the @ glyph and inline-anki won't add one.
+      - Since the =@anki= form is easier to remember and easier to type, you can just always type that and remove the glyph later where you think its absence looks better.
   - A drawer named =:anki:=.
-    - When Anki assigns it an ID, the drawer is renamed to include it like this: =:anki-1693535436702:=.
+    - When Anki assigns it an ID, the drawer will be renamed to include the ID, giving you something like =:anki-1693535436702:=.
+      - Think about this if you customize the Org setting =org-export-with-drawers=.
 - Clozes are marked by *bold text*.  If you prefer italic or underline, configure =inline-anki-emphasis-type=.
-  - Worried that you'll have unintentional flashcards everywhere because you like to bold things?  Don't worry, it won't be a flashcard if there's not a magic string as above.
-  - Bear in mind that if you change to italic or underline, you'll have to edit all your cards to match.  To help with this, type =M-x inline-anki-occur-flashcards RET=.
-  - If necessary, you can write Anki's regular ={{c1::}}= syntax directly.  Mainly useful for writing math equations.
-    - A card that has such syntax should not have any bold, else there will be double-clozes.
-#  - a drawer named =:anki:=, which is renamed to something like =:anki-16900001:= when the Anki note ID has been assigned.
+  - Worried that you'll have unintentional flashcards everywhere because you like to bold things?  Don't worry.  Without a magic string as above, it won't be a flashcard.
+  - Bear in mind that if you change to italic or underline, you'll have to edit all your preexisting cards.  You can look for them with =M-x inline-anki-occur RET=.
+    - For the entire directory, you can look with =M-x inline-anki-grep RET=, and then edit with =M-x wgrep-change-to-wgrep-mode RET=.  Just read about wgrep first.
+  - If necessary, you can write Anki's own ={{c1::}}= syntax directly.  Mainly useful for writing math equations.
+    - A card that has such syntax should not have any bold, or there will be double-clozes.
 
 ** To push cards
-
 
 1. Make sure Anki has the AnkiConnect add-on installed
 2. Make sure you have =curl= installed
@@ -127,12 +132,12 @@ Many traditional features are ABSENT in inline-anki:
 You may like to know that:
 - When you update a note, it overwrites what was previously in that note in Anki.  Any edits made inside Anki will be forgotten.  Anki isn't responsible for anything except the review schedule.
 - There's a bit of a gimmick: if a note has 3 cloze fields, and you study it a bit, and later you remove the first cloze field, the second and third field will *inherit the scheduling of the first and second fields*.  So technically, you can have cards that aren't scheduled in full faithfulness to the algorithm, and failure statistics may be referring to a cloze card that you've removed.
-  - Up to you what you do with this knowledge.  If you want my two cents, it affects nothing in my life.
+  - Up to you whether to care, but in my opinion, it changes nothing.
   - No surprise to experienced Anki-users, but the third field's original scheduling will be attached to an empty card.  Clean up empty cards with the menu option "Check database...".
 
 *** Push cards from the whole directory
 
-If you have =inline-anki-directory= configured correctly, then you can run this command anytime:
+If =inline-anki-directory= points to the correct place, then you can run this command anytime:
 
 : M-x inline-anki-bulk-push RET
 
@@ -174,19 +179,24 @@ Alternatively with Doom Emacs, this goes in =packages.el=:
 (package! inline-anki :recipe (:host github :repo "meedstrom/inline-anki"))
 #+end_src
 
-* Warning
+* Warnings
 To detect clozes, this package relies on correct fontification in Org-mode.  So if you've been dragging along a half-broken Org setup, now may be the time to debug it.
 
 A gotcha: you must not *hard-wrap* your text (e.g. with =fill-paragraph=) if you want Anki to receive the whole flashcard.
 
 * Roadmap
-- [X] A command to search for flashcards
 - [ ] Send a field to Anki containing the file path and instruct the user to set up Anki such that clicking this path opens it with emacsclient
 - [ ] Export pictures and media
   - not super useful since we are restricted to clozes for now
   - [ ] Let drawer-style flashcards use a front-back template instead of cloze
 - [ ] Allow hard-wrapping
+- [ ] Include filename/breadcrumbs as an extra field?
+- [ ] For myself, I'd like a way to include any extra field based on anything in the buffer, so I can send an URL to the web-published version of the source file (I publish many notes on [[https://edstrom.dev][edstrom.dev]]).  This would let me tap that URL when I'm on the phone.
 
 * Q&A
 - Can I continue using my [org-drill/org-anki/...] notes?
-  - Yes.  There is no risk of conflict because all those packages look at Org subtrees as their "data objects", and this package does not.  You can even have an inline-anki card /inside/ an org-drill subtree.
+  - Yes!  There is no conflict because those packages look at Org subtrees as their "data objects", and this package does not.  You can even have an inline-anki card /inside/ an org-anki subtree.
+    - I guess it would be a way to have big notes composed of smaller notes.  Then a CSS rule could eliminate inline-anki's IDs in the big note.
+
+* Thanks
+Thanks a lot to @louietan who wrote https://github.com/louietan/anki-editor.  The fact I could rely on its AnkiConnect-interfacing code lowered the barrier for me to get started.
