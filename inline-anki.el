@@ -44,11 +44,11 @@
   "Name of deck to upload to."
   :type 'string)
 
-(defcustom inline-anki-note-type "Cloze"
-  "Name of your note type."
+(defcustom inline-anki-cloze-note-type "Cloze"
+  "Name of your cloze note type."
   :type 'string)
 
-(defcustom inline-anki-note-fields '("Text" "Extra")
+(defcustom inline-anki-cloze-note-fields '("Text" "Extra")
   "Names of fields in your note type."
   :type '(repeat string))
 
@@ -59,12 +59,12 @@ can only be one character long."
   :type 'string)
 
 (defcustom inline-anki-use-tags t
-  "Whether to send Org tags along to Anki.
-A value of nil should let `inline-anki-push-notes-in-directory' work faster if
+  "Whether to send Org tags to Anki.
+Setting it to nil lets `inline-anki-push-notes-in-directory' work faster if
 you have hundreds of files.
 
-If you merely want to exclude parent tags, see
-`org-use-tag-inheritance' instead."
+If you merely want to exclude parent tags, leave this at `t' and
+see `org-use-tag-inheritance' instead."
   :type 'boolean)
 
 (defconst inline-anki-rx:list-bullet
@@ -177,14 +177,14 @@ If you merely want to exclude parent tags, see
              #'inline-anki--create-note
            #'inline-anki--update-note)
          (list (cons 'deck inline-anki-deck)
-               (cons 'note-type inline-anki-note-type)
+               (cons 'note-type inline-anki-cloze-note-type)
                (cons 'note-id note-id)
                (cons 'tags (cons (format-time-string "from-emacs-%F")
                                  (when inline-anki-use-tags
                                    (mapcar #'substring-no-properties
                                            (org-get-tags)))))
                ;; Drop text into the note's first field
-               (cons 'fields (list (cons (car inline-anki-note-fields) clozed))))))
+               (cons 'fields (list (cons (car inline-anki-cloze-note-fields) clozed))))))
     (message "No implicit clozes found, skipping:  %s" text)
     nil))
 

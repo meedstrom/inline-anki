@@ -141,10 +141,10 @@ You may like to know that:
 - =inline-anki-deck=
   - Default "Default".
 
-- =inline-anki-note-type=
+- =inline-anki-cloze-note-type=
   - Default "Cloze".
 
-- =inline-anki-note-fields=
+- =inline-anki-cloze-note-fields=
   - Default =("Text" "Extra")=.
 
 - =inline-anki-emphasis-type=
@@ -169,24 +169,21 @@ Alternatively with Doom Emacs, this goes in =packages.el=:
 (package! inline-anki :recipe (:host github :repo "meedstrom/inline-anki"))
 #+end_src
 
-* Warnings
-To detect clozes, this package relies on correct fontification in Org-mode.  So if you've been dragging along a half-broken Org setup, now may be the time to debug it.
-
-A gotcha: you must not *hard-wrap* your text (e.g. with =fill-paragraph=) if you want Anki to receive the whole flashcard.
+* Warning
+You must not *hard-wrap* your text (e.g. with =fill-paragraph=) if you want Anki to receive the whole flashcard.
 
 * Roadmap
 - [ ] Allow hard-wrapping
 - [ ] Export pictures and media
-  - not super useful since we are restricted to clozes for now
-  - [ ] Let drawer-style flashcards use a front-back template instead of cloze
+  - Not super useful as long as we are restricted to clozes
+  - [ ] Create a fifth note expression: a drawer named, say, =:anki-frontback:= expresing a traditional front-back note-type instead of cloze-deletion.
 - [ ] Include the file path as an extra field and instruct the user to set up Anki such that clicking this path opens it with emacsclient
 - [ ] For myself, I'd like a way to include any extra field based on anything in the buffer, so I can send an URL to the web-published version of the source file (I publish many notes on [[https://edstrom.dev][edstrom.dev]]).  This would let me tap that URL when I'm reviewing on the phone.
+- [ ] Make so that commenting-out a flashcard expression also suspends it from review in Anki
 
 * Q&A
 - Can I continue using my [org-drill/org-anki/...] notes?
-  - Yes!  There is no conflict because those packages look at Org subtrees as their "data objects", and this package does not.  You can even have an inline-anki card /inside/ an org-anki subtree.
-- It still sends flashcards that are commented out -- can you fix?
-  - Well, that flashcard will still be in Anki regardless, so commenting-out is false comfort.
+  - Yes!  They don't conflict because those packages treat Org subtrees as their "data objects", and this package does not.  You can even have an inline-anki card /inside/ an org-anki subtree.
 
 * Thanks
-Thanks a lot to @louietan who wrote https://github.com/louietan/anki-editor.  The fact I could rely on its AnkiConnect-interfacing code lowered the barrier for me to get started.
+Thanks a lot to @louietan who wrote https://github.com/louietan/anki-editor.  I could rely on its AnkiConnect-interfacing code, and that lowered the barrier for me to get started.
