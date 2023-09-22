@@ -4,7 +4,7 @@
 ;;
 ;; Description: One-liner flashcards
 ;; Author: Martin Edström
-;; Version: 0.1.0
+;; Version: 0.1.1-pre
 ;; Package-Requires: ((emacs "28") (asyncloop "0.3.0-pre") (pcre2el "1.12") (request "0.3.0") (dash "2.12.0"))
 ;; URL: https://github.com/meedstrom/inline-anki
 
