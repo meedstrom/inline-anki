@@ -32,6 +32,9 @@
 
 ;;; Code:
 
+(with-eval-after-load 'org
+  (add-to-list 'org-structure-template-alist '("f" . "flashcard")))
+
 (defgroup inline-anki nil
   "Customizations for inline-anki."
   :group 'org)
@@ -51,7 +54,7 @@
   "Names of fields in your note type."
   :type '(repeat string))
 
-(defcustom inline-anki-emphasis-type "*"
+(defcustom inline-anki-emphasis-type "_"
   "The kind of emphasis you want to indicate a cloze deletion.
 Whatever you choose, it MUST be found in `org-emphasis-alist' and
 can only be one character long."
@@ -81,6 +84,12 @@ see `org-use-tag-inheritance' instead."
 (defconst inline-anki-rx:eol
   (rx (? "@") "^{" (group (= 13 digit)) "}" (*? space) eol) )
 
+(defconst inline-anki-rx:structure:new
+  (rx bol "#+begin_flashcard" (*? space) eol))
+
+(defconst inline-anki-rx:structure
+  (rx bol "#+begin_flashcard " (group (= 13 digit))))
+
 (defconst inline-anki-rx:drawer:new
   (rx bol ":anki:"))
 
@@ -107,7 +116,7 @@ see `org-use-tag-inheritance' instead."
 
 ;;;###autoload
 (defun inline-anki-rgrep ()
-  "Recursively search for flashcards in current directory."
+  "Deep-search for flashcards in current directory."
   (interactive)
   (require 'pcre2el)
   ;; Override rgrep's command to add -P for PCRE
@@ -125,7 +134,7 @@ see `org-use-tag-inheritance' instead."
 ;; context.  But it'd be possible to pass another argument to
 ;; `inline-anki--create-note' that could let it choose one of 3 different
 ;; callbacks.  Then we'd basically be telling it "hey, go ahead and assume point
-;; is already on an @anki string".
+;; is already on an @anki string" and there's no need to search.
 (defun inline-anki--dangerously-write-id (id)
   "Assign ID to the unlabeled flashcard at point."
   (unless id
@@ -155,7 +164,7 @@ see `org-use-tag-inheritance' instead."
   "Return TEXT with all letters replaced by dots.
 Useful as placeholder in a cloze-deletion, so you can still see
 how long the clozed part is."
-  (with-temp-buffer
+   (with-temp-buffer
     (insert text)
     (goto-char (point-min))
     (while (re-search-forward "[[:word:]]" nil t)
@@ -284,22 +293,22 @@ Skips some checks.  Fine to call directly from a Lisp program."
                        :note-id -1))
 
        (cl-loop initially (goto-char (point-min))
-                while (re-search-forward inline-anki-rx:drawer nil t)
+                while (re-search-forward inline-anki-rx:structure nil t)
                 count (inline-anki-push
                        :field-beg (1+ (line-end-position))
                        :field-end (save-excursion
                                     (save-match-data
-                                      (search-forward "\n:end:")
+                                      (search-forward "\n#+end_flashcard")
                                       (1- (line-beginning-position))))
                        :note-id (string-to-number (match-string 1))))
 
        (cl-loop initially (goto-char (point-min))
-                while (re-search-forward inline-anki-rx:drawer:new nil t)
+                while (re-search-forward inline-anki-rx:structure:new nil t)
                 count (inline-anki-push
                        :field-beg (1+ (line-end-position))
                        :field-end (save-excursion
                                     (save-match-data
-                                      (search-forward "\n:end:")
+                                      (search-forward "\n#+end_flashcard")
                                       (1- (line-beginning-position))))
                        :note-id -1))))))
 

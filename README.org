@@ -20,7 +20,7 @@ Here are five Anki cloze notes (totalling nine clozes), expressed in just five l
 - @^{1690003421} DRY is short for *Don't Repeat Yourself*
 #+end_quote
 
-No hidden property drawers, anywhere!  The source Org syntax is also just five lines:
+No hidden property drawers!  The source Org syntax is also just five lines:
 
 #+begin_src org
 - @^{1693000409} 🇫🇷 *chien*  🇬🇧 *dog*
@@ -74,6 +74,13 @@ The *Litany of Tarski* goes:
 5. Let me not become attached to beliefs I may not want.
 :end:
 #+end_src
+
+* Deprecation notice
+This package works perfectly.  I don't expect it to need any patches, for a long time.
+
+However, I *won't be extending this package*.  I'm heading a new direction per my epiphany on https://edstrom.dev/posts/2023-09-22.
+
+If there's a bug, file an issue and I'm happy to help.
 
 * Usage
 ** Permanent limitations
@@ -160,15 +167,12 @@ You may like to know that:
 
 If you have [[https://github.com/raxod502/straight.el][straight.el]], you can install the package with this initfile snippet:
 #+begin_src elisp
-(use-package asyncloop ;; dependency
-  :straight (asyncloop :type git :host github :repo "meedstrom/asyncloop"))
 (use-package inline-anki
   :straight (inline-anki :type git :host github :repo "meedstrom/inline-anki"))
 #+end_src
 
 Alternatively with Doom Emacs, this goes in =packages.el=:
 #+begin_src elisp
-(package! asyncloop   :recipe (:host github :repo "meedstrom/asyncloop")) ;; dependency
 (package! inline-anki :recipe (:host github :repo "meedstrom/inline-anki"))
 #+end_src
 
@@ -178,10 +182,11 @@ You must not *hard-wrap* your text (e.g. with =fill-paragraph=) if you want Anki
 * Roadmap
 - [ ] Allow hard-wrapping
 - [ ] Export pictures and media
-  - Not super useful as long as we are restricted to clozes
-  - [ ] Define an expression for a traditional front-back note-type instead of cloze-deletion.  One idea is a =#+begin_anki...#+end_anki= structure block that takes a bunch of parameters, but the extra 2 lines feel clunky in my head and I don't think I would use it much.  It's the perfect tech if you want fine control, but I'm going the other direction with some ideas to let us avoid the extra 2 lines.
-- [ ] Create a sixth note expression: rows in an Org table
-  - [ ] And a seventh: a /single-column/ two-row Org table (think about it!) could define a front-back note.
+  - Not super-useful as long as we are restricted to clozes
+- [ ] Define an expression for a traditional front-back note-type instead of cloze-deletion.  One idea is a =#+begin_anki...#+end_anki= structure block that takes a bunch of parameters, but the extra 2 lines feel clunky in my head and I don't think I would use it much.  It's the perfect tech if you want fine control, but I'm going the other direction with some ideas to let us avoid the extra 2 lines.
+  - [ ] Create a front-back note expression: a table of exactly two cells, be that 1x2 or 2x1.
+    - [ ] Extend this so that if you have many rows, you can flag the table as a table of flashcards where each row is one flashcard.  Very compact!
+- [ ] Create a fifth cloze note expression: rows in a single-column Org table, where each row expresses a paragraph in Anki.  But only if it's 3 cells or more.
 - [ ] Make so that commenting-out a flashcard expression also suspends it from review in Anki
 - [ ] Include the file path as an extra field, so that the user can click the path inside Anki.
   - [ ] Instruct the user on how to make Anki always open links with emacsclient.
