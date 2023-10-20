@@ -33,11 +33,13 @@
 ;; Required programs:
 ;; - curl
 ;; - Anki with AnkiConnect add-on
+;;
+;; Recommended initfile snippet:
+;;
+;; (with-eval-after-load 'org
+;;   (add-to-list 'org-structure-template-alist '("f" . "flashcard")))
 
 ;;; Code:
-
-(with-eval-after-load 'org
-  (add-to-list 'org-structure-template-alist '("f" . "flashcard")))
 
 (defgroup inline-anki nil
   "Customizations for inline-anki."

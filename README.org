@@ -235,6 +235,12 @@ Alternatively with Doom Emacs, this goes in =packages.el=:
 (package! inline-anki :recipe (:host github :repo "meedstrom/inline-anki"))
 #+end_src
 
+Another suggested config line follows.  It lets you quickly create a =#+begin_flashcard= block at point with ~C-c ,~ (=org-insert-structure-template=).  Or with org-tempo, it lets you type =<f= and press TAB for the same effect.
+
+#+begin_src elisp
+(add-to-list 'org-structure-template-alist '("f" . "flashcard"))
+#+end_src
+
 * Warning
 You must not *hard-wrap* your text (e.g. with =fill-paragraph=) if you want Anki to receive the whole flashcard.
 
