@@ -135,6 +135,29 @@ See https://apps.ankiweb.net/docs/manual.html#latex-conflicts.")
           ;; to be type of list.
           (cons "tags" (vconcat .tags)))))
 
+(defun inline-anki--anki-connect-store-media-file (path)
+  "Store media file for PATH, which is an absolute file name.
+The result is the path to the newly stored media file."
+  (let* ((hash (secure-hash 'sha1 path))
+         (media-file-name (format "%s-%s%s"
+                                  (file-name-base path)
+                                  hash
+                                  (file-name-extension path t)))
+         content)
+    (when (equal :json-false (inline-anki--anki-connect-invoke-result
+                              "retrieveMediaFile"
+                              `((filename . ,media-file-name))))
+      (message "Storing media file to Anki for %s..." path)
+      (setq content (base64-encode-string
+                     (with-temp-buffer
+                       (insert-file-contents path)
+                       (buffer-string))))
+      (inline-anki--anki-connect-invoke-result
+       "storeMediaFile"
+       `((filename . ,media-file-name)
+         (data . ,content))))
+    media-file-name))
+
 
 ;;; Org Export Backend
 
@@ -225,6 +248,71 @@ CONTENTS is nil.  INFO is a plist holding contextual information."
     (if inline-anki-break-consecutive-braces-in-latex
         (replace-regexp-in-string "}}" "} } " code)
       code)))
+
+(defun inline-anki--ox-html-link (oldfun link desc info)
+  "When LINK is a link to local file, transcodes it to html and stores the target file to Anki, otherwise calls OLDFUN for help.
+The implementation is borrowed and simplified from ox-html."
+
+  (or (catch 'giveup
+        (unless (plist-get info :anki-editor-mode)
+          (throw 'giveup nil))
+
+        (let* ((type (org-element-property :type link))
+               (raw-path (org-element-property :path link))
+               (desc (org-string-nw-p desc))
+               (path
+                (cond
+                 ((string= type "file")
+                  ;; Possibly append `:html-link-home' to relative file
+                  ;; name.
+                  (let ((inhibit-message nil)
+                        (home (and (plist-get info :html-link-home)
+                                   (org-trim (plist-get info :html-link-home)))))
+                    (when (and home
+                               (plist-get info :html-link-use-abs-url)
+                               (file-name-absolute-p raw-path))
+                      (setq raw-path (concat (file-name-as-directory home) raw-path)))
+                    ;; storing file to Anki and return the modified path
+                    (inline-anki--anki-connect-store-media-file (expand-file-name (url-unhex-string raw-path)))))
+                 (t (throw 'giveup nil))))
+               (attributes-plist
+                (let* ((parent (org-export-get-parent-element link))
+                       (link (let ((container (org-export-get-parent link)))
+                               (if (and (eq (org-element-type container) 'link)
+                                        (org-html-inline-image-p link info))
+                                   container
+                                 link))))
+                  (and (eq (org-element-map parent 'link 'identity info t) link)
+                       (org-export-read-attribute :attr_html parent))))
+               (attributes
+                (let ((attr (org-html--make-attribute-string attributes-plist)))
+                  (if (org-string-nw-p attr) (concat " " attr) ""))))
+          (cond
+           ;; Image file.
+           ((and (plist-get info :html-inline-images)
+                 (org-export-inline-image-p
+                  link (plist-get info :html-inline-image-rules)))
+            (org-html--format-image path attributes-plist info))
+
+           ;; Audio file.
+           ((string-suffix-p ".mp3" path t)
+              (format "[sound:%s]" path))
+
+           ;; External link with a description part.
+           ((and path desc) (format "<a href=\"%s\"%s>%s</a>"
+                                    (org-html-encode-plain-text path)
+                                    attributes
+                                    desc))
+
+           ;; External link without a description part.
+           (path (let ((path (org-html-encode-plain-text path)))
+                   (format "<a href=\"%s\"%s>%s</a>"
+                           path
+                           attributes
+                           (org-link-unescape path))))
+
+           (t (throw 'giveup nil)))))
+      (funcall oldfun link desc info)))
 
 
 ;;; Core Functions
