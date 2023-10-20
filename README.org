@@ -10,40 +10,40 @@ I don't want to awkwardly append flashcards to the end of an Org section as a ki
 We provide four ways to express flashcards.
 
 ** Way 1: As list items
-Here are five Anki cloze notes (totalling nine clozes), expressed in just five list items:
+Here are five Anki cloze notes (totalling nine cloze deletions), expressed in just five list items:
 
 #+begin_quote
-- @^{1693000409} 🇫🇷 *chien*  🇬🇧 *dog*
-- @^{1693000402} 🇫🇷 *maison*  🇬🇧 *house*
-- @^{1693000403} 🇫🇷 *reunion*  🇬🇧 *meeting*
-- @^{1690300404} 🇫🇷 *legerdemain*  🇬🇧 *sleight-of-hand*
-- @^{1690003421} DRY is short for *Don't Repeat Yourself*
+- @^{1693000409} 🇫🇷 _chien_  🇬🇧 _dog_
+- @^{1693000402} 🇫🇷 _maison_  🇬🇧 _house_
+- @^{1693000403} 🇫🇷 _reunion_  🇬🇧 _meeting_
+- @^{1690300404} 🇫🇷 _legerdemain_  🇬🇧 _sleight-of-hand_
+- @^{1690003421} DRY is short for _Don't Repeat Yourself_
 #+end_quote
 
-No hidden property drawers!  The source Org syntax is also just five lines:
+No hidden property drawers or anything.  The source Org syntax is five lines too:
 
 #+begin_src org
-- @^{1693000409} 🇫🇷 *chien*  🇬🇧 *dog*
-- @^{1693000402} 🇫🇷 *maison*  🇬🇧 *house*
-- @^{1693000403} 🇫🇷 *reunion*  🇬🇧 *meeting*
-- @^{1690300404} 🇫🇷 *legerdemain*  🇬🇧 *sleight-of-hand*
-- @^{1690003421} DRY is short for *Don't Repeat Yourself*
+- @^{1693000409} 🇫🇷 _chien_  🇬🇧 _dog_
+- @^{1693000402} 🇫🇷 _maison_  🇬🇧 _house_
+- @^{1693000403} 🇫🇷 _reunion_  🇬🇧 _meeting_
+- @^{1690300404} 🇫🇷 _legerdemain_  🇬🇧 _sleight-of-hand_
+- @^{1690003421} DRY is short for _Don't Repeat Yourself_
 #+end_src
 
-The starting @^{number} uniquely identifies the note.  Think of the @ glyph as encircling an "a" for "Anki". ;-)
+The starting @^{number} uniquely identifies the note.  Think of the @ glyph as encircling an "a" for "anki"!
 
-As you've guessed, the bold parts define cloze deletions.
+As you've guessed, the underlined parts define cloze deletions.
 
 ** Way 2: As running paragraphs
-The following two paragraphs express two Anki cloze notes (totalling four clozes).
+The following two paragraphs express two Anki cloze notes (totalling four cloze deletions).
 
 #+begin_quote
-In English, we have the word-pair truth and lying.  We also have the word-pair *rational* and rationalization: it's as if lying was called *truthization*.^{16900030021}
+In English, we have the word-pair truth and lying.  We also have the word-pair _rational_ and rationalization: it's as if lying was called _truthization_.^{16900030021}
 
-A gotcha for inline-anki: you must not *hard-wrap* paragraphs.  If you do, inline-anki will only grab *the last line* of the paragraph.^{1690986753420}
+A gotcha for inline-anki: you must not _hard-wrap_ paragraphs.  If you do, inline-anki will only grab _the last line_ of the paragraph.^{1690986753420}
 #+end_quote
 
-As you can see, I omitted the @ glyph.  You can do that on line endings.
+Note I omitted the @ glyph.  You can do that on line endings.
 
 ** Way 3: As list items, with trailing ID
 
@@ -60,27 +60,29 @@ This list expresses, among other things, three Anki cloze notes:
     - If the multiverse is real, I desire to *believe the multiverse is real*, and if the multiverse is not real, I desire to believe the multiverse is not real.  Let me not become attached to beliefs I may not want. (application of the *Litany of Tarski*)^{1695193247518}
 #+end_quote
   
-** Way 4: As drawers
-The drawer below expresses one Anki cloze note (totalling three clozes).  If you're reading this in a web browser, note that this is what it'll look like in an org-mode buffer.  I had to show it this way because upon export to the web, the drawer boundaries normally disappear.
+** Way 4: As structure templates
+The block below expresses a single Anki cloze note (totalling three cloze deletions).
+
+If you're reading this in a web browser, note that this is what it'll look like in an org-mode buffer.  I had to show it this way because upon export to the web, the block boundaries disappear and you'd never realize there was anything odd about these paragraphs.
 
 #+begin_src org
-:anki-1694048375012:
-The *Litany of Tarski* goes:
+#+begin_flashcard 165193247510
+The _Litany of Tarski_ goes:
 
 1. If the box contains a diamond,
-2. *I desire to believe that the box contains a diamond*;
-3. *If the box does not contain a diamond*,
+2. _I desire to believe that the box contains a diamond_;
+3. _If the box does not contain a diamond_,
 4. I desire to believe that the box does not contain a diamond;
 5. Let me not become attached to beliefs I may not want.
-:end:
+#+end_flashcard
 #+end_src
 
 * Deprecation notice
-This package works perfectly.  I don't expect it to need any patches, for a long time.
+This package works perfectly.  I don't expect it to need patches for a long time.
 
-However, I *won't be extending this package*.  I'm heading a new direction per my epiphany on https://edstrom.dev/posts/2023-09-22.
+If you run into a bug, file an issue and I'm happy to help.
 
-If there's a bug, file an issue and I'm happy to help.
+However, I *won't be extending this package*.  No more features.  I'm heading a new direction per my epiphany on https://edstrom.dev/2023-09-22.
 
 * Usage
 ** Permanent limitations
@@ -88,11 +90,21 @@ If there's a bug, file an issue and I'm happy to help.
 There are *three flaws* which will never go away:
 
 - *Flaw 1:* Like anki-editor, inline-anki does not let you review inside Emacs.  You have to whip out your phone and review there, in your Anki app.
+
   - To me this is a non-issue since the bus is the only place I want to review anyway.
-- *Flaw 2:* Like anki-editor, inline-anki takes ownership -- you cannot edit the cards from within Anki.  You have to return to your computer and edit there, in Emacs.
-  - This means you can't make small corrections on-the-fly while reviewing.  Bit annoying, but at least you won't face sync conflicts (and I won't have to write sync code, I hear it's a nightmare).
-  - Fortunately, this is less of a problem in our paradigm, since the flashcards are serving double duty as body text.  You will often directly see and refine the text of the flashcard, in contrast with other SRS when you only see it during review.
+
+- *Flaw 2:* Like with anki-editor, inline-anki definitions work as the "master copy": *you cannot edit the cards from within Anki*.  If you tried, such edits would be lost on next sync.
+
+  You have to return to your computer and edit there, in Emacs.
+
+  - This means you can't make small corrections on-the-fly while reviewing.
+
+    Bit annoying, yes, but two-way sync is a notoriously finicky dev challenge so if such a feature was present, users would run into sync conflicts and nobody wants to deal with that.
+
+  - Fortunately, this is less of a problem for us than for regular Anki users, since the flashcards are serving double duty as body text.  You will be able to see and refine the text of the flashcard at your leisure, in contrast with other SRS when you only see it during review.
+
 - *Flaw 3:* The note format is constrained -- you can't express every kind of flashcard possible in Anki.
+  
   - For me this is a good trade, if that means the flashcards stay in my life.  Until now, they never stayed long due to clumsy systems.   Better simple flashcards than no flashcards.
 
 ** Limitations vs. anki-editor/org-anki
@@ -108,10 +120,12 @@ Many traditional features are ABSENT in inline-anki.
       - You can display the tags inside cards as a contextual hint, [[https://edstrom.dev/posts/qix2Q4W/how-to-display-tags-as-hint-in-all-anki-cards][if you code this in the card template]]
       - You can use the tags to set up Custom Study sessions on a filtered subset of notes
         - Useful since we don't separate decks
-    - Finally, even if you disable =inline-anki-use-tags=, inline-anki always attaches one tag named after the date, in this style: "from-emacs-2023-09-20"
+    - Finally, even if you set =inline-anki-use-tags= to nil, inline-anki always attaches one tag named after the date, in this style: "from-emacs-2023-09-20"
       - This lets you see in Anki if you have stale notes that aren't being updated
       - This lets you separate your handmade notes from those that came from inline-anki
-- It doesn't signal in any way that Anki has tagged a card as =marked= or =leech= (but you can still see this in Anki's own card browser)
+- It doesn't signal in any way that Anki has tagged a card as =marked= or =leech=.
+  - You can still see this in Anki's own card browser, so you can still sit down and go through them manually every now and then -- just like a normal Anki user, just that you have to open the source file and edit there.
+    - (On the feature wishlist is attaching a link to every note that would let you jump to the source file)
 
 ** Syntax of a flashcard
 
@@ -121,16 +135,61 @@ Many traditional features are ABSENT in inline-anki.
   - A magic string at the *end of a line*: =@anki= OR =^{anki}=.
     - Same as above, except that you can omit the @ glyph and inline-anki won't add one.
       - Since the =@anki= form is easier to remember and easier to type, you can just always type that and remove the glyph later where you think its absence looks better.
-  - A drawer named =:anki:=.
-    - When Anki assigns it an ID, the drawer will be renamed to include the ID, giving you something like =:anki-1693535436702:=.
-      - Think about this if you customize the Org setting =org-export-with-drawers=.
-- Clozes are marked by *bold text*.  If you prefer italic or underline, configure =inline-anki-emphasis-type=.
-  - Worried that you'll have unintentional flashcards everywhere because you like to bold things?  Don't worry.  Without a magic string as above, it won't become a flashcard.
-  - If you switch to italic or underline, remember to *edit all your cards*.
+  - A structure template named =#+begin_flashcard=.
+    - When Anki assigns it an ID, it becomes something like =#+begin_flashcard 1693535436702=.
+
+- Clozes are marked by _underline_ text.  If you prefer bold or italic, configure =inline-anki-emphasis-type=.
+  - If you switch to bold or italic, remember to *edit all your preexisting cards*.
     - To search the buffer for flashcards, try =M-x inline-anki-occur RET=.
     - To search the whole directory, try =M-x inline-anki-rgrep RET=.  Then you can edit with [[http://github.com/mhayashi1120/Emacs-wgrep][wgrep]] or a keyboard macro.
-  - If necessary, you can write Anki's own ={{c1::}}= syntax directly.  Mainly useful for writing math equations.
-    - A card with such syntax should not have any bold, or there will be double-clozes.
+  - If necessary, you can write Anki's own ={{c1::}}= syntax directly.  Best I can tell, it's mainly useful for writing math equations.
+
+** Why underlines?
+
+Have you ever used underlines, other than as a novelty?
+
+They're rare on the web for a reason: you easily mistake them for hyperlinks, especially if you're colorblind.
+
+Think of them as the handwriting equivalent of bold.  They belong on paper, not on a computer screen.
+
+Which makes them a natural choice for inline-anki.  It's free real estate.  And we get full control of how a cloze deletion should look!
+# With that out of the way, I felt justified taking over the underline as free real estate.
+
+Here's how it looks in my Emacs:
+
+and the same page, exported to my website:
+
+https://edstrom.dev/sJt8/replacing-guilt#XjWh
+
+To recreate this appearance, add the following to your initfiles.
+
+#+begin_src elisp
+(defface my-cloze '((t . (:box t))) "Cloze face")
+(setq org-emphasis-alist '(("*" bold)
+                           ("/" italic)
+                           ("_" my-cloze) ;; new
+                           ("=" org-verbatim verbatim)
+                           ("~" org-code verbatim)
+                           ("+" (:strike-through t))))
+#+end_src
+
+Org exports underlines to HTML as ~<span class="underline">~, so you can control how it ends up looking on your blog with a CSS rule such as the following.
+
+#+begin_src css
+span.underline {
+    text-decoration: none;
+    background-color: #ccc;
+    padding: 2px;    
+}
+#+end_src
+
+------
+
+Mind you, none of this bars you from using the underline in general.  A paragraph needs a magic string like =@anki= to be parsed as a flashcard in the first place, without which underlines have no special meaning.
+
+In fact, I started out using *bold*, not underline!  Works fine.
+
+The only reason I changed was that I started developing invisible-anki, a project for eliminating the note IDs altogether.  After the note IDs are gone, we must reserve an emphasis marker for clozes everywhere.  So I'm just early-adopting that emphasis marker.
 
 ** To push cards
 
@@ -158,7 +217,7 @@ You may like to know that:
   - Default =("Text" "Extra")=.
 
 - =inline-anki-emphasis-type=
-  - Default "*", can be changed to "/", "_" or other things you find in =org-emphasis-alist=.
+  - Default "_", can be changed to "*", "/" or other things you find in =org-emphasis-alist=.
 
 - =inline-anki-use-tags=
   - Default =t=.  See docstring.
@@ -181,20 +240,23 @@ You must not *hard-wrap* your text (e.g. with =fill-paragraph=) if you want Anki
 
 * Roadmap
 - [ ] Allow hard-wrapping
+- [ ] Fix newline issues in multiline cards
 - [ ] Export pictures and media
   - Not super-useful as long as we are restricted to clozes
-- [ ] Define an expression for a traditional front-back note-type instead of cloze-deletion.  One idea is a =#+begin_anki...#+end_anki= structure block that takes a bunch of parameters, but the extra 2 lines feel clunky in my head and I don't think I would use it much.  It's the perfect tech if you want fine control, but I'm going the other direction with some ideas to let us avoid the extra 2 lines.
-  - [ ] Create a front-back note expression: a table of exactly two cells, be that 1x2 or 2x1.
-    - [ ] Extend this so that if you have many rows, you can flag the table as a table of flashcards where each row is one flashcard.  Very compact!
-- [ ] Create a fifth cloze note expression: rows in a single-column Org table, where each row expresses a paragraph in Anki.  But only if it's 3 cells or more.
+- [ ] Define some expressions for a traditional front-back note-type instead of cloze-deletion.
+  - [ ] A parameter for =#+begin_flashcard=.  Then interpret the last paragraph within as the back side.
+  - [ ] A single-column or single-row table.
+    - Then no need for =#+begin_flashcard= and no need to add a blank line in between the fields.
+    - [ ] Extend this so that if you have many rows, you can flag the whole table as a table of flashcards where each row is one flashcard.
+      - But that's mainly useful for vocabulary-type stuff, since not much text fits in one row.
 - [ ] Make so that commenting-out a flashcard expression also suspends it from review in Anki
-- [ ] Include the file path as an extra field, so that the user can click the path inside Anki.
-  - [ ] Instruct the user on how to make Anki always open links with emacsclient.
-- [ ] For myself, I'd like a programmable way to include any extra field, since I would use that to include the URL to my web-published version of the same source file.  Then I could visit that URL while reviewing on the phone.
+- [ ] Include the file-path as an extra field, so that the user can click the path inside Anki.
+  - [ ] Instruct the user on how to make Anki open emacsclient.
+- [ ] For myself, I'd like a programmable way to include any extra field, since I would use that to include the URL to my web-published version of the same source file.  Then I could visit that webpage while reviewing on the phone.
 - [ ] What's DEFINITELY on the roadmap, is a way to omit recording the note ID altogether, and just recognize notes by heuristic.  See my epiphany at https://edstrom.dev/posts/2023-09-22
 
 * Q&A
-- Can I continue using my [org-drill/org-anki/...] notes?
+- Can I continue using my [org-drill/org-anki/...] cards?
   - Yes!  They don't conflict because those packages treat Org subtrees as their "data objects", and this package does not.  You can even have an inline-anki card /inside/ an org-anki subtree.
 
 * Thanks

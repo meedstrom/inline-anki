@@ -1,4 +1,4 @@
-;;; inline-anki.el --- One-liner flashcards -*- lexical-binding: t; -*-
+;;; inline-anki.el --- Embed implicit flashcards in flowing text -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2023 Martin Edström <meedstrom91@gmail.com>
 ;;
@@ -26,7 +26,11 @@
 
 ;;; Commentary:
 
-;; External requirements:
+;; Embed implicit flashcards in flowing text.
+;;
+;; More info at https://github.com/meedstrom/inline-anki
+;;
+;; Required programs:
 ;; - curl
 ;; - Anki with AnkiConnect add-on
 
@@ -66,7 +70,7 @@ Setting it to nil lets `inline-anki-push-notes-in-directory' work faster if
 you have hundreds of files.
 
 If you merely want to exclude parent tags, leave this at t and
-see `org-use-tag-inheritance' instead."
+configure `org-use-tag-inheritance' instead."
   :type 'boolean)
 
 (defconst inline-anki-rx:list-bullet
@@ -84,17 +88,11 @@ see `org-use-tag-inheritance' instead."
 (defconst inline-anki-rx:eol
   (rx (? "@") "^{" (group (= 13 digit)) "}" (*? space) eol) )
 
-(defconst inline-anki-rx:structure:new
-  (rx bol "#+begin_flashcard" (*? space) eol))
+(defconst inline-anki-rx:struct:new
+  (rx bol (*? space) "#+begin_flashcard" (*? space) eol))
 
-(defconst inline-anki-rx:structure
-  (rx bol "#+begin_flashcard " (group (= 13 digit))))
-
-(defconst inline-anki-rx:drawer:new
-  (rx bol ":anki:"))
-
-(defconst inline-anki-rx:drawer
-  (rx bol ":anki-" (group (= 13 digit)) ":"))
+(defconst inline-anki-rx:struct
+  (rx bol (*? space) "#+begin_flashcard " (group (= 13 digit))))
 
 (defvar inline-anki--file-list nil
   "Internal use only.")
@@ -102,13 +100,13 @@ see `org-use-tag-inheritance' instead."
 (defvar inline-anki--known-flashcard-places nil
   "Internal use only.")
 
-;; TODO: make a version that Vertico&Helm can make interactive
+;; TODO: make a version that Vertico/Helm can make interactive
 ;;;###autoload
 (defun inline-anki-occur ()
   "Use `occur' to show all flashcards in the buffer."
   (interactive)
-  (occur (rx (or (regexp inline-anki-rx:drawer)
-                 (regexp inline-anki-rx:drawer:new)
+  (occur (rx (or (regexp inline-anki-rx:struct)
+                 (regexp inline-anki-rx:struct:new)
                  (regexp inline-anki-rx:eol)
                  (regexp inline-anki-rx:eol:new)
                  (regexp inline-anki-rx:item-start)
@@ -116,14 +114,14 @@ see `org-use-tag-inheritance' instead."
 
 ;;;###autoload
 (defun inline-anki-rgrep ()
-  "Deep-search for flashcards in current directory."
+  "Find all flashcards in current directory and descendants."
   (interactive)
   (require 'pcre2el)
   ;; Override rgrep's command to add -P for PCRE
   (let ((grep-find-template "find -H <D> <X> -type f <F> -exec grep <C> -nH -P --null -e <R> \\{\\} +"))
     (rgrep (rxt-elisp-to-pcre
-            (rx (or (regexp inline-anki-rx:drawer)
-                    (regexp inline-anki-rx:drawer:new)
+            (rx (or (regexp inline-anki-rx:struct)
+                    (regexp inline-anki-rx:struct:new)
                     (regexp inline-anki-rx:eol)
                     (regexp inline-anki-rx:eol:new)
                     (regexp inline-anki-rx:item-start)
@@ -133,42 +131,43 @@ see `org-use-tag-inheritance' instead."
 ;; This does its own regexp searches because it's used as a callback with no
 ;; context.  But it'd be possible to pass another argument to
 ;; `inline-anki--create-note' that could let it choose one of 3 different
-;; callbacks.  Then we'd basically be telling it "hey, go ahead and assume point
-;; is already on an @anki string" and there's no need to search.
+;; callbacks.  But tiny diff to code complexity in the end.
 (defun inline-anki--dangerously-write-id (id)
   "Assign ID to the unlabeled flashcard at point."
   (unless id
-    (error "Note creation failed for unknown reason"))
+    (error "Note creation failed for unknown reason (no ID returned)"))
+  ;; Point is already on the correct line, at least
   (goto-char (line-beginning-position))
   (cond
-   ;; Replace "@anki"
+   ;; Replace "@anki" with ID
    ((search-forward "@anki" (line-end-position) t)
     (delete-char -4)
     (insert "^{" (number-to-string id) "}"))
 
-   ;; Replace "^{anki}"
+   ;; Replace "^{anki}" with ID
    ((re-search-forward (rx "^{" (group "anki") "}" (*? space) eol)
                        (line-end-position)
                        t)
     (replace-match (number-to-string id) nil nil nil 1))
 
-   ;; Replace ":anki:"
-   ((re-search-forward (rx (*? space) ":anki:") (line-end-position) t)
-    (forward-char -1)
-    (insert "-" (number-to-string id)))
+   ;; Insert ID after "#+begin_flashcard"
+   ((re-search-forward (rx (*? space) "#+begin_flashcard") (line-end-position) t)
+    (insert " " (number-to-string id)))
 
    (t
     (error "No inline-anki magic string found"))))
 
 (defun inline-anki-dots-for-letters (text)
-  "Return TEXT with all letters replaced by dots.
+  "Return TEXT with all letters and digits replaced by dots.
 Useful as placeholder in a cloze-deletion, so you can still see
-how long the clozed part is."
+how long the clozed part is.  Blank spaces and dashes will remain
+visible as in the original text."
    (with-temp-buffer
     (insert text)
     (goto-char (point-min))
-    (while (re-search-forward "[[:word:]]" nil t)
-      (replace-match "."))
+    (save-match-data
+      (while (re-search-forward "[[:alnum:]]" nil t)
+        (replace-match ".")))
     (buffer-string)))
 
 (defun inline-anki-convert-implicit-clozes (text)
@@ -176,18 +175,18 @@ how long the clozed part is."
   (require 'org)
   (cl-assert (member inline-anki-emphasis-type (map-keys org-emphasis-alist)))
   (with-temp-buffer
-    (insert " ") ;; workaround bug where the regexp misses bold @ BoL
+    (insert " ") ;; workaround bug where the regexp misses emph @ BoL
     (insert (substring-no-properties text))
     (insert " ")
     (goto-char (point-min))
     (let ((n 0))
       (while (re-search-forward org-emph-re nil t)
         (when (equal (match-string 3) inline-anki-emphasis-type)
-          (let ((text (match-string 4)))
+          (let ((truth (match-string 4)))
             (replace-match (concat "{{c"
                                    (number-to-string (cl-incf n))
                                    "::"
-                                   text
+                                   truth
                                    "::"
                                    (inline-anki-dots-for-letters text)
                                    "}}")
@@ -207,7 +206,7 @@ value of -1), create it."
         (error "Two magic strings on same line: %d" this-line)
       (push this-line inline-anki--known-flashcard-places)))
 
-  (if-let* ((text (buffer-substring field-beg field-end))
+  (if-let* ((text (buffer-substring-no-properties field-beg field-end))
             (clozed (inline-anki-convert-implicit-clozes text)))
       (prog1 t
         (funcall
@@ -227,90 +226,92 @@ value of -1), create it."
     (message "No implicit clozes found, skipping:  %s" text)
     nil))
 
+(defun inline-anki-push-notes-in-buffer-1 ()
+  "Push notes in buffer, and return the sum of pushes done."
+  ;; NOTE: Scan for new flashcards last, otherwise you waste compute
+  ;; cycles because you submit the new ones twice
+  (save-mark-and-excursion
+    (+
+     (cl-loop initially (goto-char (point-min))
+              while (re-search-forward inline-anki-rx:item-start nil t)
+              count (inline-anki-push
+                     :field-beg (point)
+                     :field-end (line-end-position)
+                     :note-id (string-to-number (match-string 1))))
+
+     (cl-loop initially (goto-char (point-min))
+              while (re-search-forward inline-anki-rx:item-start:new nil t)
+              count (inline-anki-push
+                     :field-beg (point)
+                     :field-end (line-end-position)
+                     :note-id -1))
+
+     (cl-loop initially (goto-char (point-min))
+              while (re-search-forward inline-anki-rx:eol nil t)
+              count (inline-anki-push
+                     :field-beg (save-excursion
+                                  (save-match-data
+                                    (goto-char (line-beginning-position))
+                                    (re-search-forward (rx bol (* space))
+                                                       (line-end-position) t)
+                                    (if (looking-at inline-anki-rx:list-bullet)
+                                        (match-end 0)
+                                      (point))))
+                     :field-end (match-beginning 0)
+                     :note-id (string-to-number (match-string 1))))
+
+     (cl-loop initially (goto-char (point-min))
+              while (re-search-forward inline-anki-rx:eol:new nil t)
+              count (inline-anki-push
+                     :field-beg (save-excursion
+                                  (save-match-data
+                                    (goto-char (line-beginning-position))
+                                    (re-search-forward (rx bol (* space))
+                                                       (line-end-position) t)
+                                    (if (looking-at inline-anki-rx:list-bullet)
+                                        (match-end 0)
+                                      (point))))
+                     :field-end (match-beginning 0)
+                     :note-id -1))
+
+     (cl-loop initially (goto-char (point-min))
+              while (re-search-forward inline-anki-rx:struct nil t)
+              count (inline-anki-push
+                     :field-beg (1+ (line-end-position))
+                     :field-end (save-excursion
+                                  (save-match-data
+                                    (search-forward "\n#+end_flashcard")
+                                    (1- (line-beginning-position))))
+                     :note-id (string-to-number (match-string 1))))
+
+     (cl-loop initially (goto-char (point-min))
+              while (re-search-forward inline-anki-rx:struct:new nil t)
+              count (inline-anki-push
+                     :field-beg (1+ (line-end-position))
+                     :field-end (save-excursion
+                                  (save-match-data
+                                    (search-forward "\n#+end_flashcard")
+                                    (1- (line-beginning-position))))
+                     :note-id -1)))))
+
 ;;;###autoload
 (defun inline-anki-push-notes-in-buffer (&optional called-interactively)
   "Push all flashcards in the buffer to Anki.
-Argument CALLED-INTERACTIVELY is automatically set if this
-command was called interactively."
+Argument CALLED-INTERACTIVELY is automatically set; there is no
+need to pass it."
   (interactive "p")
-  (if (string-empty-p (shell-command-to-string "ps -e | grep anki"))
-      (message "Anki doesn't seem to be running")
-    (let ((pushed (inline-anki--push-notes-in-buffer)))
-      (if called-interactively
-          (message "Pushed %d notes!" pushed)
-        pushed))))
-
-(defun inline-anki--push-notes-in-buffer ()
-  "Worker for `inline-anki-push-notes-in-buffer' and
-`inline-anki-push-notes-in-directory'.
-Skips some checks.  Fine to call directly from a Lisp program."
+  (and called-interactively
+       (string-empty-p (shell-command-to-string "ps -e | grep anki"))
+       (message "Anki doesn't seem to be running"))
   (setq inline-anki--known-flashcard-places nil)
   (and inline-anki-use-tags
        (not (derived-mode-p 'org-mode))
        (cl-letf ((org-mode-hook nil))
          (org-mode)))
-  (let ((list-or-paragraph-start
-         (rx bol (*? space) (? (regexp inline-anki-rx:list-bullet)))))
-
-    ;; NOTE: scan for new flashcards last, otherwise you waste compute cycles
-    ;; because the new ones get an id which would be picked up again
-    (save-mark-and-excursion
-      (+
-       (cl-loop initially (goto-char (point-min))
-                while (re-search-forward inline-anki-rx:item-start nil t)
-                count (inline-anki-push
-                       :field-beg (point)
-                       :field-end (line-end-position)
-                       :note-id (string-to-number (match-string 1))))
-
-       (cl-loop initially (goto-char (point-min))
-                while (re-search-forward inline-anki-rx:item-start:new nil t)
-                count (inline-anki-push
-                       :field-beg (point)
-                       :field-end (line-end-position)
-                       :note-id -1))
-
-       (cl-loop initially (goto-char (point-min))
-                while (re-search-forward inline-anki-rx:eol nil t)
-                count (inline-anki-push
-                       :field-beg (save-excursion
-                                    (save-match-data
-                                      (goto-char (line-beginning-position))
-                                      (re-search-forward list-or-paragraph-start
-                                                         (line-end-position))))
-                       :field-end (match-beginning 0)
-                       :note-id (string-to-number (match-string 1))))
-
-       (cl-loop initially (goto-char (point-min))
-                while (re-search-forward inline-anki-rx:eol:new nil t)
-                count (inline-anki-push
-                       :field-beg (save-excursion
-                                    (save-match-data
-                                      (goto-char (line-beginning-position))
-                                      (re-search-forward list-or-paragraph-start
-                                                         (line-end-position))))
-                       :field-end (match-beginning 0)
-                       :note-id -1))
-
-       (cl-loop initially (goto-char (point-min))
-                while (re-search-forward inline-anki-rx:structure nil t)
-                count (inline-anki-push
-                       :field-beg (1+ (line-end-position))
-                       :field-end (save-excursion
-                                    (save-match-data
-                                      (search-forward "\n#+end_flashcard")
-                                      (1- (line-beginning-position))))
-                       :note-id (string-to-number (match-string 1))))
-
-       (cl-loop initially (goto-char (point-min))
-                while (re-search-forward inline-anki-rx:structure:new nil t)
-                count (inline-anki-push
-                       :field-beg (1+ (line-end-position))
-                       :field-end (save-excursion
-                                    (save-match-data
-                                      (search-forward "\n#+end_flashcard")
-                                      (1- (line-beginning-position))))
-                       :note-id -1))))))
+  (let ((pushed (inline-anki-push-notes-in-buffer-1)))
+    (if called-interactively
+        (message "Pushed %d notes!" pushed)
+      pushed)))
 
 ;;;###autoload
 (defun inline-anki-push-notes-in-directory ()
@@ -322,6 +323,7 @@ Skips some checks.  Fine to call directly from a Lisp program."
     (asyncloop-run-function-queue
       (list
        (lambda (_)
+         ;; TODO: exclude any .ignore and .gitignore-identified files
          (setq inline-anki--file-list
                (directory-files-recursively default-directory "\\.org$" nil t))
          (format "Will push from %d files in %s"
@@ -334,11 +336,14 @@ Skips some checks.  Fine to call directly from a Lisp program."
            (if visiting
                (with-current-buffer visiting
                  (if (buffer-modified-p)
-                     (asyncloop-log loop
-                       "Unsaved changes in file, skipping %s" visiting)
-                   (inline-anki--push-notes-in-buffer)))
-             (find-file-literally path) ;; whooo fast
-             (when (= 0 (inline-anki--push-notes-in-buffer))
+                     (message
+                      (asyncloop-log loop
+                        "Unsaved changes in file, skipping %s" visiting))
+                   (inline-anki-push-notes-in-buffer)))
+             ;; Find file normally (not literally), but skip org-mode.
+             (cl-letf (((symbol-function #'org-mode) #'fundamental-mode))
+               (find-file path))
+             (when (= 0 (inline-anki-push-notes-in-buffer))
                (cl-assert (not (buffer-modified-p)))
                (kill-buffer)))
            ;; Eat the file list, one item at a time
@@ -348,8 +353,8 @@ Skips some checks.  Fine to call directly from a Lisp program."
            (format "%d files to go; was in %s"
                    (length inline-anki--file-list) path))))
 
-      :debug-buffer-name "*inline-anki bulk worker*")
-    (display-buffer "*inline-anki bulk worker*")))
+      :debug-buffer-name "*inline-anki sync progress*")
+    (display-buffer "*inline-anki sync progress*")))
 
 (provide 'inline-anki)
 
