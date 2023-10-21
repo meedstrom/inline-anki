@@ -85,17 +85,17 @@ For set-up, please see [the user manual](doc/inline-anki.md) (also available as 
 
 ## Why underlines?
 
-Underlines are rare on the web for a reason: you easily mistake them for hyperlinks, especially if you're colorblind.
+Underlines are rare on the web for a reason: you easily mistake them for hyperlinks, especially if you're colorblind. 
 
-They're not even permitted in Markdown!
+Think of underlines as the **handwriting equivalent of bold text**.  They belong on paper, not on a computer screen.  They're not even permitted in Markdown!  I had to hack this README by using `<ins>` HTML tags.
 
-Think of them as the handwriting equivalent of bold text.  They belong on paper, not on a computer screen.
+Since people avoid the underline on computer screens, it's free real estate to load with a new semantic.  "But you just said to avoid it!"  Well, the upside compared to **bold**/*italic*/~strikethrough~, is we get full control of how a cloze deletion should look!  Here's how it looks in my Emacs:
 
-Which makes them an easy choice for inline-anki.  Since nobody should be using them, it's free real estate.
-
-"But you break your own advice!"  Hold your horses, I'm building up to it.  The upside of underline is we get full control of how a cloze deletion should look!  Here's how it looks in my Emacs:
+![Example in Emacs, of cloze text inside a box](box-example-source.png)
 
 and the corresponding page on [my website](https://edstrom.dev/sJt8/replacing-guilt#XjWh):
+
+![Example in web browser, of cloze text inside a box](box-example-source.png)
 
 See, no mistaking them for hyperlinks now.  To recreate this appearance, add the following to your initfiles.
 
