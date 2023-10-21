@@ -66,7 +66,7 @@ The block below expresses a single Anki cloze note (totalling three cloze deleti
 If you're reading this in a web browser, note that this is what it'll look like in an org-mode buffer.  I had to show it this way because upon export to the web, the block boundaries disappear and you'd never realize there was anything odd about these paragraphs.
 
 #+begin_src org
-#+begin_flashcard 165193247510
+,#+begin_flashcard 165193247510
 The _Litany of Tarski_ goes:
 
 1. If the box contains a diamond,
@@ -74,7 +74,7 @@ The _Litany of Tarski_ goes:
 3. _If the box does not contain a diamond_,
 4. I desire to believe that the box does not contain a diamond;
 5. Let me not become attached to beliefs I may not want.
-#+end_flashcard
+,#+end_flashcard
 #+end_src
 
 * Set-up
