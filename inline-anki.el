@@ -54,13 +54,11 @@
   "Name of deck to upload to."
   :type 'string)
 
-(defcustom inline-anki-cloze-note-type "Cloze"
-  "Name of your cloze note type."
+(defcustom inline-anki-note-type "Cloze from Outer Space"
+  "Name of your cloze note type.
+Will fail silently if the note type doesn't exist, so get it
+right!"
   :type 'string)
-
-(defcustom inline-anki-cloze-note-fields '("Text" "Extra")
-  "Names of fields in your note type."
-  :type '(repeat string))
 
 (defcustom inline-anki-emphasis-type "_"
   "The kind of emphasis you want to indicate a cloze deletion.
@@ -68,37 +66,63 @@ Whatever you choose, it MUST be found in `org-emphasis-alist' and
 can only be one character long."
   :type 'string)
 
-(defcustom inline-anki-use-tags t
+(defcustom inline-anki-use-tags nil
   "Whether to send Org tags to Anki.
-Setting it to nil lets `inline-anki-push-notes-in-directory' work faster if
-you have hundreds of files.
+Setting it to nil lets `inline-anki-push-notes-in-directory' work
+faster if you have hundreds of files.
 
-If you merely want to exclude parent tags, leave this at t and
-configure `org-use-tag-inheritance' instead."
+Defaults to nil because some users may be distraught to find a
+load of new tags in their Anki database.
+
+If you enable this but realize you you want to include the local
+subtree tags only, set `org-use-tag-inheritance' to nil."
   :type 'boolean)
 
 (defcustom inline-anki-ignore
   '("/logseq/version-files/"
     "/logseq/bak/")
-  "List of substrings that expel a file-path from being visited."
+  "List of substrings that bar a file-path from being visited."
   :type '(repeat string))
+
+(defcustom inline-anki-fields
+  '(("Text" . t)
+    ("Source" . inline-anki-field:filename-link))
+  "Alist specifying note fields and how to populate them.
+The cdrs may be either t, a string or a function.  The symbol t
+is replaced with the full HTML of the note, so you probably
+only want t for one of the fields.
+
+If the cdr is a function, it's evaluated with the appropriate
+buffer set as current, with point on the first line of the
+flashcard expression.
+
+You have to create each field in Anki's \"Manage note types\"
+before it will work.  Fields unknown to Anki will not be filled
+in.  Conversely, it's OK if Anki defines more fields than this
+variable has."
+  :type '(alist
+          :key-type string
+          :value-type (choice function
+                              string
+                              (const :tag "The full HTML content" t)
+                              sexp)))
 
 (defconst inline-anki-rx:list-bullet
   (rx (or (any "-+*") (seq (*? digit) (any ").") " "))))
 
-(defconst inline-anki-rx:item-start:new
+(defconst inline-anki-rx:item-start-new
   (rx bol (*? space) (regexp inline-anki-rx:list-bullet) (*? space) "@anki "))
 
 (defconst inline-anki-rx:item-start
   (rx bol (*? space) (?? "# ") (*? space) (regexp inline-anki-rx:list-bullet) (*? space) "@^{" (group (= 13 digit)) "}"))
 
-(defconst inline-anki-rx:eol:new
+(defconst inline-anki-rx:eol-new
   (rx (or "@anki" "^{anki}") (*? space) eol))
 
 (defconst inline-anki-rx:eol
-  (rx bol (?? "@") "^{" (group (= 13 digit)) "}" (*? space) eol))
+  (rx (?? "@") "^{" (group (= 13 digit)) "}" (*? space) eol))
 
-(defconst inline-anki-rx:struct:new
+(defconst inline-anki-rx:struct-new
   (rx bol (*? space) "#+begin_flashcard" (*? space) eol))
 
 (defconst inline-anki-rx:struct
@@ -116,11 +140,11 @@ configure `org-use-tag-inheritance' instead."
   "Use `occur' to show all flashcards in the buffer."
   (interactive)
   (occur (rx (or (regexp inline-anki-rx:struct)
-                 (regexp inline-anki-rx:struct:new)
+                 (regexp inline-anki-rx:struct-new)
                  (regexp inline-anki-rx:eol)
-                 (regexp inline-anki-rx:eol:new)
+                 (regexp inline-anki-rx:eol-new)
                  (regexp inline-anki-rx:item-start)
-                 (regexp inline-anki-rx:item-start:new)))))
+                 (regexp inline-anki-rx:item-start-new)))))
 
 ;;;###autoload
 (defun inline-anki-rgrep ()
@@ -131,11 +155,11 @@ configure `org-use-tag-inheritance' instead."
   (let ((grep-find-template "find -H <D> <X> -type f <F> -exec grep <C> -nH -P --null -e <R> \\{\\} +"))
     (rgrep (rxt-elisp-to-pcre
             (rx (or (regexp inline-anki-rx:struct)
-                    (regexp inline-anki-rx:struct:new)
+                    (regexp inline-anki-rx:struct-new)
                     (regexp inline-anki-rx:eol)
-                    (regexp inline-anki-rx:eol:new)
+                    (regexp inline-anki-rx:eol-new)
                     (regexp inline-anki-rx:item-start)
-                    (regexp inline-anki-rx:item-start:new))))
+                    (regexp inline-anki-rx:item-start-new))))
            "*.org")))
 
 ;; This does its own regexp searches because it's used as a callback with no
@@ -167,7 +191,7 @@ configure `org-use-tag-inheritance' instead."
    (t
     (error "No inline-anki magic string found"))))
 
-(defun inline-anki-dots-for-letters (text)
+(defun inline-anki--dots-for-letters (text)
   "Return TEXT with all letters and digits replaced by dots.
 Useful as placeholder in a cloze-deletion, so you can still see
 how long the clozed part is.  Blank spaces and dashes will remain
@@ -180,16 +204,19 @@ visible as in the original text."
         (replace-match ".")))
     (buffer-string)))
 
-(defun inline-anki-convert-implicit-clozes (text)
+(defconst inline-anki-rx:comment-glyph
+  (rx bol (*? space) "# "))
+
+(defun inline-anki--convert-implicit-clozes (text)
   "Return TEXT with emphasis replaced by Anki {{c::}} syntax."
   (with-temp-buffer
     (insert " ") ;; workaround bug where the regexp misses emph @ BoL
     (insert (substring-no-properties text))
     (insert " ")
     (goto-char (point-min))
-    ;; newlines pls
-    ;; (while (search-forward "\n" nil t)
-    ;; (replace-match "<br>"))
+    ;; comment means suspend, but don't also blank-out the html
+    (while (re-search-forward inline-anki-rx:comment-glyph nil t)
+      (delete-char -2))
     (let ((n 0))
       (goto-char (point-min))
       (while (re-search-forward org-emph-re nil t)
@@ -200,14 +227,14 @@ visible as in the original text."
                                    "::"
                                    truth
                                    "::"
-                                   (inline-anki-dots-for-letters truth)
+                                   (inline-anki--dots-for-letters truth)
                                    "}}")
                            nil nil nil 2))))
       (if (= n 0)
           nil ;; Nil signals that no clozes found
         (string-trim (buffer-string))))))
 
-(cl-defun inline-anki-push-note (&key field-beg field-end note-id)
+(cl-defun inline-anki--push-note (&key field-beg field-end note-id)
   "Push a flashcard to Anki, identified by NOTE-ID.
 Use the buffer substring delimited by FIELD-BEG and FIELD-END.
 
@@ -217,37 +244,55 @@ value of -1), create it."
     (if (member this-line inline-anki--known-flashcard-places)
         (error "Two magic strings on same line: %d" this-line)
       (push this-line inline-anki--known-flashcard-places)))
-
   (if-let* ((text (buffer-substring field-beg field-end))
-            (clozed (inline-anki-convert-implicit-clozes text))
-            (html (org-export-string-as
-                   clozed
-                   inline-anki--ox-anki-html-backend
-                   t
-                   '(:with-toc nil))))
+            (clozed (inline-anki--convert-implicit-clozes text))
+            (html (org-export-string-as clozed
+                                        inline-anki--ox-anki-html-backend
+                                        t
+                                        '(:with-toc nil))))
       (prog1 t
         (funcall
          (if (= -1 note-id)
              #'inline-anki--create-note
            #'inline-anki--update-note)
-
-         (list (cons 'deck inline-anki-deck)
-               (cons 'note-type inline-anki-cloze-note-type)
-               (cons 'note-id note-id)
-               (cons 'tags (cons (format-time-string "from-emacs-%F")
-                                 (when inline-anki-use-tags
-                                   (mapcar #'substring-no-properties
-                                           (org-get-tags)))))
-               ;; Drop text into the note's first field
-               (cons 'fields `((,(car inline-anki-cloze-note-fields) . ,html)
-                               ;; TODO: let user add any cons cells here to eval
-                               ("Source" . ,(concat "<a href=\"file://" buffer-file-name "\">" buffer-file-name "</a>"))))
-               (cons 'suspend-p (when (save-excursion
-                                        (goto-char (line-beginning-position))
-                                        (looking-at-p "[[:space:]]*?# "))
-                                  t)))))
+         (list
+          (cons 'deck inline-anki-deck)
+          (cons 'note-type inline-anki-note-type)
+          (cons 'note-id note-id)
+          (cons 'tags (cons (format-time-string "from-emacs-%F")
+                            (when inline-anki-use-tags
+                              (mapcar #'substring-no-properties
+                                      (org-get-tags)))))
+          (cons 'fields (cl-loop
+                         for (field . value) in inline-anki-fields
+                         as expanded = (inline-anki--expand value)
+                         if (eq t value)
+                         collect (cons field html)
+                         else unless (or (null value) (null expanded))
+                         collect (cons field expanded)))
+          (cons 'suspend? (save-excursion
+                            (goto-char (line-beginning-position))
+                            (looking-at-p "[[:space:]]*?# "))))))
     (message "No implicit clozes found, skipping:  %s" text)
     nil))
+
+(defun inline-anki--expand (input)
+  "Return INPUT if it's a string, else funcall or eval it."
+  (if (stringp input)
+      input
+    (if (functionp input)
+        (save-excursion
+          (save-match-data
+            (funcall input)))
+      (if (null input)
+        ""
+        (if (listp input)
+            (eval input t)
+          "")))))
+
+(defun inline-anki-field:filename-link ()
+  "Return the buffer filename wrapped in <a href>."
+  (concat "<a href=\"file://" buffer-file-name "\">" buffer-file-name "</a>"))
 
 (defun inline-anki-push-notes-in-buffer-1 ()
   "Push notes in buffer, and return the count of pushes made."
@@ -259,21 +304,21 @@ value of -1), create it."
     (+
      (cl-loop initially (goto-char (point-min))
               while (re-search-forward inline-anki-rx:item-start nil t)
-              count (inline-anki-push-note
+              count (inline-anki--push-note
                      :field-beg (point)
                      :field-end (line-end-position)
                      :note-id (string-to-number (match-string 1))))
 
      (cl-loop initially (goto-char (point-min))
-              while (re-search-forward inline-anki-rx:item-start:new nil t)
-              count (inline-anki-push-note
+              while (re-search-forward inline-anki-rx:item-start-new nil t)
+              count (inline-anki--push-note
                      :field-beg (point)
                      :field-end (line-end-position)
                      :note-id -1))
 
      (cl-loop initially (goto-char (point-min))
               while (re-search-forward inline-anki-rx:eol nil t)
-              count (inline-anki-push-note
+              count (inline-anki--push-note
                      :field-beg (save-excursion
                                   (save-match-data
                                     (goto-char (line-beginning-position))
@@ -286,8 +331,8 @@ value of -1), create it."
                      :note-id (string-to-number (match-string 1))))
 
      (cl-loop initially (goto-char (point-min))
-              while (re-search-forward inline-anki-rx:eol:new nil t)
-              count (inline-anki-push-note
+              while (re-search-forward inline-anki-rx:eol-new nil t)
+              count (inline-anki--push-note
                      :field-beg (save-excursion
                                   (save-match-data
                                     (goto-char (line-beginning-position))
@@ -301,21 +346,21 @@ value of -1), create it."
 
      (cl-loop initially (goto-char (point-min))
               while (re-search-forward inline-anki-rx:struct nil t)
-              count (inline-anki-push-note
+              count (inline-anki--push-note
                      :field-beg (1+ (line-end-position))
                      :field-end (save-excursion
                                   (save-match-data
-                                    (search-forward "\n#+end_flashcard")
+                                    (search-forward "#+end_flashcard")
                                     (1- (line-beginning-position))))
                      :note-id (string-to-number (match-string 1))))
 
      (cl-loop initially (goto-char (point-min))
-              while (re-search-forward inline-anki-rx:struct:new nil t)
-              count (inline-anki-push-note
+              while (re-search-forward inline-anki-rx:struct-new nil t)
+              count (inline-anki--push-note
                      :field-beg (1+ (line-end-position))
                      :field-end (save-excursion
                                   (save-match-data
-                                    (search-forward "\n#+end_flashcard")
+                                    (search-forward "#+end_flashcard")
                                     (1- (line-beginning-position))))
                      :note-id -1)))))
 
@@ -345,7 +390,7 @@ need to pass it."
         (message "Pushed %d notes!" pushed)
       pushed)))
 
-(defun inline-anki-files-except-gitignored ()
+(defun inline-anki--list-files-except-gitignored ()
   "List all Org files under current dir, except gitignored files."
   (cl-loop for file in
            (string-split (shell-command-to-string
@@ -354,7 +399,7 @@ need to pass it."
            when (string-suffix-p ".org" file)
            collect (expand-file-name file)))
 
-(defun inline-anki-git-repo-p (directory)
+(defun inline-anki--git-repo-p (directory)
   "Non-nil if DIRECTORY is a Git repository."
   (and (file-directory-p directory)
        (or (file-regular-p (expand-file-name ".git" directory))
@@ -369,19 +414,18 @@ need to pass it."
       (message "Anki doesn't seem to be running")
     (asyncloop-run-function-queue
       (list
-       (lambda (_)
+       (defun inline-anki--prep-scanner (_)
          (setq inline-anki--file-list
                ;; Ideally we'd obey an `inline-anki-must-heed-gitignore' that
-               ;; causes failure when git isn't installed, but the top dir may
-               ;; not even be a git repo so we'd also have to traverse the
-               ;; directory tree and maybe call git ls-files for each dir, maybe
-               ;; not, so I gave up.
-               (if (and (inline-anki-git-repo-p ".")
+               ;; causes failure when git isn't installed, and check if subdirs
+               ;; are git repos even if the top dir isn't.  Buuut
+               ;; `inline-anki-ignore' was a simpler solution.
+               (if (and (inline-anki--git-repo-p ".")
                         (executable-find "git"))
-                   (inline-anki-files-except-gitignored)
+                   (inline-anki--list-files-except-gitignored)
                  (directory-files-recursively
                   default-directory "\\.org$" nil t)))
-         ;; Filter out Logseq backups
+         ;; Filter out ignores
          (setq inline-anki--file-list
                (cl-loop
                 for path in inline-anki--file-list
@@ -392,7 +436,7 @@ need to pass it."
                  (length inline-anki--file-list)
                  default-directory))
 
-       (defun inline-anki--scan-next-file (loop)
+       (defun inline-anki--next (loop)
          (let* ((path (pop inline-anki--file-list))
                 (visiting (find-buffer-visiting path))
                 (buf nil)
@@ -420,14 +464,15 @@ need to pass it."
               "Pushed %s notes in %s" pushed buf))
            ;; Eat the file list, one item at a time
            (when inline-anki--file-list
-             (push #'inline-anki--scan-next-file (asyncloop-remainder loop)))
+             (push #'inline-anki--next (asyncloop-remainder loop)))
            ;; Return useful debug string
-           (format "%d files to go; was in %s"
-                   (length inline-anki--file-list) path))))
+           (format "%d files to go; pushed %d from %s"
+                   (length inline-anki--file-list) pushed buf))))
 
       :debug-buffer-name "*inline-anki sync*")
 
-    (display-buffer "*inline-anki sync*")))
+    (unless (get-buffer-window "*inline-anki sync*" 'visible)
+      (display-buffer "*inline-anki sync*"))))
 
 (provide 'inline-anki)
 

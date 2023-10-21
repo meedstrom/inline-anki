@@ -171,9 +171,6 @@ The result is the path to the newly stored media file."
 
 ;;; Org Export Backend
 
-(defcustom anki-editor-use-math-jax nil
-  "Use Anki's built in MathJax support instead of LaTeX.")
-
 (defconst inline-anki--ox-anki-html-backend
   (if inline-anki-use-math-jax
       (org-export-create-backend
@@ -343,8 +340,7 @@ The implementation is borrowed and simplified from ox-html."
 
 (defun inline-anki--update-note (note)
   "Request AnkiConnect for updating fields and tags of NOTE."
-  (let ((suspend-p (alist-get 'suspend-p note))
-        (queue (inline-anki--anki-connect-invoke-queue)))
+  (let ((queue (inline-anki--anki-connect-invoke-queue)))
     (funcall queue
              'updateNoteFields
              `((note . ,(inline-anki--anki-connect-map-note note))))
@@ -380,15 +376,20 @@ The implementation is borrowed and simplified from ox-html."
              `((query . ,(concat "nid:" (number-to-string
                                          (alist-get 'note-id note)))))
              (lambda (cards)
-               (let ((card-queue (inline-anki--anki-connect-invoke-queue)))
-                 (if suspend-p
+               ;; suspend or unsuspend
+               (if cards
+                 (let ((card-queue (inline-anki--anki-connect-invoke-queue)))
+                   (if (alist-get 'suspend? note)
+                       (funcall card-queue
+                                'suspend
+                                `((cards . ,cards)))
                      (funcall card-queue
-                              'suspend
-                              `((cards . ,cards)))
-                   (funcall card-queue
-                            'unsuspend
-                            `((cards . ,cards))))
-                 (funcall card-queue))))
+                              'unsuspend
+                              `((cards . ,cards))))
+
+                   (funcall card-queue))
+
+                 (error "No cards for note %d" (alist-get 'note-id note)))))
 
     (funcall queue)))
 

@@ -21,7 +21,7 @@ This document is distributed in the hope that it will be useful, but WITHOUT ANY
 
 * Installation
 
-If you have [[https://github.com/raxod502/straight.el][straight.el]], you can install the package with this initfile snippet:
+Not yet on (M)ELPA.  If you have [[https://github.com/raxod502/straight.el][straight.el]], you can install the package with this initfile snippet:
 #+begin_src elisp
 (use-package inline-anki
   :straight (inline-anki :type git :host github :repo "meedstrom/inline-anki"))
@@ -32,11 +32,23 @@ Alternatively with Doom Emacs, this goes in =packages.el=:
 (package! inline-anki :recipe (:host github :repo "meedstrom/inline-anki"))
 #+end_src
 
-Another suggested init snippet follows.  It lets you quickly create a =#+begin_flashcard= block at point with ~C-c ,~ (=org-insert-structure-template=).
+Below, you'll find a recommended config snippet.  It lets you quickly create a =#+begin_flashcard= block at point with ~C-c ,~ (=org-insert-structure-template=).
 
 #+begin_src elisp
 (with-eval-after-load 'org
   (add-to-list 'org-structure-template-alist '("f" . "flashcard")))
+#+end_src
+
+To wrap up, a full use-package declaration could look like this:
+
+#+begin_src elisp
+(use-package inline-anki
+  :straight (inline-anki :type git :host github :repo "meedstrom/inline-anki")
+  :config
+  (setq inline-anki-use-tags nil)
+  (add-to-list 'inline-anki-ignore "/daily/")  
+  (with-eval-after-load 'org
+    (add-to-list 'org-structure-template-alist '("f" . "flashcard"))))
 #+end_src
 
 * Usage
@@ -65,20 +77,31 @@ You may like to know that:
 - =inline-anki-deck=
   - Default "Default".
 
-- =inline-anki-cloze-note-type=
-  - Default "Cloze".
+- =inline-anki-note-type=
+  - Default "Cloze from Outer Space".
 
-- =inline-anki-cloze-note-fields=
-  - Default =("Text" "Extra")=.
+- =inline-anki-fields=
+  - Default =("Text" "Extra")=.  A refactor likely coming soon.
 
 - =inline-anki-emphasis-type=
   - Default "_", can be changed to "*", "/" or other things you find in =org-emphasis-alist=.
 
 - =inline-anki-use-tags=
-  - Default =t=.  Controls whether or not to send Org tags to Anki.
+  - Default =nil=.  Controls whether or not to send Org tags to Anki.
+
+- =inline-anki-ignore=
+  - Helps the command =inline-anki-push-notes-in-directory= decide whether or not to visit a file.  If that file's full name contains one of the strings in this list, skip the file.
+
+- =inline-anki-fields=
+  - See docstring.
 
 ** Warning
 You must not *hard-wrap* your text (e.g. with =fill-paragraph=) if you want Anki to receive the whole flashcard.
+
+** Open in Emacs
+It would be convenient if you could click a link in Anki to open the corresponding Org file in Emacs.
+
+By default, =inline-anki-fields= includes a field with the filename.  With addons such as https://ankiweb.net/shared/info/879473266, it should be possible to open links using emacsclient.  Instructions TBD.
 
 * Implementation notes
 ** Permanent limitations
@@ -111,11 +134,11 @@ Many traditional features are ABSENT in inline-anki.
 - It uses only one note type ("Cloze"), with only one field ("Text")
 - It clozes only one deletion at a time
 - You cannot set tags on a per-card basis
-  - The cards will still inherit tags from the local Org context (i.e. subtree or file-level tags)
+  - The cards will still inherit tags from the local Org context (i.e. subtree and file-level tags)
     - Note that Anki tags lose much of their organizational purpose if all your notes live in Org files anyway -- you'll be organizing from within [[https://github.com/org-roam/org-roam][org-roam]] or whichever system you have, not from within Anki.  However, at least two use-cases remain:
       - You can display the tags inside cards as a contextual hint, [[https://edstrom.dev/posts/qix2Q4W/how-to-display-tags-as-hint-in-all-anki-cards][if you code this in the card template]]
       - You can use the tags to set up Custom Study sessions on a filtered subset of notes
-        - Useful since we don't separate decks
+        - Useful since the package only targets one deck
     - Finally, even if you set =inline-anki-use-tags= to nil, inline-anki always attaches one tag named after the date, in this style: "from-emacs-2023-09-20"
       - This lets you see in Anki if you have stale notes that aren't being updated
       - This lets you separate your handmade notes from those that came from inline-anki
@@ -129,17 +152,23 @@ Many traditional features are ABSENT in inline-anki.
   - A magic string at the *start of a list item*: =@anki=.
     - When Anki assigns it an ID, this will become a @ glyph followed by a 13-digit number in superscript, such as =@^{1693535436701}=.
   - A magic string at the *end of a line*: =@anki= OR =^{anki}=.
-    - Same as above, except that you can omit the @ glyph and inline-anki won't add one.
-      - Since the =@anki= form is easier to remember and easier to type, you can just always type that and remove the glyph later where you think its absence looks better.
+    - Same as above, except that you can omit the @ glyph.
+      - Since the =@anki= form is easier to remember and easier to type, I suggest you just always type that and remove the glyph later where you think its absence looks better.
   - A structure template named =#+begin_flashcard=.
     - When Anki assigns it an ID, it becomes something like =#+begin_flashcard 1693535436702=.
 
 - Clozes are marked by _underline_ text.  If you prefer bold or italic, configure =inline-anki-emphasis-type=.
-  - If you switch to bold or italic, remember to *edit all your preexisting cards*.
-    - To search the buffer for flashcards, try =M-x inline-anki-occur RET=.
-    - To search the whole directory, try =M-x inline-anki-rgrep RET=.  Then you can edit with [[http://github.com/mhayashi1120/Emacs-wgrep][wgrep]] or a keyboard macro.
   - If necessary, you can write Anki's own ={{c1::}}= syntax directly.  Best I can tell, it's mainly useful for writing math equations.
 
+*** Changing to bold or italic
+If you switch =inline-anki-emphasis-type= to bold or italic, remember to *edit all your preexisting cards*.
+
+Tips:
+
+- To search the buffer for flashcards, try =M-x inline-anki-occur RET=.
+- To search the whole directory, try =M-x inline-anki-rgrep RET=.
+  - Then you can edit with [[http://github.com/mhayashi1120/Emacs-wgrep][wgrep]] or a keyboard macro, for example.
+    - The wgrep method won't cut it for multiline flashcards, as you'll see, but if you don't have many of those, you could simply hand-edit each.  If you have many, learn to keyboard-macro.
 * Q&A
 - Can I continue using my [org-drill/org-anki/...] cards?
   - Yes!  Those packages treat whole Org subtrees as their "data objects", and this package does not.  You can even have an inline-anki card /inside/ an org-anki subtree.

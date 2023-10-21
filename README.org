@@ -130,16 +130,13 @@ The only reason I changed was that I started developing /invisible/-anki, a fork
 
 * Roadmap
 - [ ] Allow hard-wrapping
-- [X] Export pictures and media
-  - Not super-useful as long as we are restricted to clozes
-- [ ] Define some expressions for a traditional front-back note-type instead of cloze-deletion.
-  - [ ] A parameter for =#+begin_flashcard=.  Then interpret the last paragraph as the back side.
-  - [ ] A single-column or single-row 2-cell table.
-    - Then no need for =#+begin_flashcard= and no need to add a blank line in between the fields.
+- [ ] Fix picture/media export
+- Define some expressions for a traditional front-back note-type (instead of cloze-deletion)
+  - [ ] As a parameter for =#+begin_flashcard= -- interpret the last paragraph as the back side.
+  - [ ] As a single-column or single-row 2-cell table.
+    - No need for =#+begin_flashcard= and no need to add a blank line in between the fields.
     - [ ] Extend this so that if you have many rows, you can flag the whole table as a table of flashcards where each row is one flashcard.
       - But that's mainly useful for vocabulary-type stuff, since not much text fits in one table row.
-- [ ] Instruct the user on how to make Anki open emacsclient when they click a =file://= link.
-- [ ] For myself, I'd like a programmable way to include any extra field, since I would use that to include the URL to my web-published version of the same source file.  Then I could visit that webpage while reviewing on the phone.
 
 * Thanks
 Thanks a lot to @louietan who wrote https://github.com/louietan/anki-editor.  I could rely on its AnkiConnect-interfacing code, which lowered the barrier for me to get started.
