@@ -95,7 +95,7 @@ Since people avoid the underline on computer screens, it's free real estate to l
 
 and the corresponding page on [my website](https://edstrom.dev/sJt8/replacing-guilt#XjWh):
 
-![Example in web browser, of cloze text inside a box](box-example-source.png)
+![Example in web browser, of cloze text inside a box](box-example-web.png)
 
 See, no mistaking them for hyperlinks now.  To recreate this appearance, add the following to your initfiles.
 
