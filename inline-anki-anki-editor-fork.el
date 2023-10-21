@@ -171,6 +171,9 @@ The result is the path to the newly stored media file."
 
 ;;; Org Export Backend
 
+(defcustom anki-editor-use-math-jax nil
+  "Use Anki's built in MathJax support instead of LaTeX.")
+
 (defconst inline-anki--ox-anki-html-backend
   (if inline-anki-use-math-jax
       (org-export-create-backend
@@ -259,6 +262,7 @@ CONTENTS is nil.  INFO is a plist holding contextual information."
         (replace-regexp-in-string "}}" "} } " code)
       code)))
 
+;; For use during html export
 (defun inline-anki--ox-html-link (oldfun link desc info)
   "When LINK is a link to local file, transcodes it to html and stores the target file to Anki, otherwise calls OLDFUN for help.
 The implementation is borrowed and simplified from ox-html."

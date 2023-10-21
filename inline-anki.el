@@ -1,8 +1,8 @@
 ;;; inline-anki.el --- Embed implicit flashcards in flowing text -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2023 Martin Edström <meedstrom91@gmail.com>
-;;
-;; Description: One-liner flashcards
+
+;; Description: Embed implicit flashcards in flowing text
 ;; Author: Martin Edström
 ;; Version: 0.1.1-pre
 ;; Created: 2023-09-19
@@ -28,7 +28,7 @@
 
 ;; Embed implicit flashcards in flowing text.
 ;;
-;; Read more at https://github.com/meedstrom/inline-anki
+;; Read more in the Info manual or https://github.com/meedstrom/inline-anki
 ;;
 ;; Requirements:
 ;; - curl
@@ -188,8 +188,8 @@ visible as in the original text."
     (insert " ")
     (goto-char (point-min))
     ;; newlines pls
-    (while (search-forward "\n" nil t)
-      (replace-match "<br>"))
+    ;; (while (search-forward "\n" nil t)
+    ;; (replace-match "<br>"))
     (let ((n 0))
       (goto-char (point-min))
       (while (re-search-forward org-emph-re nil t)
@@ -219,7 +219,12 @@ value of -1), create it."
       (push this-line inline-anki--known-flashcard-places)))
 
   (if-let* ((text (buffer-substring field-beg field-end))
-            (clozed (inline-anki-convert-implicit-clozes text)))
+            (clozed (inline-anki-convert-implicit-clozes text))
+            (html (org-export-string-as
+                   clozed
+                   inline-anki--ox-anki-html-backend
+                   t
+                   '(:with-toc nil))))
       (prog1 t
         (funcall
          (if (= -1 note-id)
@@ -234,7 +239,7 @@ value of -1), create it."
                                    (mapcar #'substring-no-properties
                                            (org-get-tags)))))
                ;; Drop text into the note's first field
-               (cons 'fields `((,(car inline-anki-cloze-note-fields) . ,clozed)
+               (cons 'fields `((,(car inline-anki-cloze-note-fields) . ,html)
                                ;; TODO: let user add any cons cells here to eval
                                ("Source" . ,(concat "<a href=\"file://" buffer-file-name "\">" buffer-file-name "</a>"))))
                (cons 'suspend-p (when (save-excursion
@@ -330,7 +335,12 @@ need to pass it."
          (org-mode)))
   (unless (file-writable-p buffer-file-name)
     (user-error "No write permissions, cancelling: %s" buffer-file-name))
-  (let ((pushed (inline-anki-push-notes-in-buffer-1)))
+  (let (pushed)
+    (unwind-protect
+        (progn
+          (advice-add 'org-html-link :around #'inline-anki--ox-html-link)
+          (setq pushed (inline-anki-push-notes-in-buffer-1)))
+      (advice-remove 'org-html-link #'inline-anki--ox-html-link))
     (if called-interactively
         (message "Pushed %d notes!" pushed)
       pushed)))
