@@ -9,17 +9,17 @@ I don't want to awkwardly append flashcards to the end of an Org section as a ki
 
 
 
-# Demonstration
+## Demonstration
 
 We provide four ways to express flashcards.
 
 
-## Way 1: As list items
+### Way 1: As list items
 
 Here are five Anki cloze notes (totalling nine cloze deletions), expressed in just five list items:
 
 
--   @^{1693000409} 🇫🇷 <ins>chien</ins> 🇬🇧 <ins>dog</ins>
+-   @<sup>1693000409</sup> 🇫🇷 <ins>chien</ins> 🇬🇧 <ins>dog</ins>
 -   @<sup>1693000402</sup> 🇫🇷 <ins>maison</ins>  🇬🇧 <ins>house</ins>
 -   @<sup>1693000403</sup> 🇫🇷 <ins>reunion</ins>  🇬🇧 <ins>meeting</ins>
 -   @<sup>1690300404</sup> 🇫🇷 <ins>legerdemain</ins>  🇬🇧 <ins>sleight-of-hand</ins>
@@ -38,7 +38,7 @@ The starting @<sup>number</sup> uniquely identifies the note.  Think of the @ gl
 As you've guessed, the underlined parts define cloze deletions.
 
 
-## Way 2: As running paragraphs
+### Way 2: As running paragraphs
 
 The following two paragraphs express two Anki cloze notes (totalling four cloze deletions).
 
@@ -48,7 +48,7 @@ The following two paragraphs express two Anki cloze notes (totalling four cloze 
 
 Note I omitted the @ glyph.  You can do that on line endings.
 
-## Way 3: As list items, with trailing ID
+### Way 3: As list items, with trailing ID
 
 I find it more aesthetic to put the Anki note ID at the end of a list item, when that list item is a member of a longer list of non-flashcard things.
 
@@ -62,7 +62,7 @@ This list expresses, among other things, three Anki cloze notes:
 >         -   If the multiverse is real, I desire to <ins>believe the multiverse is real</ins>, and if the multiverse is not real, I desire to believe the multiverse is not real.  Let me not become attached to beliefs I may not want. (application of the <ins>Litany of Tarski</ins>)<sup>1695193247518</sup>
 
 
-## Way 4: As structure templates
+### Way 4: As structure templates
 
 The block below expresses a single Anki cloze note (totalling three cloze deletions).
 
@@ -78,21 +78,20 @@ If you're reading this in a web browser, note that this is what it'll look like 
     5. Let me not become attached to beliefs I may not want.
     #+end_flashcard
 
-
-# Set-up
+## Set-up
 
 For set-up, please see [the user manual](doc/inline-anki.md) (also available as Info manual after installation, type `C-h i d m inline-anki`).
 
 
-# Why underlines?
+## Why underlines?
 
-Have you ever used underlines, other than as a novelty?
+Underlines are rare on the web for a reason: you easily mistake them for hyperlinks, especially if you're colorblind.
 
-They're rare on the web for a reason: you easily mistake them for hyperlinks, especially if you're colorblind.
+They're not even permitted in Markdown!
 
 Think of them as the handwriting equivalent of bold text.  They belong on paper, not on a computer screen.
 
-Which makes them a natural choice for inline-anki.  Since nobody should be using them, it's free real estate.
+Which makes them an easy choice for inline-anki.  Since nobody should be using them, it's free real estate.
 
 "But you break your own advice!"  Hold your horses, I'm building up to it.  The upside of underline is we get full control of how a cloze deletion should look!  Here's how it looks in my Emacs:
 
@@ -120,14 +119,12 @@ Org exports underlines to HTML as `<ins>`, so you can control how it ends up loo
 
 Mind you, none of this bars you from using the underline in general.  A paragraph needs a magic string like `@anki` to be parsed as a flashcard in the first place, without which underlines have no special meaning.
 
-In fact, I started out using **bold**, not underline!  Works fine.
+In fact, I started out using **bold**, not underline!  No problems.
 
-The only reason I changed was that I started developing *invisible*-anki, a fork that eliminates the note IDs altogether.  With the note IDs gone, it must reserve an emphasis marker that always means cloze.  I'm early-adopting that emphasis marker.
+The reason I changed was the idea of "*invisible*-anki", a fork of this project that eliminates the note IDs altogether.  With the note IDs gone, it must reserve an emphasis marker that always means cloze.  I'm early-adopting that emphasis marker.
 
 
-<a id="org957e3ba"></a>
-
-# Roadmap
+## Roadmap
 
 -   [ ] Allow hard-wrapping
 -   [ ] Fix picture/media export
@@ -141,7 +138,7 @@ The only reason I changed was that I started developing *invisible*-anki, a fork
 
 <a id="org7d5eb0b"></a>
 
-# Thanks
+## Thanks
 
 Thanks a lot to @louietan who wrote <https://github.com/louietan/anki-editor>.  I could rely on its AnkiConnect-interfacing code, which lowered the barrier for me to get started.
 
