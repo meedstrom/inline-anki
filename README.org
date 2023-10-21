@@ -12,13 +12,13 @@ We provide four ways to express flashcards.
 ** Way 1: As list items
 Here are five Anki cloze notes (totalling nine cloze deletions), expressed in just five list items:
 
-#+begin_quote
+#+begin_html
 - @^{1693000409} 🇫🇷 <ins>chien</ins>  🇬🇧 _dog_
 - @^{1693000402} 🇫🇷 <ins>maison</ins>  🇬🇧 _house_
 - @^{1693000403} 🇫🇷 _reunion_  🇬🇧 _meeting_
 - @^{1690300404} 🇫🇷 _legerdemain_  🇬🇧 _sleight-of-hand_
 - @^{1690003421} DRY is short for _Don't Repeat Yourself_
-#+end_quote
+#+end_html
 
 No hidden property drawers or anything.  The source Org syntax is five lines too:
 
