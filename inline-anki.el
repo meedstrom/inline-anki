@@ -33,7 +33,7 @@
 ;; Requirements:
 ;; - curl
 ;; - Anki with AnkiConnect add-on
-;; - An Unix-like system
+;; - A Unix-like system (Linux, MacOS, WSL, BSD)
 ;;
 ;; Recommended initfile snippet:
 ;;
@@ -83,19 +83,19 @@ configure `org-use-tag-inheritance' instead."
   (rx bol (*? space) (regexp inline-anki-rx:list-bullet) (*? space) "@anki "))
 
 (defconst inline-anki-rx:item-start
-  (rx bol (*? space) (regexp inline-anki-rx:list-bullet) (*? space) "@^{" (group (= 13 digit)) "}"))
+  (rx bol (*? space) (?? "# ") (*? space) (regexp inline-anki-rx:list-bullet) (*? space) "@^{" (group (= 13 digit)) "}"))
 
 (defconst inline-anki-rx:eol:new
   (rx (or "@anki" "^{anki}") (*? space) eol))
 
 (defconst inline-anki-rx:eol
-  (rx (? "@") "^{" (group (= 13 digit)) "}" (*? space) eol) )
+  (rx bol (?? "@") "^{" (group (= 13 digit)) "}" (*? space) eol))
 
 (defconst inline-anki-rx:struct:new
   (rx bol (*? space) "#+begin_flashcard" (*? space) eol))
 
 (defconst inline-anki-rx:struct
-  (rx bol (*? space) "#+begin_flashcard " (group (= 13 digit)) (or eol (not digit))))
+  (rx bol (*? space) (?? "# ") (*? space) "#+begin_flashcard " (group (= 13 digit)) (or eol (not digit))))
 
 (defvar inline-anki--file-list nil
   "Internal use only.")
@@ -134,7 +134,7 @@ configure `org-use-tag-inheritance' instead."
 ;; This does its own regexp searches because it's used as a callback with no
 ;; context.  But it'd be possible to pass another argument to
 ;; `inline-anki--create-note' that could let it choose one of 3 different
-;; callbacks.  But tiny diff to code complexity in the end.
+;; callbacks.  Anyway, tiny diff to code complexity in the end.
 (defun inline-anki--dangerously-write-id (id)
   "Assign ID to the unlabeled flashcard at point."
   (unless id
@@ -175,14 +175,16 @@ visible as in the original text."
 
 (defun inline-anki-convert-implicit-clozes (text)
   "Return TEXT with emphasis replaced by Anki {{c::}} syntax."
-  (require 'org)
-  (cl-assert (member inline-anki-emphasis-type (map-keys org-emphasis-alist)))
   (with-temp-buffer
     (insert " ") ;; workaround bug where the regexp misses emph @ BoL
     (insert (substring-no-properties text))
     (insert " ")
     (goto-char (point-min))
+    ;; newlines pls
+    (while (search-forward "\n" nil t)
+      (replace-match "<br>"))
     (let ((n 0))
+      (goto-char (point-min))
       (while (re-search-forward org-emph-re nil t)
         (when (equal (match-string 3) inline-anki-emphasis-type)
           (let ((truth (match-string 4)))
@@ -191,14 +193,14 @@ visible as in the original text."
                                    "::"
                                    truth
                                    "::"
-                                   (inline-anki-dots-for-letters text)
+                                   (inline-anki-dots-for-letters truth)
                                    "}}")
                            nil nil nil 2))))
       (if (= n 0)
           nil ;; Nil signals that no clozes found
         (string-trim (buffer-string))))))
 
-(cl-defun inline-anki-push (&key field-beg field-end note-id)
+(cl-defun inline-anki-push-note (&key field-beg field-end note-id)
   "Push a flashcard to Anki, identified by NOTE-ID.
 Use the buffer substring delimited by FIELD-BEG and FIELD-END.
 
@@ -209,13 +211,14 @@ value of -1), create it."
         (error "Two magic strings on same line: %d" this-line)
       (push this-line inline-anki--known-flashcard-places)))
 
-  (if-let* ((text (buffer-substring-no-properties field-beg field-end))
+  (if-let* ((text (buffer-substring field-beg field-end))
             (clozed (inline-anki-convert-implicit-clozes text)))
       (prog1 t
         (funcall
          (if (= -1 note-id)
              #'inline-anki--create-note
            #'inline-anki--update-note)
+
          (list (cons 'deck inline-anki-deck)
                (cons 'note-type inline-anki-cloze-note-type)
                (cons 'note-id note-id)
@@ -224,34 +227,41 @@ value of -1), create it."
                                    (mapcar #'substring-no-properties
                                            (org-get-tags)))))
                ;; Drop text into the note's first field
-               (cons 'fields (list (cons (car inline-anki-cloze-note-fields)
-                                         clozed))))))
+               (cons 'fields `((,(car inline-anki-cloze-note-fields) . ,clozed)
+                               ;; TODO: let user add any cons cells here to eval
+                               ("Source" . ,(concat "<a href=\"file://" buffer-file-name "\">" buffer-file-name "</a>"))))
+               (cons 'suspend-p (when (save-excursion
+                                        (goto-char (line-beginning-position))
+                                        (looking-at-p "[[:space:]]*?# "))
+                                  t)))))
     (message "No implicit clozes found, skipping:  %s" text)
     nil))
 
 (defun inline-anki-push-notes-in-buffer-1 ()
   "Push notes in buffer, and return the count of pushes made."
+  (require 'org)
+  (cl-assert (member inline-anki-emphasis-type (map-keys org-emphasis-alist)))
   ;; NOTE: Scan for new flashcards last, otherwise you waste compute
   ;; cycles because you submit the new ones twice
   (save-mark-and-excursion
     (+
      (cl-loop initially (goto-char (point-min))
               while (re-search-forward inline-anki-rx:item-start nil t)
-              count (inline-anki-push
+              count (inline-anki-push-note
                      :field-beg (point)
                      :field-end (line-end-position)
                      :note-id (string-to-number (match-string 1))))
 
      (cl-loop initially (goto-char (point-min))
               while (re-search-forward inline-anki-rx:item-start:new nil t)
-              count (inline-anki-push
+              count (inline-anki-push-note
                      :field-beg (point)
                      :field-end (line-end-position)
                      :note-id -1))
 
      (cl-loop initially (goto-char (point-min))
               while (re-search-forward inline-anki-rx:eol nil t)
-              count (inline-anki-push
+              count (inline-anki-push-note
                      :field-beg (save-excursion
                                   (save-match-data
                                     (goto-char (line-beginning-position))
@@ -265,7 +275,7 @@ value of -1), create it."
 
      (cl-loop initially (goto-char (point-min))
               while (re-search-forward inline-anki-rx:eol:new nil t)
-              count (inline-anki-push
+              count (inline-anki-push-note
                      :field-beg (save-excursion
                                   (save-match-data
                                     (goto-char (line-beginning-position))
@@ -279,7 +289,7 @@ value of -1), create it."
 
      (cl-loop initially (goto-char (point-min))
               while (re-search-forward inline-anki-rx:struct nil t)
-              count (inline-anki-push
+              count (inline-anki-push-note
                      :field-beg (1+ (line-end-position))
                      :field-end (save-excursion
                                   (save-match-data
@@ -289,7 +299,7 @@ value of -1), create it."
 
      (cl-loop initially (goto-char (point-min))
               while (re-search-forward inline-anki-rx:struct:new nil t)
-              count (inline-anki-push
+              count (inline-anki-push-note
                      :field-beg (1+ (line-end-position))
                      :field-end (save-excursion
                                   (save-match-data
@@ -303,36 +313,39 @@ value of -1), create it."
 Argument CALLED-INTERACTIVELY is automatically set; there is no
 need to pass it."
   (interactive "p")
+  (setq inline-anki--known-flashcard-places nil)
   (and called-interactively
        (string-empty-p (shell-command-to-string "ps -e | grep anki"))
        (message "Anki doesn't seem to be running"))
-  (setq inline-anki--known-flashcard-places nil)
   (and inline-anki-use-tags
        (not (derived-mode-p 'org-mode))
        (cl-letf ((org-mode-hook nil))
          (org-mode)))
+  (unless (file-writable-p buffer-file-name)
+    (user-error "No write permissions, cancelling: %s" buffer-file-name))
   (let ((pushed (inline-anki-push-notes-in-buffer-1)))
     (if called-interactively
         (message "Pushed %d notes!" pushed)
       pushed)))
 
 (defun inline-anki-files-except-gitignored ()
-  "List all Org files under DIR, except gitignored files."
+  "List all Org files under current dir, except gitignored files."
   (cl-loop for file in
            (string-split (shell-command-to-string
                           "git ls-files -zoc --exclude-standard")
                          " ")
            when (string-suffix-p ".org" file)
-           collect file))
+           collect (expand-file-name file)))
 
 (defun inline-anki-git-repo-p (directory)
+  "Non-nil if DIRECTORY is a Git repository."
   (and (file-directory-p directory)
        (or (file-regular-p (expand-file-name ".git" directory))
            (file-directory-p (expand-file-name ".git" directory)))))
 
 ;;;###autoload
 (defun inline-anki-push-notes-in-directory ()
-  "Push notes from every file under the current directory tree."
+  "Push notes from every file in current dir and all subdirs."
   (interactive)
   (require 'asyncloop)
   (if (string-empty-p (shell-command-to-string "ps -e | grep anki"))
@@ -341,10 +354,11 @@ need to pass it."
       (list
        (lambda (_)
          (setq inline-anki--file-list
-               ;; Ideally we'd obey an `inline-anki-must-heed-gitignore' that makes it fail
-               ;; when git isn't installed, but the top-level dir may not even
-               ;; be a git repo so we'd also have to traverse the directory tree
-               ;; using either git ls-files or regular ls, so I gave up.
+               ;; Ideally we'd obey an `inline-anki-must-heed-gitignore' that
+               ;; causes failure when git isn't installed, but the top dir may
+               ;; not even be a git repo so we'd also have to traverse the
+               ;; directory tree and maybe call git ls-files for each dir, maybe
+               ;; not, so I gave up.
                (if (and (inline-anki-git-repo-p ".")
                         (executable-find "git"))
                    (inline-anki-files-except-gitignored)
@@ -363,21 +377,30 @@ need to pass it."
 
        (defun inline-anki--scan-next-file (loop)
          (let* ((path (pop inline-anki--file-list))
-                (visiting (find-buffer-visiting path)))
-           (if visiting
-               (with-current-buffer visiting
-                 (if (buffer-modified-p)
-                     (message
-                      (asyncloop-log loop
-                        "Unsaved changes in file, skipping %s" visiting))
-                   (inline-anki-push-notes-in-buffer)))
-             ;; Skip org-mode for speed.  Also tried `find-file-literally' in
-             ;; the past; bad idea.
-             (cl-letf (((symbol-function #'org-mode) #'fundamental-mode))
-               (find-file path))
-             (when (= 0 (inline-anki-push-notes-in-buffer))
-               (cl-assert (not (buffer-modified-p)))
-               (kill-buffer)))
+                (visiting (find-buffer-visiting path))
+                (buf nil)
+                (pushed
+                 (if visiting
+                     (with-current-buffer visiting
+                       (if (buffer-modified-p)
+                           (message
+                            (asyncloop-log loop
+                              "Unsaved changes in file, skipping %s" visiting))
+                         (setq buf visiting)
+                         (inline-anki-push-notes-in-buffer)))
+                   ;; Skip org-mode for speed.  Also tried `find-file-literally'
+                   ;; in the past; bad idea.
+                   (with-current-buffer
+                       (cl-letf (((symbol-function #'org-mode) #'ignore))
+                         (find-file-noselect path))
+                     (setq buf (current-buffer))
+                     (inline-anki-push-notes-in-buffer)))))
+           (if (= 0 pushed)
+               (progn
+                 (cl-assert (not (buffer-modified-p buf)))
+                 (kill-buffer buf))
+             (message
+              "Pushed %s notes in %s" pushed buf))
            ;; Eat the file list, one item at a time
            (when inline-anki--file-list
              (push #'inline-anki--scan-next-file (asyncloop-remainder loop)))
@@ -385,8 +408,9 @@ need to pass it."
            (format "%d files to go; was in %s"
                    (length inline-anki--file-list) path))))
 
-      :debug-buffer-name "*inline-anki sync progress*")
-    (display-buffer "*inline-anki sync progress*")))
+      :debug-buffer-name "*inline-anki sync*")
+
+    (display-buffer "*inline-anki sync*")))
 
 (provide 'inline-anki)
 

@@ -84,7 +84,65 @@ If you run into a bug, file an issue and I'm happy to help.
 
 However, I *won't be extending this package*.  No more features.  I'm heading a new direction per my epiphany on https://edstrom.dev/2023-09-22.
 
+* Installation
+
+If you have [[https://github.com/raxod502/straight.el][straight.el]], you can install the package with this initfile snippet:
+#+begin_src elisp
+(use-package inline-anki
+  :straight (inline-anki :type git :host github :repo "meedstrom/inline-anki"))
+#+end_src
+
+Alternatively with Doom Emacs, this goes in =packages.el=:
+#+begin_src elisp
+(package! inline-anki :recipe (:host github :repo "meedstrom/inline-anki"))
+#+end_src
+
+Another suggested init snippet follows.  It lets you quickly create a =#+begin_flashcard= block at point with ~C-c ,~ (=org-insert-structure-template=).
+
+#+begin_src elisp
+(with-eval-after-load 'org
+  (add-to-list 'org-structure-template-alist '("f" . "flashcard")))
+#+end_src
+
 * Usage
+** To push cards
+
+1. Make sure Anki has the AnkiConnect add-on installed
+2. Make sure you have =curl= installed
+3. Start Anki
+4. From your Org file, type =M-x inline-anki-push-notes-in-buffer RET=
+   - Or push entire directory by typing =M-x inline-anki-push-notes-in-directory RET=
+
+You may like to know that:
+- When you update a note, it overwrites that note in Anki.  *Any edits made inside Anki will be forgotten!*  Anki is only responsible for the review schedule, nothing else.
+
+- If you comment-out a note expression, Anki will suspend all the cards for that note.
+  - If you later uncomment it, Anki will unsuspend them.
+  - Note that you can still follow a workflow of suspending cards during your review sessions.  I actually consider it a psychological bonus that Anki will forget these suspends on the next push, forcing you to revise every bad note before you can push again.
+    - Just remember to look up the suspends inside Anki but edit in the corresponding Org file.
+
+- There's a bit of a gimmick: if a note has 3 cloze fields, and you study it a bit, and later you remove the first cloze field, the second and third field will *inherit the scheduling of the first and second fields*.  So technically, you can have cards that aren't scheduled in full faithfulness to the algorithm, and failure statistics may be referring to a cloze card that you've removed.
+  - Up to you whether to care, but in my opinion, it changes nothing.
+  - No surprise to experienced Anki-users, but the third field's original scheduling will be attached to an empty card.  You can clean up empty cards with the menu option "Check database...".
+
+** Config variables
+
+- =inline-anki-deck=
+  - Default "Default".
+
+- =inline-anki-cloze-note-type=
+  - Default "Cloze".
+
+- =inline-anki-cloze-note-fields=
+  - Default =("Text" "Extra")=.
+
+- =inline-anki-emphasis-type=
+  - Default "_", can be changed to "*", "/" or other things you find in =org-emphasis-alist=.
+
+- =inline-anki-use-tags=
+  - Default =t=.  Controls whether or not to send Org tags to Anki.
+
+* Implementation notes
 ** Permanent limitations
 
 There are *three flaws* which will never go away:
@@ -150,18 +208,19 @@ Have you ever used underlines, other than as a novelty?
 
 They're rare on the web for a reason: you easily mistake them for hyperlinks, especially if you're colorblind.
 
-Think of them as the handwriting equivalent of bold.  They belong on paper, not on a computer screen.
+Think of them as the handwriting equivalent of bold text.  They belong on paper, not on a computer screen.
 
-Which makes them a natural choice for inline-anki.  It's free real estate.  And we get full control of how a cloze deletion should look!
-# With that out of the way, I felt justified taking over the underline as free real estate.
+Which makes them a natural choice for inline-anki.  Since nobody should be using them, it's free real estate.
 
-Here's how it looks in my Emacs:
+"But you break your own advice!"  Hold your horses, I'm building up to it.  The upside of underline is we get full control of how a cloze deletion should look!  Here's how it looks in my Emacs:
 
-and the same page, exported to my website:
 
-https://edstrom.dev/sJt8/replacing-guilt#XjWh
+and the corresponding page on [[https://edstrom.dev/sJt8/replacing-guilt#XjWh][my website]]:
 
-To recreate this appearance, add the following to your initfiles.
+
+
+
+See, no mistaking them for hyperlinks now.  To recreate this appearance, add the following to your initfiles.
 
 #+begin_src elisp
 (defface my-cloze '((t . (:box t))) "Cloze face")
@@ -178,7 +237,7 @@ Org exports underlines to HTML as ~<span class="underline">~, so you can control
 #+begin_src css
 span.underline {
     text-decoration: none;
-    background-color: #ccc;
+    background-color: #bbb;
     padding: 2px;    
 }
 #+end_src
@@ -189,81 +248,30 @@ Mind you, none of this bars you from using the underline in general.  A paragrap
 
 In fact, I started out using *bold*, not underline!  Works fine.
 
-The only reason I changed was that I started developing invisible-anki, a project for eliminating the note IDs altogether.  After the note IDs are gone, we must reserve an emphasis marker for clozes everywhere.  So I'm just early-adopting that emphasis marker.
-
-** To push cards
-
-1. Make sure Anki has the AnkiConnect add-on installed
-2. Make sure you have =curl= installed
-3. Start Anki
-4. From your Org file, type =M-x inline-anki-push-notes-in-buffer RET=
-   - Or push entire directory by typing =M-x inline-anki-push-notes-in-directory RET=
-
-You may like to know that:
-- When you update a note, it overwrites what was previously in that note in Anki.  Any edits made inside Anki will be forgotten.  Anki isn't responsible for anything except the review schedule.
-- There's a bit of a gimmick: if a note has 3 cloze fields, and you study it a bit, and later you remove the first cloze field, the second and third field will *inherit the scheduling of the first and second fields*.  So technically, you can have cards that aren't scheduled in full faithfulness to the algorithm, and failure statistics may be referring to a cloze card that you've removed.
-  - Up to you whether to care, but in my opinion, it changes nothing.
-  - No surprise to experienced Anki-users, but the third field's original scheduling will be attached to an empty card.  You can clean up empty cards with the menu option "Check database...".
-
-** Config variables
-
-- =inline-anki-deck=
-  - Default "Default".
-
-- =inline-anki-cloze-note-type=
-  - Default "Cloze".
-
-- =inline-anki-cloze-note-fields=
-  - Default =("Text" "Extra")=.
-
-- =inline-anki-emphasis-type=
-  - Default "_", can be changed to "*", "/" or other things you find in =org-emphasis-alist=.
-
-- =inline-anki-use-tags=
-  - Default =t=.  Whether or not to send Org tags to Anki.
-
-* Installation
-
-If you have [[https://github.com/raxod502/straight.el][straight.el]], you can install the package with this initfile snippet:
-#+begin_src elisp
-(use-package inline-anki
-  :straight (inline-anki :type git :host github :repo "meedstrom/inline-anki"))
-#+end_src
-
-Alternatively with Doom Emacs, this goes in =packages.el=:
-#+begin_src elisp
-(package! inline-anki :recipe (:host github :repo "meedstrom/inline-anki"))
-#+end_src
-
-Another suggested config line follows.  It lets you quickly create a =#+begin_flashcard= block at point with ~C-c ,~ (=org-insert-structure-template=).  Or with org-tempo, it lets you type =<f= and press TAB for the same effect.
-
-#+begin_src elisp
-(add-to-list 'org-structure-template-alist '("f" . "flashcard"))
-#+end_src
+The only reason I changed was that I started developing /invisible/-anki, a fork that eliminates the note IDs altogether.  With the note IDs gone, it must reserve an emphasis marker that always means cloze.  I'm early-adopting that emphasis marker.
 
 * Warning
 You must not *hard-wrap* your text (e.g. with =fill-paragraph=) if you want Anki to receive the whole flashcard.
 
 * Roadmap
 - [ ] Allow hard-wrapping
-- [ ] Fix newline issues in multiline cards
+- [X] Fix newline issues in multiline cards
 - [ ] Export pictures and media
   - Not super-useful as long as we are restricted to clozes
 - [ ] Define some expressions for a traditional front-back note-type instead of cloze-deletion.
   - [ ] A parameter for =#+begin_flashcard=.  Then interpret the last paragraph within as the back side.
-  - [ ] A single-column or single-row table.
+  - [ ] A single-column or single-row 2-cell table.
     - Then no need for =#+begin_flashcard= and no need to add a blank line in between the fields.
     - [ ] Extend this so that if you have many rows, you can flag the whole table as a table of flashcards where each row is one flashcard.
       - But that's mainly useful for vocabulary-type stuff, since not much text fits in one row.
-- [ ] Make so that commenting-out a flashcard expression also suspends it from review in Anki
-- [ ] Include the file-path as an extra field, so that the user can click the path inside Anki.
-  - [ ] Instruct the user on how to make Anki open emacsclient.
+- [X] Make so that commenting-out a flashcard expression also suspends it from review in Anki
+- [X] Include the file-path as an extra field, so that the user can click the path inside Anki.
+- [ ] Instruct the user on how to make Anki open emacsclient.
 - [ ] For myself, I'd like a programmable way to include any extra field, since I would use that to include the URL to my web-published version of the same source file.  Then I could visit that webpage while reviewing on the phone.
-- [ ] What's DEFINITELY on the roadmap, is a way to omit recording the note ID altogether, and just recognize notes by heuristic.  See my epiphany at https://edstrom.dev/posts/2023-09-22
 
 * Q&A
 - Can I continue using my [org-drill/org-anki/...] cards?
-  - Yes!  They don't conflict because those packages treat Org subtrees as their "data objects", and this package does not.  You can even have an inline-anki card /inside/ an org-anki subtree.
+  - Yes!  They don't conflict because those packages treat whole Org subtrees as their "data objects", and this package does not.  You can even have an inline-anki card /inside/ an org-anki subtree... not that you'd want to.
 
 * Thanks
 Thanks a lot to @louietan who wrote https://github.com/louietan/anki-editor.  I could rely on its AnkiConnect-interfacing code, which lowered the barrier for me to get started.

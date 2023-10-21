@@ -36,28 +36,38 @@
 (defcustom inline-anki-break-consecutive-braces-in-latex
   nil
   "If non-nil, consecutive `}' will be automatically separated by spaces to prevent early-closing of cloze.
-See https://apps.ankiweb.net/docs/manual.html#latex-conflicts.")
+See https://apps.ankiweb.net/docs/manual.html#latex-conflicts."
+  :type 'boolean
+  :group 'inline-anki)
 
 (defcustom inline-anki-protected-tags
   '("marked" "leech")
   "A list of tags that won't be deleted from Anki even though they're absent in Org entries, such as special tags `marked', `leech'."
-  :type '(repeat string))
+  :type '(repeat string)
+  :group 'inline-anki)
 
 (defcustom inline-anki-ignored-org-tags
   (append org-export-select-tags org-export-exclude-tags)
-  "A list of Org tags that are ignored when constructing notes form entries."
-  :type '(repeat string))
+  "A list of Org tags that are ignored when constructing notes from entries."
+  :type '(repeat string)
+  :group 'inline-anki)
 
 (defcustom inline-anki-anki-connect-listening-address
   "127.0.0.1"
-  "The network address AnkiConnect is listening.")
+  "The network address AnkiConnect is listening."
+  :type 'string
+  :group 'inline-anki)
 
 (defcustom inline-anki-anki-connect-listening-port
   "8765"
-  "The port number AnkiConnect is listening.")
+  "The port number AnkiConnect is listening."
+  :type 'string
+  :group 'inline-anki)
 
 (defcustom inline-anki-use-math-jax nil
-  "Use Anki's built in MathJax support instead of LaTeX.")
+  "Use Anki's built in MathJax support instead of LaTeX."
+  :type 'boolean
+  :group 'inline-anki)
 
 ;;; AnkiConnect
 
@@ -329,8 +339,8 @@ The implementation is borrowed and simplified from ox-html."
 
 (defun inline-anki--update-note (note)
   "Request AnkiConnect for updating fields and tags of NOTE."
-
-  (let ((queue (inline-anki--anki-connect-invoke-queue)))
+  (let ((suspend-p (alist-get 'suspend-p note))
+        (queue (inline-anki--anki-connect-invoke-queue)))
     (funcall queue
              'updateNoteFields
              `((note . ,(inline-anki--anki-connect-map-note note))))
@@ -360,6 +370,21 @@ The implementation is borrowed and simplified from ox-html."
                                           (tags . ,(string-join tags-to-remove " ")))))
 
                  (funcall tag-queue))))
+
+    (funcall queue
+             'findCards
+             `((query . ,(concat "nid:" (number-to-string
+                                         (alist-get 'note-id note)))))
+             (lambda (cards)
+               (let ((card-queue (inline-anki--anki-connect-invoke-queue)))
+                 (if suspend-p
+                     (funcall card-queue
+                              'suspend
+                              `((cards . ,cards)))
+                   (funcall card-queue
+                            'unsuspend
+                            `((cards . ,cards))))
+                 (funcall card-queue))))
 
     (funcall queue)))
 
