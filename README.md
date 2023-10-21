@@ -1,0 +1,167 @@
+
+# Table of Contents
+
+1.  [Demonstration](#org52ddec0)
+    1.  [Way 1: As list items](#orgbed1cee)
+    2.  [Way 2: As running paragraphs](#org09f6ef6)
+    3.  [Way 3: As list items, with trailing ID](#org06af0eb)
+    4.  [Way 4: As structure templates](#org80f0c97)
+2.  [Set-up](#org84cd4af)
+3.  [Why underlines?](#orgfca8f51)
+4.  [Roadmap](#org957e3ba)
+5.  [Thanks](#org7d5eb0b)
+
+For nearly a decade I've daydreamed of writing [SRS](https://en.wikipedia.org/wiki/Spaced_repetition#Software) flashcards in a way that flows together with longer "body text" in any of my files, so that the texts serve as a [single-source-of-truth](https://en.wikipedia.org/wiki/Single_source_of_truth).
+
+The other SRS programs in the Emacs ecosystem ([org-fc](https://github.com/l3kn/org-fc), [org-drill](https://gitlab.com/phillord/org-drill), [org-anki](https://github.com/eyeinsky/org-anki), [pamparam](https://github.com/abo-abo/pamparam), [anki-editor](https://github.com/louietan/anki-editor)) all share a fatal flaw: **they separate the flashcards from normal text** by way of shoving them under a dedicated headline.
+
+I don't want to awkwardly append flashcards to the end of an Org section as a kind of paraphrasis or summary of that section, but to let the flashcards serve *as* paragraphs in their own right!
+
+
+<a id="org52ddec0"></a>
+
+# Demonstration
+
+We provide four ways to express flashcards.
+
+
+<a id="orgbed1cee"></a>
+
+## Way 1: As list items
+
+Here are five Anki cloze notes (totalling nine cloze deletions), expressed in just five list items:
+
+
+
+-   @<sup>1693000409</sup> 🇫🇷 <ins>chien</ins>  🇬🇧 <span class="underline">dog</span>
+-   @<sup>1693000402</sup> 🇫🇷 <ins>maison</ins>  🇬🇧 <span class="underline">house</span>
+-   @<sup>1693000403</sup> 🇫🇷 <span class="underline">reunion</span>  🇬🇧 <span class="underline">meeting</span>
+-   @<sup>1690300404</sup> 🇫🇷 <span class="underline">legerdemain</span>  🇬🇧 <span class="underline">sleight-of-hand</span>
+-   @<sup>1690003421</sup> DRY is short for <span class="underline">Don't Repeat Yourself</span>
+
+No hidden property drawers or anything.  The source Org syntax is five lines too:
+
+    - @^{1693000409} 🇫🇷 _chien_  🇬🇧 _dog_
+    - @^{1693000402} 🇫🇷 _maison_  🇬🇧 _house_
+    - @^{1693000403} 🇫🇷 _reunion_  🇬🇧 _meeting_
+    - @^{1690300404} 🇫🇷 _legerdemain_  🇬🇧 _sleight-of-hand_
+    - @^{1690003421} DRY is short for _Don't Repeat Yourself_
+
+The starting @<sup>number</sup> uniquely identifies the note.  Think of the @ glyph as encircling an "a" for "anki"!
+
+As you've guessed, the underlined parts define cloze deletions.
+
+
+## Way 2: As running paragraphs
+
+The following two paragraphs express two Anki cloze notes (totalling four cloze deletions).
+
+> In English, we have the word-pair truth and lying.  We also have the word-pair <span class="underline">rational</span> and rationalization: it's as if lying was called <span class="underline">truthization</span>.<sup>16900030021</sup>
+> 
+> A gotcha for inline-anki: you must not <span class="underline">hard-wrap</span> paragraphs.  If you do, inline-anki will only grab <span class="underline">the last line</span> of the paragraph.<sup>1690986753420</sup>
+
+Note I omitted the @ glyph.  You can do that on line endings.
+
+## Way 3: As list items, with trailing ID
+
+I find it more aesthetic to put the Anki note ID at the end of a list item, when that list item is a member of a longer list of non-flashcard things.
+
+This list expresses, among other things, three Anki cloze notes:
+
+> -   "The third virtue is lightness. Let the winds of evidence blow you about as though you are a leaf, with no direction of your own.  Beware lest you fight a rearguard retreat against the evidence, grudgingly conceding each foot of ground only when forced, feeling cheated.  Surrender to the truth as quickly as you can.  Do this the instant you realize what you are resisting, the instant you can see from which quarter the winds of evidence are blowing against you.  Be faithless to your cause and betray it to a stronger enemy."
+> -   Do not think that fairness to all sides means balancing yourself evenly between positions; truth is not handed out <span class="underline">in equal portions</span> before the start of a debate.<sup>1695193247566</sup>
+> -   If you are equally good at explaining <span class="underline">any outcome</span>, you have zero knowledge.<sup>1695193247617</sup>
+> -   That which can be destroyed by the truth should be.  (P. C. Hodgell)
+>     -   Corollary: That which the truth nourishes should thrive.
+>         -   If the multiverse is real, I desire to <span class="underline">believe the multiverse is real</span>, and if the multiverse is not real, I desire to believe the multiverse is not real.  Let me not become attached to beliefs I may not want. (application of the <span class="underline">Litany of Tarski</span>)<sup>1695193247518</sup>
+
+
+<a id="org80f0c97"></a>
+
+## Way 4: As structure templates
+
+The block below expresses a single Anki cloze note (totalling three cloze deletions).
+
+If you're reading this in a web browser, note that this is what it'll look like in an org-mode buffer.  I had to show it this way because upon export to the web, the block boundaries disappear and you'd never realize there was anything odd about these paragraphs.
+
+    #+begin_flashcard 165193247510
+    The _Litany of Tarski_ goes:
+    
+    1. If the box contains a diamond,
+    2. _I desire to believe that the box contains a diamond_;
+    3. _If the box does not contain a diamond_,
+    4. I desire to believe that the box does not contain a diamond;
+    5. Let me not become attached to beliefs I may not want.
+    #+end_flashcard
+
+
+<a id="org84cd4af"></a>
+
+# Set-up
+
+For set-up, please see [the user manual](doc/inline-anki.md) (also available as Info manual after installation, type `C-h i d m inline-anki`).
+
+
+<a id="orgfca8f51"></a>
+
+# Why underlines?
+
+Have you ever used underlines, other than as a novelty?
+
+They're rare on the web for a reason: you easily mistake them for hyperlinks, especially if you're colorblind.
+
+Think of them as the handwriting equivalent of bold text.  They belong on paper, not on a computer screen.
+
+Which makes them a natural choice for inline-anki.  Since nobody should be using them, it's free real estate.
+
+"But you break your own advice!"  Hold your horses, I'm building up to it.  The upside of underline is we get full control of how a cloze deletion should look!  Here's how it looks in my Emacs:
+
+and the corresponding page on [my website](https://edstrom.dev/sJt8/replacing-guilt#XjWh):
+
+See, no mistaking them for hyperlinks now.  To recreate this appearance, add the following to your initfiles.
+
+    (defface my-cloze '((t . (:box t))) "Cloze face")
+    (setq org-emphasis-alist '(("*" bold)
+                               ("/" italic)
+                               ("_" my-cloze) ;; new
+                               ("=" org-verbatim verbatim)
+                               ("~" org-code verbatim)
+                               ("+" (:strike-through t))))
+
+Org exports underlines to HTML as `<span class="underline">`, so you can control how it ends up looking on your blog with a CSS rule such as the following.
+
+    span.underline {
+        text-decoration: none;
+        background-color: #bbb;
+        padding: 2px;    
+    }
+
+---
+
+Mind you, none of this bars you from using the underline in general.  A paragraph needs a magic string like `@anki` to be parsed as a flashcard in the first place, without which underlines have no special meaning.
+
+In fact, I started out using **bold**, not underline!  Works fine.
+
+The only reason I changed was that I started developing *invisible*-anki, a fork that eliminates the note IDs altogether.  With the note IDs gone, it must reserve an emphasis marker that always means cloze.  I'm early-adopting that emphasis marker.
+
+
+<a id="org957e3ba"></a>
+
+# Roadmap
+
+-   [ ] Allow hard-wrapping
+-   [ ] Fix picture/media export
+-   Define some expressions for a traditional front-back note-type (instead of cloze-deletion)
+    -   [ ] As a parameter for `#+begin_flashcard` &#x2013; interpret the last paragraph as the back side.
+    -   [ ] As a single-column or single-row 2-cell table.
+        -   No need for `#+begin_flashcard` and no need to add a blank line in between the fields.
+        -   [ ] Extend this so that if you have many rows, you can flag the whole table as a table of flashcards where each row is one flashcard.
+            -   But that's mainly useful for vocabulary-type stuff, since not much text fits in one table row.
+
+
+<a id="org7d5eb0b"></a>
+
+# Thanks
+
+Thanks a lot to @louietan who wrote <https://github.com/louietan/anki-editor>.  I could rely on its AnkiConnect-interfacing code, which lowered the barrier for me to get started.
+
