@@ -28,7 +28,7 @@
 
 ;; Embed implicit flashcards in flowing text.
 ;;
-;; More info at https://github.com/meedstrom/inline-anki
+;; Read more at https://github.com/meedstrom/inline-anki
 ;;
 ;; Requirements:
 ;; - curl
@@ -47,6 +47,7 @@
   :group 'org)
 
 (require 'inline-anki-anki-editor-fork)
+(require 'seq)
 (require 'map)
 
 (defcustom inline-anki-deck "Default"
@@ -75,6 +76,12 @@ you have hundreds of files.
 If you merely want to exclude parent tags, leave this at t and
 configure `org-use-tag-inheritance' instead."
   :type 'boolean)
+
+(defcustom inline-anki-ignore
+  '("/logseq/version-files/"
+    "/logseq/bak/")
+  "List of substrings that expel a file-path from being visited."
+  :type '(repeat string))
 
 (defconst inline-anki-rx:list-bullet
   (rx (or (any "-+*") (seq (*? digit) (any ").") " "))))
@@ -368,8 +375,8 @@ need to pass it."
          (setq inline-anki--file-list
                (cl-loop
                 for path in inline-anki--file-list
-                unless (or (string-search "logseq/version-files/" path)
-                           (string-search "logseq/bak/" path))
+                unless (seq-find `(lambda (ign) (string-search ign ,path))
+                                 inline-anki-ignore)
                 collect path))
          (format "Will push from %d files in %s"
                  (length inline-anki--file-list)
