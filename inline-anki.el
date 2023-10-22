@@ -4,7 +4,7 @@
 
 ;; Description: Embed implicit flashcards in flowing text
 ;; Author: Martin Edström
-;; Version: 0.1.1-pre
+;; Version: 0.2.0
 ;; Created: 2023-09-19
 ;; Package-Requires: ((emacs "28") (asyncloop "0.3.2") (pcre2el "1.12") (request "0.3.0") (dash "2.12.0"))
 ;; URL: https://github.com/meedstrom/inline-anki
@@ -285,7 +285,7 @@ value of -1), create it."
           (save-match-data
             (funcall input)))
       (if (null input)
-        ""
+          ""
         (if (listp input)
             (eval input t)
           "")))))
