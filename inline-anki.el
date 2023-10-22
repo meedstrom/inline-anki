@@ -1,4 +1,4 @@
-;;; inline-anki.el --- Embed implicit flashcards in flowing text -*- lexical-binding: t; -*-
+;;; inline-anki.el --- Embed implicit flashcards in flowing text -*- lexical-binding: t; no-byte-compile: t; -*-
 
 ;; Copyright (C) 2023 Martin Edström <meedstrom91@gmail.com>
 
