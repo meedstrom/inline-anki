@@ -1,4 +1,4 @@
-;;; inline-anki.el --- Embed implicit flashcards in flowing text -*- lexical-binding: t; no-byte-compile: t; -*-
+;;; inline-anki.el --- Embed implicit flashcards in flowing text -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2023 Martin Edström <meedstrom91@gmail.com>
 
@@ -397,6 +397,12 @@ need to pass it."
         (message "Pushed %d notes!" pushed)
       pushed)))
 
+(defun inline-anki--git-repo-p (directory)
+  "Non-nil if DIRECTORY is a Git repository."
+  (and (file-directory-p directory)
+       (or (file-regular-p (expand-file-name ".git" directory))
+           (file-directory-p (expand-file-name ".git" directory)))))
+
 (defun inline-anki--list-files-except-gitignored ()
   "List all Org files under current dir, except gitignored files."
   (cl-loop for file in
@@ -406,77 +412,73 @@ need to pass it."
            when (string-suffix-p ".org" file)
            collect (expand-file-name file)))
 
-(defun inline-anki--git-repo-p (directory)
-  "Non-nil if DIRECTORY is a Git repository."
-  (and (file-directory-p directory)
-       (or (file-regular-p (expand-file-name ".git" directory))
-           (file-directory-p (expand-file-name ".git" directory)))))
+(defun inline-anki--prep-scanner (_)
+  (setq inline-anki--file-list
+        ;; Ideally we'd obey an `inline-anki-must-heed-gitignore' that
+        ;; causes failure when git isn't installed, and check if subdirs
+        ;; are git repos even if the top dir isn't.  Buuut
+        ;; `inline-anki-ignore' was a simpler solution.
+        (if (and (inline-anki--git-repo-p ".")
+                 (executable-find "git"))
+            (inline-anki--list-files-except-gitignored)
+          (directory-files-recursively
+           default-directory "\\.org$" nil t)))
+  ;; Filter out ignores
+  (setq inline-anki--file-list
+        (cl-loop
+         for path in inline-anki--file-list
+         unless (seq-find `(lambda (ign) (string-search ign ,path))
+                          inline-anki-ignore)
+         collect path))
+  (format "Will push from %d files in %s"
+          (length inline-anki--file-list)
+          default-directory))
+
+(defun inline-anki--next (loop)
+  (let* ((path (pop inline-anki--file-list))
+         (visiting (find-buffer-visiting path))
+         (buf nil)
+         (file nil)
+         (pushed
+          (if visiting
+              (with-current-buffer visiting
+                (if (buffer-modified-p)
+                    (message
+                     (asyncloop-log loop
+                       "Unsaved changes in file, skipping %s" visiting))
+                  (setq buf visiting)
+                  (inline-anki-push-notes-in-buffer)))
+            ;; Skip org-mode for speed.  Also tried `find-file-literally'
+            ;; in the past; bad idea.
+            (with-current-buffer
+                (cl-letf (((symbol-function #'org-mode) #'ignore))
+                  (find-file-noselect path))
+              (setq buf (current-buffer))
+              (inline-anki-push-notes-in-buffer)))))
+    (setq file (buffer-name buf))
+    (if (= 0 pushed)
+        (progn
+          (cl-assert (not (buffer-modified-p buf)))
+          (kill-buffer buf))
+      (message
+       "Pushed %s notes in %s" pushed buf))
+    ;; Eat the file list, one item at a time
+    (when inline-anki--file-list
+      (push #'inline-anki--next (asyncloop-remainder loop)))
+    ;; Return useful debug string
+    (format "%d files to go; pushed %d from %s"
+            (length inline-anki--file-list) pushed file)))
 
 ;;;###autoload
 (defun inline-anki-push-notes-in-directory ()
   "Push notes from every file in current dir and all subdirs."
   (interactive)
+  (require 'asyncloop)
   (if (string-empty-p (shell-command-to-string "ps -e | grep anki"))
       (message "Anki doesn't seem to be running")
     (asyncloop-run-function-queue
-      (list
-       (defun inline-anki--prep-scanner (_)
-         (setq inline-anki--file-list
-               ;; Ideally we'd obey an `inline-anki-must-heed-gitignore' that
-               ;; causes failure when git isn't installed, and check if subdirs
-               ;; are git repos even if the top dir isn't.  Buuut
-               ;; `inline-anki-ignore' was a simpler solution.
-               (if (and (inline-anki--git-repo-p ".")
-                        (executable-find "git"))
-                   (inline-anki--list-files-except-gitignored)
-                 (directory-files-recursively
-                  default-directory "\\.org$" nil t)))
-         ;; Filter out ignores
-         (setq inline-anki--file-list
-               (cl-loop
-                for path in inline-anki--file-list
-                unless (seq-find `(lambda (ign) (string-search ign ,path))
-                                 inline-anki-ignore)
-                collect path))
-         (format "Will push from %d files in %s"
-                 (length inline-anki--file-list)
-                 default-directory))
-
-       (defun inline-anki--next (loop)
-         (let* ((path (pop inline-anki--file-list))
-                (visiting (find-buffer-visiting path))
-                (buf nil)
-                (file nil)
-                (pushed
-                 (if visiting
-                     (with-current-buffer visiting
-                       (if (buffer-modified-p)
-                           (message
-                            (asyncloop-log loop
-                              "Unsaved changes in file, skipping %s" visiting))
-                         (setq buf visiting)
-                         (inline-anki-push-notes-in-buffer)))
-                   ;; Skip org-mode for speed.  Also tried `find-file-literally'
-                   ;; in the past; bad idea.
-                   (with-current-buffer
-                       (cl-letf (((symbol-function #'org-mode) #'ignore))
-                         (find-file-noselect path))
-                     (setq buf (current-buffer))
-                     (inline-anki-push-notes-in-buffer)))))
-           (setq file (buffer-name buf))
-           (if (= 0 pushed)
-               (progn
-                 (cl-assert (not (buffer-modified-p buf)))
-                 (kill-buffer buf))
-             (message
-              "Pushed %s notes in %s" pushed buf))
-           ;; Eat the file list, one item at a time
-           (when inline-anki--file-list
-             (push #'inline-anki--next (asyncloop-remainder loop)))
-           ;; Return useful debug string
-           (format "%d files to go; pushed %d from %s"
-                   (length inline-anki--file-list) pushed file))))
-
+      #'(inline-anki--prep-scanner
+         inline-anki--next)
       :debug-buffer-name "*inline-anki sync*")
 
     (unless (get-buffer-window "*inline-anki sync*" 'visible)
