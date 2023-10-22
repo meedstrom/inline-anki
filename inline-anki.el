@@ -400,8 +400,8 @@ need to pass it."
   "List all Org files under current dir, except gitignored files."
   (cl-loop for file in
            (string-split (shell-command-to-string
-                          "git ls-files -zoc --exclude-standard")
-                         " ")
+                          "git ls-files -oc --exclude-standard")
+                         "\n")
            when (string-suffix-p ".org" file)
            collect (expand-file-name file)))
 
