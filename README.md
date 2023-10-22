@@ -80,7 +80,7 @@ If you're reading this in a web browser, note that this is what it'll look like 
 
 ## Set-up
 
-Please see [the user manual](doc/inline-anki.md) (also available as Info manual after installation; type `C-h i d m inline-anki`).
+Please see [the user manual](doc/inline-anki.org) (also available as Info manual after installation; type `C-h i d m inline-anki`).
 
 
 ## Why underlines?
