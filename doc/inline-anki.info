@@ -66,21 +66,11 @@ with this initfile snippet:
      (package! inline-anki :recipe (:host github :repo "meedstrom/inline-anki"))
 
    Below, you’ll find a recommended config snippet.  It lets you quickly
-create a ‘#+begin_flashcard’ block at point with ‘C-c ,’
+create a ‘#+begin_flashcard’ block at point with the C-c , key
 (‘org-insert-structure-template’).
 
      (with-eval-after-load 'org
        (add-to-list 'org-structure-template-alist '("f" . "flashcard")))
-
-   To wrap up, a full use-package declaration could look like this:
-
-     (use-package inline-anki
-       :straight (inline-anki :type git :host github :repo "meedstrom/inline-anki")
-       :config
-       (setq inline-anki-use-tags nil)
-       (add-to-list 'inline-anki-ignore "/daily/")
-       (with-eval-after-load 'org
-         (add-to-list 'org-structure-template-alist '("f" . "flashcard"))))
 
 
 File: inline-anki.info,  Node: Usage,  Next: Implementation notes,  Prev: Installation,  Up: Top
@@ -110,27 +100,27 @@ File: inline-anki.info,  Node: To push cards,  Next: Config variables,  Up: Usag
           inline-anki-push-notes-in-directory RET’
 
    You may like to know that:
-   • When you update a note, it overwrites that note in Anki.  *Any
+   • When you upload a note, it overwrites that note in Anki.  *Any
      edits made inside Anki will be forgotten!*  Anki is only
      responsible for the review schedule, nothing else.
 
-   • If you comment-out a note expression, Anki will suspend all the
-     cards for that note.
+   • As a convenience, if you comment-out a note expression, Anki will
+     suspend all the cards for that note.
         • If you later uncomment it, Anki will unsuspend them.
         • Note that you can still follow a workflow of suspending cards
-          during your review sessions.  I actually consider it a
-          psychological bonus that Anki will forget these suspends on
-          the next push, forcing you to revise every bad note before you
-          can push again.
+          during your review sessions.  I consider it a psychological
+          boon that Anki will forget these suspends on the next push,
+          forcing you to revise all bad notes you found before you can
+          push again.
              • Just remember to look up the suspends inside Anki but
-               edit in the corresponding Org file.
+               edit in the corresponding source Org file.
 
-   • There’s a bit of a gimmick: if a note has 3 cloze fields, and you
-     study it a bit, and later you remove the first cloze field, the
-     second and third field will *inherit the scheduling of the first
-     and second fields*.  So technically, you can have cards that aren’t
-     scheduled in full faithfulness to the algorithm, and failure
-     statistics may be referring to a cloze card that you’ve removed.
+   • There’s a bit of a gimmick: if a note has 3 clozes, and you study
+     it a bit, and later you remove the first cloze, the second and
+     third cloze cards will *inherit the scheduling of the first and
+     second*.  So technically, you can have cards that aren’t scheduled
+     in full faithfulness to the algorithm, and failure statistics may
+     be referring to a cloze card that you’ve removed.
         • Up to you whether to care, but in my opinion, it changes
           nothing.
         • No surprise to experienced Anki-users, but the third field’s
@@ -349,17 +339,17 @@ File: inline-anki.info,  Node: Q&A,  Prev: Implementation notes,  Up: Top
 Tag Table:
 Node: Top222
 Node: Installation1307
-Node: Usage2514
-Node: To push cards2727
-Node: Config variables4712
-Node: Warning5592
-Node: Open in Emacs5837
-Node: Mass-editing6307
-Node: Implementation notes7101
-Node: Permanent limitations7341
-Node: Limitations vs anki-editor/org-anki9082
-Node: Syntax of a flashcard11282
-Node: Q&A12695
+Node: Usage2117
+Node: To push cards2330
+Node: Config variables4326
+Node: Warning5206
+Node: Open in Emacs5451
+Node: Mass-editing5921
+Node: Implementation notes6715
+Node: Permanent limitations6955
+Node: Limitations vs anki-editor/org-anki8696
+Node: Syntax of a flashcard10896
+Node: Q&A12309
 
 End Tag Table
 

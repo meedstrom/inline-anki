@@ -32,23 +32,11 @@ Alternatively with Doom Emacs, this goes in =packages.el=:
 (package! inline-anki :recipe (:host github :repo "meedstrom/inline-anki"))
 #+end_src
 
-Below, you'll find a recommended config snippet.  It lets you quickly create a =#+begin_flashcard= block at point with =C-c ,=  (=org-insert-structure-template=).
+Below, you'll find a recommended config snippet.  It lets you quickly create a =#+begin_flashcard= block at point with the C-c , key  (=org-insert-structure-template=).
 
 #+begin_src elisp
 (with-eval-after-load 'org
   (add-to-list 'org-structure-template-alist '("f" . "flashcard")))
-#+end_src
-
-To wrap up, a full use-package declaration could look like this:
-
-#+begin_src elisp
-(use-package inline-anki
-  :straight (inline-anki :type git :host github :repo "meedstrom/inline-anki")
-  :config
-  (setq inline-anki-use-tags nil)
-  (add-to-list 'inline-anki-ignore "/daily/")  
-  (with-eval-after-load 'org
-    (add-to-list 'org-structure-template-alist '("f" . "flashcard"))))
 #+end_src
 
 * Usage
@@ -61,14 +49,14 @@ To wrap up, a full use-package declaration could look like this:
    - Or push entire directory by typing =M-x inline-anki-push-notes-in-directory RET=
 
 You may like to know that:
-- When you update a note, it overwrites that note in Anki.  *Any edits made inside Anki will be forgotten!*  Anki is only responsible for the review schedule, nothing else.
+- When you upload a note, it overwrites that note in Anki.  *Any edits made inside Anki will be forgotten!*  Anki is only responsible for the review schedule, nothing else.
 
-- If you comment-out a note expression, Anki will suspend all the cards for that note.
+- As a convenience, if you comment-out a note expression, Anki will suspend all the cards for that note.
   - If you later uncomment it, Anki will unsuspend them.
-  - Note that you can still follow a workflow of suspending cards during your review sessions.  I actually consider it a psychological bonus that Anki will forget these suspends on the next push, forcing you to revise every bad note before you can push again.
-    - Just remember to look up the suspends inside Anki but edit in the corresponding Org file.
+  - Note that you can still follow a workflow of suspending cards during your review sessions.  I consider it a psychological boon that Anki will forget these suspends on the next push, forcing you to revise all bad notes you found before you can push again.
+    - Just remember to look up the suspends inside Anki but edit in the corresponding source Org file.
 
-- There's a bit of a gimmick: if a note has 3 cloze fields, and you study it a bit, and later you remove the first cloze field, the second and third field will *inherit the scheduling of the first and second fields*.  So technically, you can have cards that aren't scheduled in full faithfulness to the algorithm, and failure statistics may be referring to a cloze card that you've removed.
+- There's a bit of a gimmick: if a note has 3 clozes, and you study it a bit, and later you remove the first cloze, the second and third cloze cards will *inherit the scheduling of the first and second*.  So technically, you can have cards that aren't scheduled in full faithfulness to the algorithm, and failure statistics may be referring to a cloze card that you've removed.
   - Up to you whether to care, but in my opinion, it changes nothing.
   - No surprise to experienced Anki-users, but the third field's original scheduling will be attached to an empty card.  You can clean up empty cards with the menu option "Check database...".
 
