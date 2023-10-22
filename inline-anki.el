@@ -276,17 +276,25 @@ value of -1), create it."
 
 (defun inline-anki--expand (input)
   "Return INPUT if it's a string, else funcall or eval it."
-  (if (stringp input)
-      input
-    (if (functionp input)
-        (save-excursion
-          (save-match-data
-            (funcall input)))
-      (if (null input)
-          ""
-        (if (listp input)
-            (eval input t)
-          "")))))
+  (condition-case signal
+      (if (stringp input)
+          input
+        (if (functionp input)
+            (save-excursion
+              (save-match-data
+                (funcall input)))
+          (if (null input)
+              ;; TODO: Maybe warn that input was nil
+              ""
+            (if (listp input)
+                (eval input t)
+              ""))))
+    ;; IME this is a common source of errors (and I'm the package dev!), so help
+    ;; tell the user where the error's coming from.
+    ((error debug)
+     (error "There was likely a problem evaluating a member of `inline-anki-fields':  %s signaled %s"
+            input
+            signal))))
 
 (defun inline-anki-field:filename-link ()
   "Return the buffer filename wrapped in <a href>."
