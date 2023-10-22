@@ -12,7 +12,7 @@ File: inline-anki.info,  Node: Top,  Next: Installation,  Up: (dir)
 Inline Anki User Manual
 ***********************
 
-This manual is for Inline Anki version 0.3.0-pre.
+This manual is for Inline Anki version 0.3.0.
 
      Copyright (C) 2023 Martin Edström <meedstrom91@gmail.com>
 
@@ -59,10 +59,12 @@ File: inline-anki.info,  Node: Installation,  Next: Usage,  Prev: Top,  Up: Top
 Not yet on (M)ELPA.  If you have straight.el
 (https://github.com/raxod502/straight.el), you can install the package
 with this initfile snippet:
+
      (use-package inline-anki
        :straight (inline-anki :type git :host github :repo "meedstrom/inline-anki"))
 
    Alternatively with Doom Emacs, this goes in ‘packages.el’:
+
      (package! inline-anki :recipe (:host github :repo "meedstrom/inline-anki"))
 
    Below, you’ll find a recommended config snippet.  It lets you quickly
@@ -91,6 +93,12 @@ File: inline-anki.info,  Node: To push cards,  Next: Config variables,  Up: Usag
 
 2.1 To push cards
 =================
+
+Your only direct interaction with this package is one command that you
+would run every once in a while (weeks?  months?  depends on you) to
+update the Anki database.
+
+   To update:
 
   1. Make sure Anki has the AnkiConnect add-on installed
   2. Make sure you have ‘curl’ installed
@@ -338,18 +346,18 @@ File: inline-anki.info,  Node: Q&A,  Prev: Implementation notes,  Up: Top
 
 Tag Table:
 Node: Top222
-Node: Installation1307
-Node: Usage2117
-Node: To push cards2330
-Node: Config variables4326
-Node: Warning5206
-Node: Open in Emacs5451
-Node: Mass-editing5921
-Node: Implementation notes6715
-Node: Permanent limitations6955
-Node: Limitations vs anki-editor/org-anki8696
-Node: Syntax of a flashcard10896
-Node: Q&A12309
+Node: Installation1303
+Node: Usage2115
+Node: To push cards2328
+Node: Config variables4506
+Node: Warning5386
+Node: Open in Emacs5631
+Node: Mass-editing6101
+Node: Implementation notes6895
+Node: Permanent limitations7135
+Node: Limitations vs anki-editor/org-anki8876
+Node: Syntax of a flashcard11076
+Node: Q&A12489
 
 End Tag Table
 

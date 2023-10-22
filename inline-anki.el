@@ -4,7 +4,7 @@
 
 ;; Description: Embed implicit flashcards in flowing text
 ;; Author: Martin Edström
-;; Version: 0.3.0-pre
+;; Version: 0.3.0
 ;; Created: 2023-09-19
 ;; Package-Requires: ((emacs "28") (asyncloop "0.3.2") (pcre2el "1.12") (request "0.3.0") (dash "2.12.0"))
 ;; URL: https://github.com/meedstrom/inline-anki
@@ -47,7 +47,6 @@
 (require 'inline-anki-anki-editor-fork)
 (require 'seq)
 (require 'map)
-(require 'asyncloop)
 
 (defcustom inline-anki-deck "Default"
   "Name of deck to upload to."
@@ -438,7 +437,6 @@ need to pass it."
   (let* ((path (pop inline-anki--file-list))
          (visiting (find-buffer-visiting path))
          (buf nil)
-         (file nil)
          (pushed
           (if visiting
               (with-current-buffer visiting
@@ -454,7 +452,8 @@ need to pass it."
                 (cl-letf (((symbol-function #'org-mode) #'ignore))
                   (find-file-noselect path))
               (setq buf (current-buffer))
-              (inline-anki-push-notes-in-buffer)))))
+              (inline-anki-push-notes-in-buffer))))
+         (file nil))
     (setq file (buffer-name buf))
     (if (= 0 pushed)
         (progn
@@ -473,7 +472,6 @@ need to pass it."
 (defun inline-anki-push-notes-in-directory ()
   "Push notes from every file in current dir and all subdirs."
   (interactive)
-  (require 'asyncloop)
   (if (string-empty-p (shell-command-to-string "ps -e | grep anki"))
       (message "Anki doesn't seem to be running")
     (asyncloop-run-function-queue

@@ -1,0 +1,363 @@
+\input texinfo    @c -*- texinfo -*-
+@c %**start of header
+@setfilename inline-anki.info
+@settitle Inline Anki User Manual
+@documentencoding UTF-8
+@documentlanguage en
+@c %**end of header
+
+@dircategory Emacs
+@direntry
+* Inline Anki: (inline-anki). Embed implicit flashcards in flowing text.
+@end direntry
+
+@finalout
+@titlepage
+@title Inline Anki User Manual
+@subtitle for version 0.3.0
+@author Martin Edström
+@end titlepage
+
+@contents
+
+@ifnottex
+@node Top
+@top Inline Anki User Manual
+
+This manual is for Inline Anki version 0.3.0.
+
+@quotation
+Copyright (C) 2023 Martin Edström <meedstrom91@@gmail.com>
+
+You can redistribute this document and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+
+This document is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE@.  See the GNU General Public License for more details.
+
+@end quotation
+
+@end ifnottex
+
+@menu
+* Installation::
+* Usage::
+* Implementation notes::
+* Q&A::
+
+@detailmenu
+--- The Detailed Node Listing ---
+
+Usage
+
+* To push cards::
+* Config variables::
+* Warning::
+* Open in Emacs::
+* Mass-editing::
+
+Implementation notes
+
+* Permanent limitations::
+* Limitations vs. anki-editor/org-anki: Limitations vs anki-editor/org-anki. 
+* Syntax of a flashcard::
+
+@end detailmenu
+@end menu
+
+@node Installation
+@chapter Installation
+
+Not yet on (M)ELPA@.  If you have @uref{https://github.com/raxod502/straight.el, straight.el}, you can install the package with this initfile snippet:
+
+@lisp
+(use-package inline-anki
+  :straight (inline-anki :type git :host github :repo "meedstrom/inline-anki"))
+@end lisp
+
+Alternatively with Doom Emacs, this goes in @samp{packages.el}:
+
+@lisp
+(package! inline-anki :recipe (:host github :repo "meedstrom/inline-anki"))
+@end lisp
+
+Below, you'll find a recommended config snippet.  It lets you quickly create a @samp{#+begin_flashcard} block at point with the C-c , key  (@samp{org-insert-structure-template}).
+
+@lisp
+(with-eval-after-load 'org
+  (add-to-list 'org-structure-template-alist '("f" . "flashcard")))
+@end lisp
+
+@node Usage
+@chapter Usage
+
+@node To push cards
+@section To push cards
+
+Your only direct interaction with this package is one command that you would run every once in a while (weeks? months? depends on you) to update the Anki database.
+
+To update:
+
+@enumerate
+@item
+Make sure Anki has the AnkiConnect add-on installed
+@item
+Make sure you have @samp{curl} installed
+@item
+Start Anki
+@item
+From your Org file, type @samp{M-x inline-anki-push-notes-in-buffer RET}
+@itemize
+@item
+Or push entire directory by typing @samp{M-x inline-anki-push-notes-in-directory RET}
+@end itemize
+@end enumerate
+
+You may like to know that:
+@itemize
+@item
+When you upload a note, it overwrites that note in Anki.  @strong{Any edits made inside Anki will be forgotten!}  Anki is only responsible for the review schedule, nothing else.
+
+@item
+As a convenience, if you comment-out a note expression, Anki will suspend all the cards for that note.
+@itemize
+@item
+If you later uncomment it, Anki will unsuspend them.
+@item
+Note that you can still follow a workflow of suspending cards during your review sessions.  I consider it a psychological boon that Anki will forget these suspends on the next push, forcing you to revise all bad notes you found before you can push again.
+@itemize
+@item
+Just remember to look up the suspends inside Anki but edit in the corresponding source Org file.
+@end itemize
+@end itemize
+
+@item
+There's a bit of a gimmick: if a note has 3 clozes, and you study it a bit, and later you remove the first cloze, the second and third cloze cards will @strong{inherit the scheduling of the first and second}.  So technically, you can have cards that aren't scheduled in full faithfulness to the algorithm, and failure statistics may be referring to a cloze card that you've removed.
+@itemize
+@item
+Up to you whether to care, but in my opinion, it changes nothing.
+@item
+No surprise to experienced Anki-users, but the third field's original scheduling will be attached to an empty card.  You can clean up empty cards with the menu option "Check database@dots{}".
+@end itemize
+@end itemize
+
+@node Config variables
+@section Config variables
+
+@itemize
+@item
+@samp{inline-anki-deck}
+@itemize
+@item
+Default "Default".
+@end itemize
+
+@item
+@samp{inline-anki-note-type}
+@itemize
+@item
+Default "Cloze from Outer Space".
+@end itemize
+
+@item
+@samp{inline-anki-emphasis-type}
+@itemize
+@item
+Default "_", can be changed to "*", "/" or other things you find in @samp{org-emphasis-alist}.
+@end itemize
+
+@item
+@samp{inline-anki-use-tags}
+@itemize
+@item
+Default @samp{nil}.  Controls whether or not to send Org tags to Anki.
+@end itemize
+
+@item
+@samp{inline-anki-ignore}
+@itemize
+@item
+Helps the command @samp{inline-anki-push-notes-in-directory} decide whether or not to visit a file.  If that file's full name contains one of the strings in this list, skip the file.
+@end itemize
+
+@item
+@samp{inline-anki-fields}
+@itemize
+@item
+See docstring.
+@end itemize
+@end itemize
+
+@node Warning
+@section Warning
+
+You must not @strong{hard-wrap} your text (e.g. with @samp{fill-paragraph}) if you want Anki to receive the whole flashcard.
+
+@node Open in Emacs
+@section Open in Emacs
+
+It would be convenient if you could click a link in Anki to open the corresponding Org file in Emacs.
+
+By default, @samp{inline-anki-fields} ships an extra field for the filename.  With addons such as @uref{https://ankiweb.net/shared/info/879473266}, it should be possible to jump from Anki to Emacs using emacsclient.  Instructions TBD@.
+
+@node Mass-editing
+@section Mass-editing
+
+If you switch @samp{inline-anki-emphasis-type} to bold or italic, remember to @strong{edit all your preexisting cards}.
+
+Tips:
+
+@itemize
+@item
+To search the buffer for flashcards, try @samp{M-x inline-anki-occur RET}.
+@item
+To search the whole directory, try @samp{M-x inline-anki-rgrep RET}.
+@itemize
+@item
+Then you can edit with @uref{http://github.com/mhayashi1120/Emacs-wgrep, wgrep} or a keyboard macro, for example.
+@itemize
+@item
+The wgrep method won't cut it for multiline flashcards, as you'll see, but if you don't have many of those, you could simply hand-edit each.  If you have many, learn to keyboard-macro.
+@end itemize
+@end itemize
+@end itemize
+
+@node Implementation notes
+@chapter Implementation notes
+
+@node Permanent limitations
+@section Permanent limitations
+
+There are @strong{three flaws} which will never go away:
+
+@itemize
+@item
+@strong{Flaw 1:} Like anki-editor, inline-anki does not let you review inside Emacs.  You have to whip out your phone and review there, in your Anki app.
+
+@itemize
+@item
+To me this is a non-issue since the bus is the only place I want to review anyway.
+@end itemize
+
+@item
+@strong{Flaw 2:} Like with anki-editor, inline-anki definitions work as the "master copy": @strong{you cannot edit the cards from within Anki}.  If you tried, such edits would be lost on next sync.
+
+You have to return to your computer and edit there, in Emacs.
+
+@itemize
+@item
+This means you can't make small corrections on-the-fly while reviewing.
+
+Bit annoying, yes, but two-way sync is a notoriously finicky dev challenge so if such a feature was present, users would run into sync conflicts and nobody wants to deal with that.
+
+@item
+Fortunately, this is less of a problem for us than for regular Anki users, since the flashcards are serving double duty as body text.  You will be able to see and refine the text of the flashcard at your leisure, in contrast with other SRS when you only see it during review.
+@end itemize
+
+@item
+@strong{Flaw 3:} The note format is constrained -- you can't express every kind of flashcard possible in Anki.
+
+@itemize
+@item
+For me this is a good trade, if that means the flashcards stay in my life.  Until now, they never stayed long due to clumsy systems.   Better simple flashcards than no flashcards.
+@end itemize
+@end itemize
+
+@node Limitations vs anki-editor/org-anki
+@section Limitations vs. anki-editor/org-anki
+
+Many traditional features are ABSENT in inline-anki.
+
+@itemize
+@item
+It uses only one deck
+@item
+It uses only one note type (cloze)
+@item
+It clozes only one deletion at a time
+@item
+You cannot set tags on a per-note basis
+@itemize
+@item
+The note will still inherit tags from the Org subtree
+@itemize
+@item
+Note that Anki tags lose much of their organizational purpose if all your notes live in Org files anyway -- you'll be organizing from within @uref{https://github.com/org-roam/org-roam, org-roam} or whichever system you have, not from within Anki.  However, at least two use-cases remain:
+@itemize
+@item
+You can display the tags inside cards as a contextual hint, @uref{https://edstrom.dev/posts/qix2Q4W/how-to-display-tags-as-hint-in-all-anki-cards, if you code this in the card template}
+@item
+You can use the tags to set up Custom Study sessions on a filtered subset of notes
+@itemize
+@item
+Invaluable since the package only targets one deck
+@end itemize
+@end itemize
+@item
+Finally, even if you set @samp{inline-anki-use-tags} to nil, inline-anki always attaches one tag named after the date, in this style: "from-emacs-2023-09-20"
+@itemize
+@item
+This lets you separate inline-anki notes from your "handmade" notes
+@item
+This lets you see if you have stale inline-anki notes that aren't being updated
+@end itemize
+@end itemize
+@end itemize
+@item
+You get no indication that Anki has tagged a card as "Marked" or "Leech"
+@itemize
+@item
+You can still see this in Anki's own card browser, so you can still sit down and go through them manually every now and then -- just like a normal Anki user, with the difference that you have to open the source file in Emacs and edit there.
+@end itemize
+@end itemize
+
+@node Syntax of a flashcard
+@section Syntax of a flashcard
+
+@itemize
+@item
+To identify a flashcard, inline-anki looks for one of the following things:
+@itemize
+@item
+A magic string at the @strong{start of a list item}: @samp{@@anki}.
+@itemize
+@item
+When Anki assigns it an ID, this will become a @@ glyph followed by a 13-digit number in superscript, such as @samp{@@^@{1693535436701@}}.
+@end itemize
+@item
+A magic string at the @strong{end of a line}: @samp{@@anki} OR @samp{^@{anki@}}.
+@itemize
+@item
+Same as above, except that you can omit the @@ glyph.
+@itemize
+@item
+Since the @samp{@@anki} form is easier to remember and easier to type, I suggest you just always type that and remove the glyph later where you think its absence looks better.
+@end itemize
+@end itemize
+@item
+A structure template named @samp{#+begin_flashcard}.
+@itemize
+@item
+When Anki assigns it an ID, it becomes something like @samp{#+begin_flashcard 1693535436702}.
+@end itemize
+@end itemize
+
+@item
+Clozes are marked by underline text.  If you prefer bold or italic, configure @samp{inline-anki-emphasis-type}.
+@itemize
+@item
+If necessary, you can write Anki's own @samp{@{@{c1::@}@}} syntax directly.  Best I can tell, it's mainly useful for writing math equations.
+@end itemize
+@end itemize
+
+@node Q&A
+@chapter Q&A
+
+@itemize
+@item
+Can I continue using my [org-drill/org-anki/@dots{}] cards?
+@itemize
+@item
+Yes!  Those packages treat whole Org subtrees as their "data objects", and this package does not.  You can even have an inline-anki card @emph{inside} an org-anki subtree.
+@end itemize
+@end itemize
+
+@bye
