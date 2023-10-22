@@ -47,6 +47,7 @@
 (require 'inline-anki-anki-editor-fork)
 (require 'seq)
 (require 'map)
+(require 'asyncloop)
 
 (defcustom inline-anki-deck "Default"
   "Name of deck to upload to."
@@ -415,7 +416,6 @@ need to pass it."
 (defun inline-anki-push-notes-in-directory ()
   "Push notes from every file in current dir and all subdirs."
   (interactive)
-  (require 'asyncloop)
   (if (string-empty-p (shell-command-to-string "ps -e | grep anki"))
       (message "Anki doesn't seem to be running")
     (asyncloop-run-function-queue
