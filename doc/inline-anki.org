@@ -7,9 +7,9 @@
 #+texinfo_dir_category: Emacs
 #+texinfo_dir_title: Inline Anki: (inline-anki).
 #+texinfo_dir_desc: Embed implicit flashcards in flowing text.
-#+subtitle: for version 0.2.0
+#+subtitle: for version 0.3.0-pre
 
-This manual is for Inline Anki version 0.2.0.
+This manual is for Inline Anki version 0.3.0-pre.
 
 #+BEGIN_QUOTE
 Copyright (C) 2023 Martin Edström <meedstrom91@gmail.com>
@@ -22,12 +22,14 @@ This document is distributed in the hope that it will be useful, but WITHOUT ANY
 * Installation
 
 Not yet on (M)ELPA.  If you have [[https://github.com/raxod502/straight.el][straight.el]], you can install the package with this initfile snippet:
+
 #+begin_src elisp
 (use-package inline-anki
   :straight (inline-anki :type git :host github :repo "meedstrom/inline-anki"))
 #+end_src
 
 Alternatively with Doom Emacs, this goes in =packages.el=:
+
 #+begin_src elisp
 (package! inline-anki :recipe (:host github :repo "meedstrom/inline-anki"))
 #+end_src
@@ -41,6 +43,10 @@ Below, you'll find a recommended config snippet.  It lets you quickly create a =
 
 * Usage
 ** To push cards
+
+Your only direct interaction with this package is one command that you would run every once in a while (weeks? months? depends on you) to update the Anki database.
+
+To update:
 
 1. Make sure Anki has the AnkiConnect add-on installed
 2. Make sure you have =curl= installed

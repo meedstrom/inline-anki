@@ -4,7 +4,7 @@
 
 ;; Description: Embed implicit flashcards in flowing text
 ;; Author: Martin Edström
-;; Version: 0.2.0
+;; Version: 0.3.0-pre
 ;; Created: 2023-09-19
 ;; Package-Requires: ((emacs "28") (asyncloop "0.3.2") (pcre2el "1.12") (request "0.3.0") (dash "2.12.0"))
 ;; URL: https://github.com/meedstrom/inline-anki
@@ -26,8 +26,6 @@
 
 ;;; Commentary:
 
-;; Embed implicit flashcards in flowing text.
-;;
 ;; Read more in the Info manual or https://github.com/meedstrom/inline-anki
 ;;
 ;; Requirements:
