@@ -80,7 +80,7 @@ If you're reading this in a web browser, note that this is what it'll look like 
 
 ## Set-up
 
-For set-up, please see [the user manual](doc/inline-anki.md) (also available as Info manual after installation, type `C-h i d m inline-anki`).
+Please see [the user manual](doc/inline-anki.md) (also available as Info manual after installation; type `C-h i d m inline-anki`).
 
 
 ## Why underlines?
@@ -89,7 +89,9 @@ Underlines are rare on the web for a reason: you easily mistake them for hyperli
 
 Think of underlines as the **handwriting equivalent of bold text**.  They belong on paper, not on a computer screen.  They're not even permitted in Markdown!  I had to hack this README by using `<ins>` HTML tags.
 
-Since people avoid the underline on computer screens, it's free real estate to load with a new semantic.  "But you just said to avoid it!"  Well, the upside compared to **bold**/*italic*/~strikethrough~, is we get full control of how a cloze deletion should look!  Here's how it looks in my Emacs:
+Since we avoid the underline on computer screens, it's free real estate to load with a new semantic.
+
+"But you just said to avoid it!"  Well, the upside compared to **bold**/*italic*/~strikethrough~, is we get **full control of how a cloze deletion should look!**  Here's how it looks in my Emacs:
 
 <img alt="Example in Emacs, of cloze text inside a box" src="box-example-source.png" width="600px" />
 
@@ -119,7 +121,7 @@ As for the web, Org exports underlines to HTML as `<span class="underline">`, so
 
 Whichever emphasis marker you choose, be it _, *, /, +, ~, or =, inline-anki doesn't bar you from using it in general.  A paragraph needs a magic string like `@anki` to be parsed as a flashcard in the first place, without which the marker has no special meaning.
 
-In fact, the default for this package was once **bold**, not underline.  It didn't result in any accidental flashcards.
+In fact, the default for this package was once **bold**, not underline.  It didn't result in any accidental flashcards, even though I put bold everywhere.
 
 The reason I switched to underline was the idea of "*invisible*-anki", a future fork of this project that eliminates the note IDs altogether.  With the note IDs gone, it must reserve an emphasis marker that always means cloze.  I'm early-adopting it.
 
