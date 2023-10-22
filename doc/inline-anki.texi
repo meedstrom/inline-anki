@@ -14,7 +14,7 @@
 @finalout
 @titlepage
 @title Inline Anki User Manual
-@subtitle for version 0.3.0
+@subtitle for version 0.3.1-pre
 @author Martin Edström
 @end titlepage
 
@@ -24,7 +24,7 @@
 @node Top
 @top Inline Anki User Manual
 
-This manual is for Inline Anki version 0.3.0.
+This manual is for Inline Anki version 0.3.1-pre.
 
 @quotation
 Copyright (C) 2023 Martin Edström <meedstrom91@@gmail.com>
