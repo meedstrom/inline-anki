@@ -93,11 +93,11 @@ Since people avoid the underline on computer screens, it's free real estate to l
 
 ![Example in Emacs, of cloze text inside a box](box-example-source.png)
 
-and the corresponding page on [my website](https://edstrom.dev/sJt8/replacing-guilt#XjWh):
+and the [corresponding page on my website](https://edstrom.dev/sJt8/replacing-guilt#XjWh) looks like this:
 
 ![Example in web browser, of cloze text inside a box](box-example-web.png)
 
-See, no mistaking them for hyperlinks now.  To recreate this appearance, add the following to your initfiles.
+See, no mistaking them for hyperlinks now.  To recreate this appearance in Emacs, use this initfile snippet -- which must run before Org loads.
 
     (defface my-cloze '((t . (:box t))) "Cloze face")
     (setq org-emphasis-alist '(("*" bold)
@@ -107,21 +107,21 @@ See, no mistaking them for hyperlinks now.  To recreate this appearance, add the
                                ("~" org-code verbatim)
                                ("+" (:strike-through t))))
 
-Org exports underlines to HTML as `<ins>`, so you can control how it ends up looking on your blog with a CSS rule such as the following.
+As for the web, Org exports underlines to HTML as `<span class="underline">`, so you can control how it ends up looking on your blog with a CSS rule such as the following.
 
     span.underline {
         text-decoration: none;
         background-color: #bbb;
-        padding: 2px;    
+        padding: 2px;
     }
 
----
+### You can still use your chosen marker
 
-Mind you, none of this bars you from using the underline in general.  A paragraph needs a magic string like `@anki` to be parsed as a flashcard in the first place, without which underlines have no special meaning.
+Whichever emphasis marker you choose, be it _, *, /, +, ~, or =, inline-anki doesn't bar you from using it in general.  A paragraph needs a magic string like `@anki` to be parsed as a flashcard in the first place, without which the marker has no special meaning.
 
-In fact, I started out using **bold**, not underline!  No problems.
+In fact, the default for this package was once **bold**, not underline.  It didn't result in any accidental flashcards.
 
-The reason I changed was the idea of "*invisible*-anki", a fork of this project that eliminates the note IDs altogether.  With the note IDs gone, it must reserve an emphasis marker that always means cloze.  I'm early-adopting that emphasis marker.
+The reason I switched to underline was the idea of "*invisible*-anki", a future fork of this project that eliminates the note IDs altogether.  With the note IDs gone, it must reserve an emphasis marker that always means cloze.  I'm early-adopting it.
 
 
 ## Roadmap
