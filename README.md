@@ -91,11 +91,11 @@ Think of underlines as the **handwriting equivalent of bold text**.  They belong
 
 Since people avoid the underline on computer screens, it's free real estate to load with a new semantic.  "But you just said to avoid it!"  Well, the upside compared to **bold**/*italic*/~strikethrough~, is we get full control of how a cloze deletion should look!  Here's how it looks in my Emacs:
 
-![Example in Emacs, of cloze text inside a box](box-example-source.png)
+<img alt="Example in Emacs, of cloze text inside a box" src="box-example-source.png" width="600px" />
 
 and the [corresponding page on my website](https://edstrom.dev/sJt8/replacing-guilt#XjWh) looks like this:
 
-![Example in web browser, of cloze text inside a box](box-example-web.png)
+<img alt="Example in web browser, of cloze text inside a box" src="box-example-web.png" width="600px" />
 
 See, no mistaking them for hyperlinks now.  To recreate this appearance in Emacs, use this initfile snippet -- which must run before Org loads.
 
