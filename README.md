@@ -62,7 +62,7 @@ This list expresses, among other things, three Anki cloze notes:
 >         -   If the multiverse is real, I desire to <ins>believe the multiverse is real</ins>, and if the multiverse is not real, I desire to believe the multiverse is not real.  Let me not become attached to beliefs I may not want. (application of the <ins>Litany of Tarski</ins>)<sup>1695193247518</sup>
 
 
-### Way 4: As structure templates
+### Way 4: Multiline flashcards in a `#+begin_flashcard` block
 
 The block below expresses a single Anki cloze note (totalling three cloze deletions).
 
@@ -109,7 +109,7 @@ See, no mistaking them for hyperlinks now.  To recreate this appearance in Emacs
                                ("~" org-code verbatim)
                                ("+" (:strike-through t))))
 
-As for the web, Org exports underlines to HTML as `<span class="underline">`, so you can control how it ends up looking on your blog with a CSS rule such as the following.
+As for your own blog, Org exports underlines to HTML as `<span class="underline">`, so you can control how it ends up looking with a CSS rule such as the following.
 
     span.underline {
         text-decoration: none;
@@ -117,13 +117,13 @@ As for the web, Org exports underlines to HTML as `<span class="underline">`, so
         padding: 2px;
     }
 
-### You can still use your chosen marker
+### You can still use your chosen marker normally
 
-Whichever emphasis marker you choose, be it _, *, /, +, ~, or =, inline-anki doesn't bar you from using it in general.  A paragraph needs a magic string like `@anki` to be parsed as a flashcard in the first place, without which the marker has no special meaning.
+Whichever emphasis marker you choose, be it _, *, /, +, ~, or =, inline-anki doesn't bar you from using it in general.  A paragraph needs a magic string like `@anki` to be parsed as a flashcard in the first place (see [user manual](doc/inline-anki.org)), without which the marker has no special meaning.
 
 In fact, the default for this package was once **bold**, not underline.  It didn't result in any accidental flashcards, even though I put bold everywhere.
 
-The reason I switched to underline was the idea of "*invisible*-anki", a future fork of this project that eliminates the note IDs altogether.  With the note IDs gone, it must reserve an emphasis marker that always means cloze.  I'm early-adopting it.
+The reason I switched to underline was the idea of "*invisible*-anki", a future experiment that eliminates the note IDs altogether.  With the note IDs gone, it must reserve an emphasis marker that always means cloze.  I'm early-adopting it.
 
 
 ## Roadmap
@@ -138,9 +138,7 @@ The reason I switched to underline was the idea of "*invisible*-anki", a future 
             -   But that's mainly useful for vocabulary-type stuff, since not much text fits in one table row.
 
 
-<a id="org7d5eb0b"></a>
-
 ## Thanks
 
-Thanks a lot to @louietan who wrote <https://github.com/louietan/anki-editor>.  I could rely on its AnkiConnect-interfacing code, which lowered the barrier for me to get started.
+Thanks a lot to @louietan who wrote <https://github.com/louietan/anki-editor>.  I could reuse its AnkiConnect bindings, which lowered the barrier for me to get started.
 

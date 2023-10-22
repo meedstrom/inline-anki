@@ -266,7 +266,7 @@ value of -1), create it."
                          as expanded = (inline-anki--expand value)
                          if (eq t value)
                          collect (cons field html)
-                         else unless (or (null value) (null expanded))
+                         else unless (null expanded)
                          collect (cons field expanded)))
           (cons 'suspend? (save-excursion
                             (goto-char (line-beginning-position))
@@ -438,6 +438,7 @@ need to pass it."
          (let* ((path (pop inline-anki--file-list))
                 (visiting (find-buffer-visiting path))
                 (buf nil)
+                (file nil)
                 (pushed
                  (if visiting
                      (with-current-buffer visiting
@@ -454,6 +455,7 @@ need to pass it."
                          (find-file-noselect path))
                      (setq buf (current-buffer))
                      (inline-anki-push-notes-in-buffer)))))
+           (setq file (buffer-name buf))
            (if (= 0 pushed)
                (progn
                  (cl-assert (not (buffer-modified-p buf)))
@@ -465,7 +467,7 @@ need to pass it."
              (push #'inline-anki--next (asyncloop-remainder loop)))
            ;; Return useful debug string
            (format "%d files to go; pushed %d from %s"
-                   (length inline-anki--file-list) pushed buf))))
+                   (length inline-anki--file-list) pushed file))))
 
       :debug-buffer-name "*inline-anki sync*")
 
