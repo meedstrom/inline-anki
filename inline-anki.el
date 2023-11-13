@@ -4,9 +4,9 @@
 
 ;; Description: Embed implicit flashcards in flowing text
 ;; Author: Martin Edström
-;; Version: 0.3.1-pre
+;; Version: 0.3.1
 ;; Created: 2023-09-19
-;; Package-Requires: ((emacs "28") (asyncloop "0.3.2") (pcre2el "1.12") (request "0.3.1-pre") (dash "2.12.0"))
+;; Package-Requires: ((emacs "28") (asyncloop "0.4.2") (pcre2el "1.12") (request "0.3.1-pre") (dash "2.12.0"))
 ;; URL: https://github.com/meedstrom/inline-anki
 
 ;; This file is not part of GNU Emacs.
@@ -47,6 +47,7 @@
 (require 'inline-anki-anki-editor-fork)
 (require 'seq)
 (require 'map)
+(require 'asyncloop)
 
 (defcustom inline-anki-deck "Default"
   "Name of deck to upload to."
@@ -474,13 +475,13 @@ need to pass it."
   (interactive)
   (if (string-empty-p (shell-command-to-string "ps -e | grep anki"))
       (message "Anki doesn't seem to be running")
-    (asyncloop-run-function-queue
+    (asyncloop-run
       #'(inline-anki--prep-scanner
          inline-anki--next)
-      :debug-buffer-name "*inline-anki sync*")
+      :log-buffer-name "*inline-anki sync*")
 
-    (unless (get-buffer-window "*inline-anki sync*" 'visible)
-      (display-buffer "*inline-anki sync*"))))
+    (unless (get-buffer-window "*inline-anki*" 'visible)
+      (display-buffer "*inline-anki*"))))
 
 (provide 'inline-anki)
 
