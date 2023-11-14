@@ -82,7 +82,7 @@ subtree tags only, set `org-use-tag-inheritance' to nil."
     "/logseq/bak/")
   "List of regexps that bar a file-path from being visited.
 Note that inline-anki only considers file-paths ending in .org,
-so backup and auto-save files are already skipped."
+so backup and auto-save files are already barred."
   :type '(repeat string))
 
 (defcustom inline-anki-fields
@@ -416,43 +416,14 @@ need to pass it."
         (message "Pushed %d notes!" pushed)
       pushed)))
 
-(defun inline-anki--git-repo-p (directory)
-  "Non-nil if DIRECTORY is a Git repository."
-  (and (file-directory-p directory)
-       (or (file-regular-p (expand-file-name ".git" directory))
-           (file-directory-p (expand-file-name ".git" directory)))))
-
-;; NOTE: May deprecate, see `inline-anki--prep-scanner'.
-(defun inline-anki--list-files-except-gitignored ()
-  "List all Org files under current dir, except gitignored files."
-  (cl-loop for file in
-           (string-split (shell-command-to-string
-                          "git ls-files -oc --exclude-standard")
-                         "\n")
-           when (string-suffix-p ".org" file)
-           collect (expand-file-name file)))
-
 (defun inline-anki--prep-scanner (_)
   (setq inline-anki--file-list
-        ;; Ideally we'd obey an user setting `inline-anki-must-heed-gitignore'
-        ;; that causes failure when git isn't installed, and check if subdirs
-        ;; are git repos even if the top dir isn't.  Buuut `inline-anki-ignore'
-        ;; was a simpler solution, and I might deprecate this gitignore
-        ;; integration.  As it is now, it just applies if git is installed,
-        ;; otherwise grabs all files, which isn't great (imagine making
-        ;; flashcards out of backup files or some such just because you haven't
-        ;; installed git yet, and then you have to clean them up).
-        (if (and (inline-anki--git-repo-p ".")
-                 (executable-find "git"))
-            (inline-anki--list-files-except-gitignored)
-          (directory-files-recursively
-           default-directory "\\.org$" nil t)))
-  ;; Filter out ignores
-  (setq inline-anki--file-list
         (cl-loop
-         for path in inline-anki--file-list
-         unless (seq-find `(lambda (ign) (string-match-p ign ,path))
-                          inline-anki-ignore)
+         for path in (directory-files-recursively
+                      default-directory "\\.org$" nil t)
+         ;; Filter out ignores
+         unless (cl-find-if `(lambda (ign) (string-match-p ign ,path))
+                            inline-anki-ignore)
          collect path))
   (format "Will push from %d files in %s"
           (length inline-anki--file-list)
