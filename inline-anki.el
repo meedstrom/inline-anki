@@ -4,9 +4,9 @@
 
 ;; Description: Embed implicit flashcards in flowing text
 ;; Author: Martin Edström
-;; Version: 0.3.2
+;; Version: 0.3.3-snapshot
 ;; Created: 2023-09-19
-;; Package-Requires: ((emacs "28") (asyncloop "0.4.2") (pcre2el "1.12") (request "0.3.1-pre") (dash "2.12.0"))
+;; Package-Requires: ((emacs "28") (asyncloop "0.4.3") (pcre2el "1.12") (request "0.3.3") (dash "2.19.1"))
 ;; URL: https://github.com/meedstrom/inline-anki
 
 ;; This file is not part of GNU Emacs.
@@ -80,7 +80,9 @@ subtree tags only, set `org-use-tag-inheritance' to nil."
 (defcustom inline-anki-ignore
   '("/logseq/version-files/"
     "/logseq/bak/")
-  "List of substrings that bar a file-path from being visited."
+  "List of regexps that bar a file-path from being visited.
+Note that inline-anki only considers file-paths ending in .org,
+so backup and auto-save files are already skipped."
   :type '(repeat string))
 
 (defcustom inline-anki-fields
@@ -190,7 +192,11 @@ variable has."
    (t
     (error "No inline-anki magic string found"))))
 
-(defun inline-anki--dots-for-letters (text)
+;; DEPRECATED: Found myself just trying to infer the answer from the length of
+;; the words, which ruins the test.  I'll wager the Anki creator had a similar
+;; experience, thus the 3-dot default.  I still want some indication of the
+;; answer's length, thus I made `inline-anki-dots-logarithmic'.
+(defun inline-anki-dots-for-letters (text)
   "Return TEXT with all letters and digits replaced by dots.
 Useful as placeholder in a cloze-deletion, so you can still see
 how long the clozed part is.  Blank spaces and dashes will remain
@@ -203,6 +209,19 @@ visible as in the original text."
         (replace-match ".")))
     (buffer-string)))
 
+(defun inline-anki-dots-logarithmic (text)
+  "Return TEXT replaced by dots.
+Longer TEXT means more dots, but follow a log-algorithm so it
+doesn't get crazy long in extreme cases."
+  (make-string (max 3 (* 2 (round (log (length text) 2)))) ?\.))
+
+(defcustom inline-anki-occluder
+  #'inline-anki-dots-logarithmic
+  "Function that takes cloze string and returns an occluded string.
+The Anki default of three dots can be represented by:
+  \(lambda \(_) \"...\")"
+  :type 'function)
+
 (defconst inline-anki-rx:comment-glyph
   (rx bol (*? space) "# "))
 
@@ -213,7 +232,7 @@ visible as in the original text."
     (insert (substring-no-properties text))
     (insert " ")
     (goto-char (point-min))
-    ;; comment means suspend, but don't also blank-out the html
+    ;; comment means suspend card, but don't also blank-out the html
     (while (re-search-forward inline-anki-rx:comment-glyph nil t)
       (delete-char -2))
     (let ((n 0))
@@ -226,7 +245,7 @@ visible as in the original text."
                                    "::"
                                    truth
                                    "::"
-                                   (inline-anki--dots-for-letters truth)
+                                   (funcall inline-anki-occluder truth)
                                    "}}")
                            nil nil nil 2))))
       (if (= n 0)
@@ -403,6 +422,7 @@ need to pass it."
        (or (file-regular-p (expand-file-name ".git" directory))
            (file-directory-p (expand-file-name ".git" directory)))))
 
+;; NOTE: May deprecate, see `inline-anki--prep-scanner'.
 (defun inline-anki--list-files-except-gitignored ()
   "List all Org files under current dir, except gitignored files."
   (cl-loop for file in
@@ -414,10 +434,14 @@ need to pass it."
 
 (defun inline-anki--prep-scanner (_)
   (setq inline-anki--file-list
-        ;; Ideally we'd obey an `inline-anki-must-heed-gitignore' that
-        ;; causes failure when git isn't installed, and check if subdirs
-        ;; are git repos even if the top dir isn't.  Buuut
-        ;; `inline-anki-ignore' was a simpler solution.
+        ;; Ideally we'd obey an user setting `inline-anki-must-heed-gitignore'
+        ;; that causes failure when git isn't installed, and check if subdirs
+        ;; are git repos even if the top dir isn't.  Buuut `inline-anki-ignore'
+        ;; was a simpler solution, and I might deprecate this gitignore
+        ;; integration.  As it is now, it just applies if git is installed,
+        ;; otherwise grabs all files, which isn't great (imagine making
+        ;; flashcards out of backup files or some such just because you haven't
+        ;; installed git yet, and then you have to clean them up).
         (if (and (inline-anki--git-repo-p ".")
                  (executable-find "git"))
             (inline-anki--list-files-except-gitignored)
@@ -427,7 +451,7 @@ need to pass it."
   (setq inline-anki--file-list
         (cl-loop
          for path in inline-anki--file-list
-         unless (seq-find `(lambda (ign) (string-search ign ,path))
+         unless (seq-find `(lambda (ign) (string-match-p ign ,path))
                           inline-anki-ignore)
          collect path))
   (format "Will push from %d files in %s"
@@ -476,8 +500,8 @@ need to pass it."
   (if (string-empty-p (shell-command-to-string "ps -e | grep anki"))
       (message "Anki doesn't seem to be running")
     (asyncloop-run
-      #'(inline-anki--prep-scanner
-         inline-anki--next)
+      (list #'inline-anki--prep-scanner
+            #'inline-anki--next)
       :log-buffer-name "*inline-anki*")
 
     (unless (get-buffer-window "*inline-anki*" 'visible)
