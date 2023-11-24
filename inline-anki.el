@@ -40,14 +40,11 @@
 
 ;;; Code:
 
+(require 'asyncloop)
+
 (defgroup inline-anki nil
   "Customizations for inline-anki."
   :group 'org)
-
-(require 'inline-anki-anki-editor-fork)
-(require 'seq)
-(require 'map)
-(require 'asyncloop)
 
 (defcustom inline-anki-deck "Default"
   "Name of deck to upload to."
@@ -79,10 +76,12 @@ subtree tags only, set `org-use-tag-inheritance' to nil."
 
 (defcustom inline-anki-ignore
   '("/logseq/version-files/"
-    "/logseq/bak/")
+    "/logseq/bak/"
+    ".git/")
   "List of regexps that bar a file-path from being visited.
 Note that inline-anki only considers file-paths ending in .org,
-so backup and auto-save files are already barred."
+so backup and auto-save files ending in ~ or # are already barred
+by that fact."
   :type '(repeat string))
 
 (defcustom inline-anki-fields
@@ -95,7 +94,8 @@ only want t for one of the fields.
 
 If the cdr is a function, it's evaluated with the appropriate
 buffer set as current, with point on the first line of the
-flashcard expression.
+flashcard expression.  (In the case of a #+begin_flashcard
+template, point is on that line.)
 
 You have to create each field in Anki's \"Manage note types\"
 before it will work.  Fields unknown to Anki will not be filled
@@ -320,10 +320,18 @@ value of -1), create it."
   "Return the buffer filename wrapped in <a href>."
   (concat "<a href=\"file://" buffer-file-name "\">" buffer-file-name "</a>"))
 
+(defun inline-anki-check ()
+  "Check that everything is ready, else return nil."
+  (require 'org)
+  (cl-assert
+   (member inline-anki-emphasis-type (mapcar #'car org-emphasis-alist)))
+  (if (not (string-empty-p (shell-command-to-string "ps -e | grep anki")))
+      t
+    (message "Anki doesn't seem to be running")
+    nil))
+
 (defun inline-anki-push-notes-in-buffer-1 ()
   "Push notes in buffer, and return the count of pushes made."
-  (require 'org)
-  (cl-assert (member inline-anki-emphasis-type (map-keys org-emphasis-alist)))
   ;; NOTE: Scan for new flashcards last, otherwise you waste compute
   ;; cycles because you submit the new ones twice
   (save-mark-and-excursion
@@ -393,28 +401,33 @@ value of -1), create it."
 ;;;###autoload
 (defun inline-anki-push-notes-in-buffer (&optional called-interactively)
   "Push all flashcards in the buffer to Anki.
-Argument CALLED-INTERACTIVELY is automatically set; there is no
-need to pass it."
+Argument CALLED-INTERACTIVELY is automatically set; do not pass
+it explicitly."
   (interactive "p")
-  (setq inline-anki--known-flashcard-places nil)
-  (and called-interactively
-       (string-empty-p (shell-command-to-string "ps -e | grep anki"))
-       (message "Anki doesn't seem to be running"))
-  (and inline-anki-use-tags
-       (not (derived-mode-p 'org-mode))
-       (cl-letf ((org-mode-hook nil))
-         (org-mode)))
-  (unless (file-writable-p buffer-file-name)
-    (user-error "No write permissions, cancelling: %s" buffer-file-name))
-  (let (pushed)
-    (unwind-protect
-        (progn
-          (advice-add 'org-html-link :around #'inline-anki--ox-html-link)
-          (setq pushed (inline-anki-push-notes-in-buffer-1)))
-      (advice-remove 'org-html-link #'inline-anki--ox-html-link))
-    (if called-interactively
-        (message "Pushed %d notes!" pushed)
-      pushed)))
+  (require 'inline-anki-anki-editor-fork)
+  (when (or (not called-interactively)
+            (inline-anki-check))
+    (setq inline-anki--known-flashcard-places nil)
+    ;; When `inline-anki-push-notes-in-directory' calls this, the buffer is in
+    ;; fundamental-mode.  If we need to read tags, switch to org-mode.
+    ;; But skip whatever the user has on `org-mode-hook', since it's often a
+    ;; major slowdown.
+    (and inline-anki-use-tags
+         (not (derived-mode-p 'org-mode))
+         (cl-letf ((org-mode-hook nil))
+           (org-mode)))
+    (unless (file-writable-p buffer-file-name)
+      (error "Can't write to path (no permissions?): %s"
+             buffer-file-name))
+    (let (pushed)
+      (unwind-protect
+          (progn
+            (advice-add 'org-html-link :around #'inline-anki--ox-html-link)
+            (setq pushed (inline-anki-push-notes-in-buffer-1)))
+        (advice-remove 'org-html-link #'inline-anki--ox-html-link))
+      (if called-interactively
+          (message "Pushed %d notes!" pushed)
+        pushed))))
 
 (defun inline-anki--prep-scanner (_)
   (setq inline-anki--file-list
@@ -422,7 +435,7 @@ need to pass it."
          for path in (directory-files-recursively
                       default-directory "\\.org$" nil t)
          ;; Filter out ignores
-         unless (cl-find-if `(lambda (ign) (string-match-p ign ,path))
+         unless (cl-find-if (lambda (ign) (string-match-p ign path))
                             inline-anki-ignore)
          collect path))
   (format "Will push from %d files in %s"
@@ -430,27 +443,15 @@ need to pass it."
           default-directory))
 
 (defun inline-anki--next (loop)
-  (let* ((path (pop inline-anki--file-list))
-         (visiting (find-buffer-visiting path))
-         (buf nil)
+  (let* ((path (car inline-anki--file-list))
+         (buf (or (find-buffer-visiting path)
+                  ;; Skip org-mode for speed
+                  (cl-letf (((symbol-function #'org-mode) #'ignore))
+                    (find-file-noselect path))))
          (pushed
-          (if visiting
-              (with-current-buffer visiting
-                (if (buffer-modified-p)
-                    (message
-                     (asyncloop-log loop
-                       "Unsaved changes in file, skipping %s" visiting))
-                  (setq buf visiting)
-                  (inline-anki-push-notes-in-buffer)))
-            ;; Skip org-mode for speed.  Also tried `find-file-literally'
-            ;; in the past; bad idea.
-            (with-current-buffer
-                (cl-letf (((symbol-function #'org-mode) #'ignore))
-                  (find-file-noselect path))
-              (setq buf (current-buffer))
-              (inline-anki-push-notes-in-buffer))))
-         (file nil))
-    (setq file (buffer-name buf))
+          (with-current-buffer buf
+            (inline-anki-push-notes-in-buffer)))
+         (file (buffer-name buf)))
     (if (= 0 pushed)
         (progn
           (cl-assert (not (buffer-modified-p buf)))
@@ -458,23 +459,22 @@ need to pass it."
       (message
        "Pushed %s notes in %s" pushed buf))
     ;; Eat the file list, one item at a time
-    (when inline-anki--file-list
-      (push #'inline-anki--next (asyncloop-remainder loop)))
-    ;; Return useful debug string
-    (format "%d files to go; pushed %d from %s"
-            (length inline-anki--file-list) pushed file)))
+    (pop inline-anki--file-list)
+    (if (null inline-anki--file-list)
+        "All done"
+      (push 'run-again (asyncloop-remainder loop))
+      (format "%d files to go; pushed %d from %s"
+              (length inline-anki--file-list) pushed file))))
 
 ;;;###autoload
 (defun inline-anki-push-notes-in-directory ()
   "Push notes from every file in current dir and all subdirs."
   (interactive)
-  (if (string-empty-p (shell-command-to-string "ps -e | grep anki"))
-      (message "Anki doesn't seem to be running")
+  (when (inline-anki-check)
     (asyncloop-run
       (list #'inline-anki--prep-scanner
             #'inline-anki--next)
       :log-buffer-name "*inline-anki*")
-
     (unless (get-buffer-window "*inline-anki*" 'visible)
       (display-buffer "*inline-anki*"))))
 
