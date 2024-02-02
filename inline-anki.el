@@ -41,6 +41,7 @@
 ;;; Code:
 
 (require 'asyncloop)
+;; (require 'inline-anki-extras)
 
 (defgroup inline-anki nil
   "Customizations for inline-anki."
@@ -62,26 +63,40 @@ Whatever you choose, it MUST be found in `org-emphasis-alist' and
 can only be one character long."
   :type 'string)
 
-(defcustom inline-anki-use-tags nil
-  "Whether to send Org tags to Anki.
-Setting it to nil lets `inline-anki-push-notes-in-directory' work
-faster if you have hundreds of files.
+(defcustom inline-anki-send-tags nil
+  "List of tags to include when sending flashcards to Anki.
+This doesn't mean extra tags injected into every flashcard, but
+rather that if a flashcard has a tag in this list, then to
+send the tag.  Special value t means include all tags.
 
-Defaults to nil because some users may be distraught to find a
-load of new tags in their Anki database.
+Defaults to nil because users may be distraught to find a load of
+new tags in their Anki database.  Also, the nil value lets
+`inline-anki-push-notes-in-directory' work faster.
 
-If you enable this but realize you you want to include the local
-subtree tags only, set `org-use-tag-inheritance' to nil."
-  :type 'boolean)
+A list of strings means include the tag only if it's in this
+list.  Or if the first element is the symbol `not', then include
+the tag only if it's NOT in this list.
 
-(defcustom inline-anki-ignore
+Case-insensitive.
+
+A reasonable value is: '\(not \"noexport\" \"archive\"\).
+
+If you want to include the local subtree tags only, that cannot
+be expressed here; you need `org-use-tag-inheritance' at nil."
+  :type '(choice
+          (const :tag "All" t)
+          (const :tag "None" nil)
+          (repeat sexp)))
+
+(defcustom inline-anki-ignore-file-regexps
   '("/logseq/version-files/"
     "/logseq/bak/"
-    ".git/")
+    "/.git/")
   "List of regexps that bar a file-path from being visited.
-Note that inline-anki only considers file-paths ending in .org,
-so backup and auto-save files ending in ~ or # are already barred
-by that fact."
+Used by the command `inline-anki-push-notes-in-directory'.  Note
+that the command only considers file-paths ending in .org, so
+backup and auto-save files ending in ~ or # are already barred by
+that fact."
   :type '(repeat string))
 
 (defcustom inline-anki-fields
@@ -192,34 +207,18 @@ variable has."
    (t
     (error "No inline-anki magic string found"))))
 
-;; DEPRECATED: Found myself just trying to infer the answer from the length of
-;; the words, which ruins the test.  I'll wager the Anki creator had a similar
-;; experience, thus the 3-dot default.  I still want some indication of the
-;; answer's length, thus I made `inline-anki-dots-logarithmic'.
-(defun inline-anki-dots-for-letters (text)
-  "Return TEXT with all letters and digits replaced by dots.
-Useful as placeholder in a cloze-deletion, so you can still see
-how long the clozed part is.  Blank spaces and dashes will remain
-visible as in the original text."
-  (with-temp-buffer
-    (insert text)
-    (goto-char (point-min))
-    (save-match-data
-      (while (re-search-forward "[[:alnum:]]" nil t)
-        (replace-match ".")))
-    (buffer-string)))
-
 (defun inline-anki-dots-logarithmic (text)
   "Return TEXT replaced by dots.
-Longer TEXT means more dots, but follow a log-algorithm so it
-doesn't get crazy long in extreme cases."
+Longer TEXT means more dots, but follow a log-2 algorithm so it
+doesn't get crazy-long in extreme cases."
   (make-string (max 3 (* 2 (round (log (length text) 2)))) ?\.))
 
 (defcustom inline-anki-occluder
   #'inline-anki-dots-logarithmic
-  "Function that takes cloze string and returns an occluded string.
-The Anki default of three dots can be represented by:
-  \(lambda \(_) \"...\")"
+  "Function that takes a string and returns an occluded string, for
+use in cloze.
+
+To get the Anki default of three dots, set this variable to nil."
   :type 'function)
 
 (defconst inline-anki-rx:comment-glyph
@@ -244,8 +243,10 @@ The Anki default of three dots can be represented by:
                                    (number-to-string (cl-incf n))
                                    "::"
                                    truth
-                                   "::"
-                                   (funcall inline-anki-occluder truth)
+                                   (when inline-anki-occluder
+                                     (concat
+                                      "::"
+                                      (funcall inline-anki-occluder truth)))
                                    "}}")
                            nil nil nil 2))))
       (if (= n 0)
@@ -256,7 +257,7 @@ The Anki default of three dots can be represented by:
   "Push a flashcard to Anki, identified by NOTE-ID.
 Use the buffer substring delimited by FIELD-BEG and FIELD-END.
 
-If a flashcard doesn't exist (indicated by passing a NOTE-ID
+If a flashcard doesn't exist (indicated by a NOTE-ID
 value of -1), create it."
   (let ((this-line (line-number-at-pos)))
     (if (member this-line inline-anki--known-flashcard-places)
@@ -269,6 +270,13 @@ value of -1), create it."
                                         t
                                         '(:with-toc nil))))
       (prog1 t
+        ;; When `inline-anki-push-notes-in-directory' calls this, the buffer is
+        ;; in fundamental-mode. Switch to org-mode if we need to read tags.
+        (and inline-anki-send-tags
+             (not (derived-mode-p 'org-mode))
+             ;; Skip org-mode-hook since it's often slow.
+             (cl-letf ((org-mode-hook nil))
+               (org-mode)))
         (funcall
          (if (= -1 note-id)
              #'inline-anki--create-note
@@ -277,10 +285,26 @@ value of -1), create it."
           (cons 'deck inline-anki-deck)
           (cons 'note-type inline-anki-note-type)
           (cons 'note-id note-id)
-          (cons 'tags (cons (format-time-string "from-emacs-%F")
-                            (when inline-anki-use-tags
-                              (mapcar #'substring-no-properties
-                                      (org-get-tags)))))
+          (cons 'tags
+                (delq nil
+                      (cons
+                       (when inline-anki-extra-tag
+                         (format-time-string inline-anki-extra-tag))
+                       (mapcar #'substring-no-properties
+                               (cond ((eq t inline-anki-send-tags)
+                                      (org-get-tags))
+                                     ((null inline-anki-send-tags)
+                                      nil)
+                                     ((eq (car inline-anki-send-tags) 'not)
+                                      (cl-set-difference
+                                       (org-get-tags)
+                                       (cdr inline-anki-send-tags)
+                                       :test #'string-equal-ignore-case))
+                                     (t
+                                      (cl-set-difference
+                                       inline-anki-send-tags
+                                       (org-get-tags)
+                                       :test #'string-equal-ignore-case)))))))
           (cons 'fields (cl-loop
                          for (field . value) in inline-anki-fields
                          as expanded = (inline-anki--expand value)
@@ -294,23 +318,28 @@ value of -1), create it."
     (message "No implicit clozes found, skipping:  %s" text)
     nil))
 
+(defcustom inline-anki-extra-tag "from-emacs-%F"
+  "Tag added to every note sent to Anki.
+Will be passed through `format-time-string'.  Cannot be nil."
+  :type 'string)
+
 (defun inline-anki--expand (input)
   "Return INPUT if it's a string, else funcall or eval it."
   (condition-case signal
-      (if (stringp input)
-          input
-        (if (functionp input)
-            (save-excursion
-              (save-match-data
-                (funcall input)))
-          (if (null input)
-              ;; TODO: Maybe warn that input was nil
-              ""
-            (if (listp input)
-                (eval input t)
-              ""))))
-    ;; IME this is a common source of errors (and I'm the package dev!), so help
-    ;; tell the user where the error's coming from.
+      (cond ((stringp input)
+             input)
+            ((functionp input)
+             (save-excursion
+               (save-match-data
+                 (funcall input))))
+            ((null input)
+             (warn "A cdr of `inline-anki-fields' appears to be nil")
+             "")
+            ((listp input)
+             (eval input t))
+            (t ""))
+    ;; IME this is a common source of errors (and I'm the package dev!), so
+    ;; help tell the user where the error's coming from.
     ((error debug)
      (error "There was likely a problem evaluating a member of `inline-anki-fields':  %s signaled %s"
             input
@@ -401,21 +430,12 @@ value of -1), create it."
 ;;;###autoload
 (defun inline-anki-push-notes-in-buffer (&optional called-interactively)
   "Push all flashcards in the buffer to Anki.
-Argument CALLED-INTERACTIVELY is automatically set; do not pass
-it explicitly."
+Argument CALLED-INTERACTIVELY is automatically set."
   (interactive "p")
   (require 'inline-anki-anki-editor-fork)
   (when (or (not called-interactively)
             (inline-anki-check))
     (setq inline-anki--known-flashcard-places nil)
-    ;; When `inline-anki-push-notes-in-directory' calls this, the buffer is in
-    ;; fundamental-mode.  If we need to read tags, switch to org-mode.
-    ;; But skip whatever the user has on `org-mode-hook', since it's often a
-    ;; major slowdown.
-    (and inline-anki-use-tags
-         (not (derived-mode-p 'org-mode))
-         (cl-letf ((org-mode-hook nil))
-           (org-mode)))
     (unless (file-writable-p buffer-file-name)
       (error "Can't write to path (no permissions?): %s"
              buffer-file-name))
@@ -436,33 +456,34 @@ it explicitly."
                       default-directory "\\.org$" nil t)
          ;; Filter out ignores
          unless (cl-find-if (lambda (ign) (string-match-p ign path))
-                            inline-anki-ignore)
+                            inline-anki-ignore-file-regexps)
          collect path))
   (format "Will push from %d files in %s"
           (length inline-anki--file-list)
           default-directory))
 
 (defun inline-anki--next (loop)
-  (let* ((path (car inline-anki--file-list))
-         (buf (or (find-buffer-visiting path)
-                  ;; Skip org-mode for speed
-                  (cl-letf (((symbol-function #'org-mode) #'ignore))
-                    (find-file-noselect path))))
-         (pushed
-          (with-current-buffer buf
-            (inline-anki-push-notes-in-buffer)))
-         (file (buffer-name buf)))
-    (if (= 0 pushed)
-        (progn
-          (cl-assert (not (buffer-modified-p buf)))
-          (kill-buffer buf))
-      (message
-       "Pushed %s notes in %s" pushed buf))
-    ;; Eat the file list, one item at a time
-    (pop inline-anki--file-list)
-    (if (null inline-anki--file-list)
-        "All done"
-      (push 'run-again (asyncloop-remainder loop))
+  (if (null inline-anki--file-list)
+      "All done"
+    (let* ((path (car inline-anki--file-list))
+           (buf (or (find-buffer-visiting path)
+                    ;; Skip org-mode for speed
+                    (cl-letf (((symbol-function #'org-mode) #'ignore))
+                      (find-file-noselect path))))
+           (pushed
+            (with-current-buffer buf
+              (inline-anki-push-notes-in-buffer)))
+           (file (buffer-name buf)))
+      (if (= 0 pushed)
+          (progn
+            (cl-assert (not (buffer-modified-p buf)))
+            (kill-buffer buf))
+        (message
+         "Pushed %d notes in %s" pushed buf))
+      ;; Eat the file list, one item at a time
+      (pop inline-anki--file-list)
+      ;; Repeat this function
+      (push t (asyncloop-remainder loop))
       (format "%d files to go; pushed %d from %s"
               (length inline-anki--file-list) pushed file))))
 
@@ -477,6 +498,12 @@ it explicitly."
       :log-buffer-name "*inline-anki*")
     (unless (get-buffer-window "*inline-anki*" 'visible)
       (display-buffer "*inline-anki*"))))
+
+(define-obsolete-variable-alias
+  'inline-anki-ignore 'inline-anki-ignore-file-regexps "2024-02-02")
+
+(define-obsolete-variable-alias
+  'inline-anki-use-tags 'inline-anki-send-tags "2024-02-02")
 
 (provide 'inline-anki)
 

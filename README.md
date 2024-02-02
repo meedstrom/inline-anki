@@ -7,6 +7,9 @@ The other SRS programs in the Emacs ecosystem ([org-fc](https://github.com/l3kn/
 
 I don't want to awkwardly append flashcards to the end of an Org section as a kind of paraphrasis or summary of that section, but to let the flashcards serve *as* paragraphs in their own right!
 
+## Set-up
+
+See [the user manual](doc/inline-anki.org).  It's also available inside Emacs by typing `C-h i d m inline-anki RET`.
 
 
 ## Demonstration
@@ -78,10 +81,6 @@ If you're reading this in a web browser, note that this is what it'll look like 
     5. Let me not become attached to beliefs I may not want.
     #+end_flashcard
 
-## Set-up
-
-Please see [the user manual](doc/inline-anki.org) (also available as Info manual after installation; type `C-h i d m inline-anki`).
-
 
 ## Why underlines?
 
@@ -142,3 +141,7 @@ The reason I switched to underline was the idea of "*invisible*-anki", a future 
 
 Thanks a lot to @louietan who wrote <https://github.com/louietan/anki-editor>.  I could reuse its AnkiConnect bindings, which lowered the barrier for me to get started.
 
+
+## Set-up
+
+See [the user manual](doc/inline-anki.org).  It's also available inside Emacs by typing `C-h i d m inline-anki RET`.
