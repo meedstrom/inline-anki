@@ -55,7 +55,7 @@ Note I omitted the @ glyph.  You can do that on line endings.
 
 I find it more aesthetic to put the Anki note ID at the end of a list item, when that list item is a member of a longer list of non-flashcard things.
 
-This list expresses, among other things, three Anki cloze notes:
+This list expresses, among other things, three Anki cloze notes (totalling four deletions).  You'll note three of the six bullet points never get sent to Anki, since there is nothing to indicate them as Anki notes.
 
 > -   "The third virtue is lightness. Let the winds of evidence blow you about as though you are a leaf, with no direction of your own.  Beware lest you fight a rearguard retreat against the evidence, grudgingly conceding each foot of ground only when forced, feeling cheated.  Surrender to the truth as quickly as you can.  Do this the instant you realize what you are resisting, the instant you can see from which quarter the winds of evidence are blowing against you.  Be faithless to your cause and betray it to a stronger enemy."
 > -   Do not think that fairness to all sides means balancing yourself evenly between positions; truth is not handed out <ins>in equal portions</ins> before the start of a debate.<sup>1695193247566</sup>
@@ -67,9 +67,9 @@ This list expresses, among other things, three Anki cloze notes:
 
 ### Way 4: Multiline flashcards in a `#+begin_flashcard` block
 
-The block below expresses a single Anki cloze note (totalling three cloze deletions).
+The block below expresses a **single** Anki cloze note (totalling three cloze deletions).
 
-If you're reading this in a web browser, note that this is what it'll look like in an org-mode buffer.  I had to show it this way because upon export to the web, the block boundaries disappear and you'd never realize there was anything odd about these paragraphs.
+If you're reading this in a web browser, note that this is what it'll look like in an Org-mode buffer.  I had to show it this way because upon export to the web, the block boundaries disappear and you'd never realize there was anything odd about these paragraphs.
 
     #+begin_flashcard 165193247510
     The _Litany of Tarski_ goes:
@@ -84,13 +84,13 @@ If you're reading this in a web browser, note that this is what it'll look like 
 
 ## Why underlines?
 
-Underlines are rare on the web for a reason: you easily mistake them for hyperlinks, especially if you're colorblind. 
+Underlines are rare on the web for a reason: people easily mistake them for hyperlinks, so many style guides deprecate them.
 
-Think of underlines as the **handwriting equivalent of bold text**.  They belong on paper, not on a computer screen.  They're not even permitted in Markdown!  I had to hack this README by using `<ins>` HTML tags.
+Think of underlines as the **handwriting version** of bold text.  They belong on paper, not on a computer screen.  They're not even permitted in Markdown!  I had to hack this README by using `<ins>` HTML tags.
 
-Since we avoid the underline on computer screens, it's free real estate to load with a new semantic.
+Since we avoid the underline on computer screens... it's free real estate to load with a new semantic.
 
-"But you just said to avoid it!"  Well, the upside compared to **bold**/*italic*/~strikethrough~, is we get **full control of how a cloze deletion should look!**  Here's how it looks in my Emacs:
+"But you just said to avoid it!"  Well, the upside compared to **bold**/*italic*/~strikethrough~, is we get **full control of how a cloze deletion should look!**  Here's how I've made it look in my Emacs:
 
 <img alt="Example in Emacs, of cloze text inside a box" src="box-example-source.png" width="600px" />
 
@@ -98,7 +98,7 @@ and the [corresponding page on my website](https://edstrom.dev/sJt8/replacing-gu
 
 <img alt="Example in web browser, of cloze text inside a box" src="box-example-web.png" width="600px" />
 
-See, no mistaking them for hyperlinks now.  To recreate this appearance in Emacs, use this initfile snippet -- which must run before Org loads.
+See, no mistaking them for hyperlinks.  To recreate this appearance in Emacs, use this initfile snippet -- which must run before Org loads.
 
     (defface my-cloze '((t . (:box t))) "Cloze face")
     (setq org-emphasis-alist '(("*" bold)
@@ -108,7 +108,7 @@ See, no mistaking them for hyperlinks now.  To recreate this appearance in Emacs
                                ("~" org-code verbatim)
                                ("+" (:strike-through t))))
 
-As for your own blog, Org exports underlines to HTML as `<span class="underline">`, so you can control how it ends up looking with a CSS rule such as the following.
+As for your own blog, Org exports underlines to HTML as `<span class="underline">`, so you can control how it ends up looking with a CSS rule on your blog such as the following.
 
     span.underline {
         text-decoration: none;
@@ -118,24 +118,22 @@ As for your own blog, Org exports underlines to HTML as `<span class="underline"
 
 ### You can still use your chosen marker normally
 
-Whichever emphasis marker you choose, be it _, *, /, +, ~, or =, inline-anki doesn't bar you from using it in general.  A paragraph needs a magic string like `@anki` to be parsed as a flashcard in the first place (see [user manual](doc/inline-anki.org)), without which the marker has no special meaning.
+Let's say you prefer to mark clozes with bold.  (That was my default for a while.)  Then you might worry that you can't use it in the usual way anymore?
 
-In fact, the default for this package was once **bold**, not underline.  It didn't result in any accidental flashcards, even though I put bold everywhere.
+Don't worry -- whichever emphasis marker you choose, be it _, *, /, +, ~, or =, a paragraph needs a magic string like `@anki` to be parsed as a flashcard in the first place (see [user manual](doc/inline-anki.org)), without which the marker has no special meaning.
 
-The reason I switched to underline was the idea of "*invisible*-anki", a future experiment that eliminates the note IDs altogether.  With the note IDs gone, it must reserve an emphasis marker that always means cloze.  I'm early-adopting it.
-
+The reason I switched to underline was the idea of "*invisible*-anki", a future experiment that eliminates the note IDs in favour of heuristic recognition.  With the note IDs gone, it must reserve an emphasis marker that always means cloze.  I'm early-adopting it.
 
 ## Roadmap
 
 -   [ ] Allow hard-wrapping
 -   [ ] Fix picture/media export
--   Define some expressions for a traditional front-back note-type (instead of cloze-deletion)
+-   [ ] Define some expressions for a traditional front-back note-type (instead of cloze-deletion)
     -   [ ] As a parameter for `#+begin_flashcard` &#x2013; interpret the last paragraph as the back side.
     -   [ ] As a single-column or single-row 2-cell table.
-        -   No need for `#+begin_flashcard` and no need to add a blank line in between the fields.
+        -   Very compact: no need for `#+begin_flashcard` nor a blank line in between the fields
         -   [ ] Extend this so that if you have many rows, you can flag the whole table as a table of flashcards where each row is one flashcard.
-            -   But that's mainly useful for vocabulary-type stuff, since not much text fits in one table row.
-
+            -   But that's mainly useful for vocabulary-type stuff, since so little text fits in one table cell.
 
 ## Thanks
 
