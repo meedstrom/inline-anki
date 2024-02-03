@@ -1,12 +1,12 @@
 ;;; inline-anki.el --- Embed implicit flashcards in flowing text -*- lexical-binding: t; -*-
 
-;; Copyright (C) 2023 Martin Edström <meedstrom91@gmail.com>
+;; Copyright (C) 2023-2024 Martin Edström <meedstrom91@gmail.com>
 
 ;; Description: Embed implicit flashcards in flowing text
 ;; Author: Martin Edström
-;; Version: 0.3.3
+;; Version: 0.3.4
 ;; Created: 2023-09-19
-;; Package-Requires: ((emacs "28") (asyncloop "0.4.3") (pcre2el "1.12") (request "0.3.3") (dash "2.19.1"))
+;; Package-Requires: ((emacs "28") (asyncloop "0.5.1-snapshot") (pcre2el "1.12") (request "0.3.3") (dash "2.19.1"))
 ;; URL: https://github.com/meedstrom/inline-anki
 
 ;; This file is not part of GNU Emacs.
@@ -31,7 +31,7 @@
 ;; Requirements:
 ;; - curl
 ;; - Anki with AnkiConnect add-on
-;; - A Unix-like system (Linux, MacOS, WSL, BSD)
+;; - A Unix-like system (tested on GNU+Linux only)
 ;;
 ;; Recommended initfile snippet:
 ;;
@@ -351,6 +351,7 @@ Will be passed through `format-time-string'.  Cannot be nil."
 
 (defun inline-anki-check ()
   "Check that everything is ready, else return nil."
+  (inline-anki-warn-renamed-options)
   (cl-assert
    (member inline-anki-emphasis-type (mapcar #'car org-emphasis-alist)))
   (if (not (string-empty-p (shell-command-to-string "ps -e | grep anki")))
@@ -500,11 +501,29 @@ Argument CALLED-INTERACTIVELY is automatically set."
     (unless (get-buffer-window "*inline-anki*" 'visible)
       (display-buffer "*inline-anki*"))))
 
-(define-obsolete-variable-alias
-  'inline-anki-ignore 'inline-anki-ignore-file-regexps "2024-02-02")
+;;; Handle deprecations gracefully
 
-(define-obsolete-variable-alias
-  'inline-anki-use-tags 'inline-anki-send-tags "2024-02-02")
+(defcustom inline-anki-ignore
+  '("/logseq/version-files/"
+    "/logseq/bak/"
+    "/.git/")
+  "This option has been renamed, use `inline-anki-ignore-file-regexps'."
+  :type '(repeat string))
+
+(defun inline-anki-warn-renamed-options ()
+  (require 'custom)
+  ;; If it's at the standard value, pretend there's no such variable
+  (when (equal (custom--standard-value 'inline-anki-ignore)
+               (symbol-value 'inline-anki-ignore))
+    (setq inline-anki-ignore nil))
+  (when-let ((use-tags (symbol-value 'inline-anki-use-tags)))
+    (setq inline-anki-send-tags use-tags)
+    (setq inline-anki-use-tags nil)
+    (message "User option renamed: `inline-anki-use-tags' to `inline-anki-send-tags'"))
+  (when-let ((igno (symbol-value 'inline-anki-ignore)))
+    (setq inline-anki-ignore-file-regexps igno)
+    (setq inline-anki-ignore nil)
+    (message "User option renamed: `inline-anki-ignore' to `inline-anki-ignore-file-regexps'")))
 
 (provide 'inline-anki)
 

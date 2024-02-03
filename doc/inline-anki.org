@@ -7,12 +7,12 @@
 #+texinfo_dir_category: Emacs
 #+texinfo_dir_title: Inline Anki: (inline-anki).
 #+texinfo_dir_desc: Embed implicit flashcards in flowing text.
-#+subtitle: for version 0.3.1-pre
+#+subtitle: for version 0.3.4
 
-This manual is for Inline Anki version 0.3.1-pre.
+This manual is for Inline Anki version 0.3.4.
 
 #+BEGIN_QUOTE
-Copyright (C) 2023 Martin Edström <meedstrom91@gmail.com>
+Copyright (C) 2023-2024 Martin Edström <meedstrom91@gmail.com>
 
 You can redistribute this document and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
 
@@ -77,11 +77,12 @@ You may like to know that:
 - =inline-anki-emphasis-type=
   - Default "_", can be changed to "*", "/" or other things you find in =org-emphasis-alist=.
 
-- =inline-anki-use-tags=
-  - Default =nil=.  Controls whether or not to send Org tags to Anki.
+- =inline-anki-send-tags=
+  - Default =nil=.  Controls whether or not to send Org tags to Anki.  Can also be a whitelist of valid tags like =("tag1" "tag2")= or a blacklist of invalid tags like =(not "tag1" "tag2")=.  Value =t= sends all tags.
+  - The benefit of a =nil= value is faster upload if you have hundreds of Org files.
 
-- =inline-anki-ignore=
-  - Helps the command =inline-anki-push-notes-in-directory= decide whether or not to visit a file.  If that file's full name contains one of the strings in this list, skip the file.
+- =inline-anki-ignore-file-regexps=
+  - Helps the command =inline-anki-push-notes-in-directory= decide whether or not to visit a file.  If that file's full name matches one of the regular expressions in this list, skip the file.
 
 - =inline-anki-fields=
   - See docstring.
@@ -139,7 +140,7 @@ Many traditional features are ABSENT in inline-anki.
       - You can display the tags inside cards as a contextual hint, [[https://edstrom.dev/posts/qix2Q4W/how-to-display-tags-as-hint-in-all-anki-cards][if you code this in the card template]]
       - You can use the tags to set up Custom Study sessions on a filtered subset of notes
         - Invaluable since the package only targets one deck
-    - Finally, even if you set =inline-anki-use-tags= to nil, inline-anki always attaches one tag named after the date, in this style: "from-emacs-2023-09-20"
+    - Finally, even if you leave =inline-anki-send-tags= at nil, inline-anki always attaches one tag named after the date, in this style: "from-emacs-2023-09-20"
       - This lets you separate inline-anki notes from your "handmade" notes
       - This lets you see if you have stale inline-anki notes that aren't being updated
 - You get no indication that Anki has tagged a card as "Marked" or "Leech"
