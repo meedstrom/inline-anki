@@ -4,7 +4,7 @@
 
 ;; Description: Embed implicit flashcards in flowing text
 ;; Author: Martin Edström
-;; Version: 0.3.3-snapshot
+;; Version: 0.3.3
 ;; Created: 2023-09-19
 ;; Package-Requires: ((emacs "28") (asyncloop "0.4.3") (pcre2el "1.12") (request "0.3.3") (dash "2.19.1"))
 ;; URL: https://github.com/meedstrom/inline-anki
@@ -351,7 +351,6 @@ Will be passed through `format-time-string'.  Cannot be nil."
 
 (defun inline-anki-check ()
   "Check that everything is ready, else return nil."
-  (require 'org)
   (cl-assert
    (member inline-anki-emphasis-type (mapcar #'car org-emphasis-alist)))
   (if (not (string-empty-p (shell-command-to-string "ps -e | grep anki")))
@@ -432,6 +431,7 @@ Will be passed through `format-time-string'.  Cannot be nil."
   "Push all flashcards in the buffer to Anki.
 Argument CALLED-INTERACTIVELY is automatically set."
   (interactive "p")
+  (require 'org)
   (require 'inline-anki-anki-editor-fork)
   (when (or (not called-interactively)
             (inline-anki-check))
@@ -491,6 +491,7 @@ Argument CALLED-INTERACTIVELY is automatically set."
 (defun inline-anki-push-notes-in-directory ()
   "Push notes from every file in current dir and all subdirs."
   (interactive)
+  (require 'org)
   (when (inline-anki-check)
     (asyncloop-run
       (list #'inline-anki--prep-scanner
