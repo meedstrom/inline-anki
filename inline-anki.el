@@ -4,9 +4,9 @@
 
 ;; Description: Embed implicit flashcards in flowing text
 ;; Author: Martin Edström
-;; Version: 0.3.5-snapshot
+;; Version: 0.3.5
 ;; Created: 2023-09-19
-;; Package-Requires: ((emacs "28") (asyncloop "0.5.1-snapshot") (pcre2el "1.12") (request "0.3.3") (dash "2.19.1"))
+;; Package-Requires: ((emacs "28") (asyncloop "0.5") (pcre2el "1.12") (request "0.3.3") (dash "2.19.1"))
 ;; URL: https://github.com/meedstrom/inline-anki
 
 ;; This file is not part of GNU Emacs.
@@ -32,11 +32,6 @@
 ;; - curl
 ;; - Anki with AnkiConnect add-on
 ;; - A Unix-like system (tested on GNU+Linux only)
-;;
-;; Recommended initfile snippet:
-;;
-;; (with-eval-after-load 'org
-;;   (add-to-list 'org-structure-template-alist '("f" . "flashcard")))
 
 ;;; Code:
 

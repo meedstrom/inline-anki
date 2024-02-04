@@ -14,7 +14,7 @@
 @finalout
 @titlepage
 @title Inline Anki User Manual
-@subtitle for version 0.3.1-pre
+@subtitle for version 0.3.4
 @author Martin Edström
 @end titlepage
 
@@ -24,10 +24,10 @@
 @node Top
 @top Inline Anki User Manual
 
-This manual is for Inline Anki version 0.3.1-pre.
+This manual is for Inline Anki version 0.3.4.
 
 @quotation
-Copyright (C) 2023 Martin Edström <meedstrom91@@gmail.com>
+Copyright (C) 2023-2024 Martin Edström <meedstrom91@@gmail.com>
 
 You can redistribute this document and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
 
@@ -135,7 +135,7 @@ There's a bit of a gimmick: if a note has 3 clozes, and you study it a bit, and 
 @item
 Up to you whether to care, but in my opinion, it changes nothing.
 @item
-No surprise to experienced Anki-users, but the third field's original scheduling will be attached to an empty card.  You can clean up empty cards with the menu option "Check database@dots{}".
+No surprise to experienced Anki-users, but the third field's original scheduling will be attached to an empty card.  You can clean up empty cards with the menu option ``Check database@dots{}''.
 @end itemize
 @end itemize
 
@@ -147,35 +147,37 @@ No surprise to experienced Anki-users, but the third field's original scheduling
 @samp{inline-anki-deck}
 @itemize
 @item
-Default "Default".
+Default ``Default''.
 @end itemize
 
 @item
 @samp{inline-anki-note-type}
 @itemize
 @item
-Default "Cloze from Outer Space".
+Default ``Cloze from Outer Space''.
 @end itemize
 
 @item
 @samp{inline-anki-emphasis-type}
 @itemize
 @item
-Default "_", can be changed to "*", "/" or other things you find in @samp{org-emphasis-alist}.
+Default ``_'', can be changed to ``*'', ``/'' or other things you find in @samp{org-emphasis-alist}.
 @end itemize
 
 @item
-@samp{inline-anki-use-tags}
+@samp{inline-anki-send-tags}
 @itemize
 @item
-Default @samp{nil}.  Controls whether or not to send Org tags to Anki.
+Default @samp{nil}.  Controls whether or not to send Org tags to Anki.  Can also be a whitelist of valid tags like @samp{("tag1" "tag2")} or a blacklist of invalid tags like @samp{(not "tag1" "tag2")}.  Value @samp{t} sends all tags.
+@item
+The benefit of a @samp{nil} value is faster upload if you have hundreds of Org files.
 @end itemize
 
 @item
-@samp{inline-anki-ignore}
+@samp{inline-anki-ignore-file-regexps}
 @itemize
 @item
-Helps the command @samp{inline-anki-push-notes-in-directory} decide whether or not to visit a file.  If that file's full name contains one of the strings in this list, skip the file.
+Helps the command @samp{inline-anki-push-notes-in-directory} decide whether or not to visit a file.  If that file's full name matches one of the regular expressions in this list, skip the file.
 @end itemize
 
 @item
@@ -238,7 +240,7 @@ To me this is a non-issue since the bus is the only place I want to review anywa
 @end itemize
 
 @item
-@strong{Flaw 2:} Like with anki-editor, inline-anki definitions work as the "master copy": @strong{you cannot edit the cards from within Anki}.  If you tried, such edits would be lost on next sync.
+@strong{Flaw 2:} Like with anki-editor, inline-anki definitions work as the ``master copy'': @strong{you cannot edit the cards from within Anki}.  If you tried, such edits would be lost on next sync.
 
 You have to return to your computer and edit there, in Emacs.
 
@@ -292,17 +294,17 @@ Invaluable since the package only targets one deck
 @end itemize
 @end itemize
 @item
-Finally, even if you set @samp{inline-anki-use-tags} to nil, inline-anki always attaches one tag named after the date, in this style: "from-emacs-2023-09-20"
+Finally, even if you leave @samp{inline-anki-send-tags} at nil, inline-anki always attaches one tag named after the date, in this style: ``from-emacs-2023-09-20''
 @itemize
 @item
-This lets you separate inline-anki notes from your "handmade" notes
+This lets you separate inline-anki notes from your ``handmade'' notes
 @item
 This lets you see if you have stale inline-anki notes that aren't being updated
 @end itemize
 @end itemize
 @end itemize
 @item
-You get no indication that Anki has tagged a card as "Marked" or "Leech"
+You get no indication that Anki has tagged a card as ``Marked'' or ``Leech''
 @itemize
 @item
 You can still see this in Anki's own card browser, so you can still sit down and go through them manually every now and then -- just like a normal Anki user, with the difference that you have to open the source file in Emacs and edit there.
@@ -356,7 +358,7 @@ If necessary, you can write Anki's own @samp{@{@{c1::@}@}} syntax directly.  Bes
 Can I continue using my [org-drill/org-anki/@dots{}] cards?
 @itemize
 @item
-Yes!  Those packages treat whole Org subtrees as their "data objects", and this package does not.  You can even have an inline-anki card @emph{inside} an org-anki subtree.
+Yes!  Those packages treat whole Org subtrees as their ``data objects'', and this package does not.  You can even have an inline-anki card @emph{inside} an org-anki subtree.
 @end itemize
 @end itemize
 
