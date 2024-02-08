@@ -453,12 +453,16 @@ Argument CALLED-INTERACTIVELY is automatically set."
     (unless (file-writable-p buffer-file-name)
       (error "Can't write to path (no permissions?): %s"
              buffer-file-name))
-    (let (pushed)
+    (let (pushed
+          (already-modified (buffer-modified-p)))
       (unwind-protect
           (progn
             (advice-add 'org-html-link :around #'inline-anki--ox-html-link)
             (setq pushed (inline-anki-push-notes-in-buffer-1)))
         (advice-remove 'org-html-link #'inline-anki--ox-html-link))
+      (if already-modified
+          (message "Not saving buffer %s" (current-buffer))
+        (save-buffer))
       (if called-interactively
           (message "Pushed %d notes!" pushed)
         pushed))))
@@ -482,18 +486,29 @@ Argument CALLED-INTERACTIVELY is automatically set."
     (let* ((path (car inline-anki--file-list))
            (buf (or (find-buffer-visiting path)
                     ;; Skip org-mode for speed
-                    (cl-letf (((symbol-function #'org-mode) #'ignore))
+                    (cl-letf (((symbol-function #'org-mode) #'ignore)
+                              ((symbol-function #'after-find-file) #'ignore)
+                              (find-file-hook nil))
                       (find-file-noselect path))))
            (pushed
             (with-current-buffer buf
               (inline-anki-push-notes-in-buffer)))
-           (file (buffer-name buf)))
+           (file (buffer-name buf))
+           (modified (buffer-modified-p buf)))
       (if (= 0 pushed)
           (progn
-            (cl-assert (not (buffer-modified-p buf)))
+            (cl-assert (not modified))
             (kill-buffer buf))
-        (message
-         "Pushed %d notes in %s" pushed buf))
+        (message "%sPushed %d notes in %s"
+                 (if modified
+                     "Not saving! "
+                   ;; Switch from fundamental-mode to org-mode (probably)
+                   ;; to avoid shocking user
+                   (with-current-buffer buf
+                     (normal-mode))
+                   "")
+                 pushed
+                 buf))
       ;; Eat the file list, one item at a time
       (pop inline-anki--file-list)
       ;; Repeat this function
