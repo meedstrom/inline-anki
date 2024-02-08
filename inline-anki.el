@@ -4,7 +4,7 @@
 
 ;; Description: Embed implicit flashcards in flowing text
 ;; Author: Martin Edström
-;; Version: 0.3.6
+;; Version: 0.3.7-pre
 ;; Created: 2023-09-19
 ;; Package-Requires: ((emacs "28") (asyncloop "0.5") (pcre2el "1.12") (request "0.3.3") (dash "2.19.1"))
 ;; URL: https://github.com/meedstrom/inline-anki
@@ -61,23 +61,25 @@ can only be one character long."
 (defcustom inline-anki-send-tags nil
   "List of tags to include when sending flashcards to Anki.
 This doesn't mean extra tags injected into every flashcard, but
-rather that if a flashcard has a tag in this list, then to
+rather that if the subtree has a tag in this list, then to
 send the tag.  Special value t means include all tags.
 
 Defaults to nil because users may be distraught to find a load of
-new tags in their Anki database.  Also, the nil value lets
-`inline-anki-push-notes-in-directory' work faster.
+new tags in their Anki database.  Also, the nil value lets the
+command `inline-anki-push-notes-in-directory' work faster, since it won't
+have to turn on Org-mode for each file visited.
 
 A list of strings means include the tag only if it's in this
 list.  Or if the first element is the symbol `not', then include
 the tag only if it's NOT in this list.
 
+A reasonable value is '\(not \"noexport\" \"archive\"\).
+
 Case-insensitive.
 
-A reasonable value is: '\(not \"noexport\" \"archive\"\).
-
-If you want to include the local subtree tags only, that cannot
-be expressed here; you need `org-use-tag-inheritance' at nil."
+If you want to include the local subtree tags only and exclude
+global tags, that cannot be expressed here; you need
+`org-use-tag-inheritance' at nil."
   :type '(choice
           (const :tag "All" t)
           (const :tag "None" nil)
@@ -95,8 +97,8 @@ that fact."
   :type '(repeat string))
 
 (defcustom inline-anki-fields
-  '(("Text" . t)
-    ("Source" . inline-anki-field:filename-link))
+  '(("Source" . inline-anki-field:filename-link)
+    ("Text" . t))
   "Alist specifying note fields and how to populate them.
 The cdrs may be either t, a string or a function.  The symbol t
 is replaced with the full HTML of the note, so you probably
@@ -107,10 +109,10 @@ buffer set as current, with point on the first line of the
 flashcard expression.  (In the case of a #+begin_flashcard
 template, point is on that line.)
 
-You have to create each field in Anki's \"Manage note types\"
-before it will work.  Fields unknown to Anki will not be filled
-in.  Conversely, it's OK if Anki defines more fields than this
-variable has."
+You have to create a field with the same name in Anki's \"Manage
+note types\" before it will work.  Fields unknown to Anki will
+not be filled in.  Conversely, it's OK if Anki defines more
+fields than this variable has, they will not be edited."
   :type '(alist
           :key-type string
           :value-type (choice function
