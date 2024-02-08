@@ -4,7 +4,7 @@
 
 ;; Description: Embed implicit flashcards in flowing text
 ;; Author: Martin Edström
-;; Version: 0.3.5
+;; Version: 0.3.6
 ;; Created: 2023-09-19
 ;; Package-Requires: ((emacs "28") (asyncloop "0.5") (pcre2el "1.12") (request "0.3.3") (dash "2.19.1"))
 ;; URL: https://github.com/meedstrom/inline-anki
@@ -139,6 +139,20 @@ variable has."
 (defconst inline-anki-rx:struct
   (rx bol (*? space) (?? "# ") (*? space) "#+begin_flashcard " (group (= 13 digit)) (or eol (not digit))))
 
+(defconst inline-anki-rx:new-struct-new
+  (rx bol (*? space) "#+begin_anki " (*? space) (+? word) (*? space) eol))
+
+(defconst inline-anki-rx:new-struct
+  (rx bol (*? space) (?? "# ") (*? space) "#+begin_anki " (*? space)
+      (= 5 word) (+? space) (group (= 13 digit)) (or eol (not digit))))
+
+;; Reason I didn't go with anki or cloze is there are already hotkeys a and c
+;; (defvar inline-anki-structure-name "anki")
+;; (defvar inline-anki-structure-name "fc")
+;; (defvar inline-anki-structure-name "cloze")
+;; but now I know a good way: "begin_anki cloze", "begin_anki basic", using
+;; hotkeys f c and f b, respectively.
+
 (defvar inline-anki--file-list nil
   "Internal use only.")
 
@@ -204,7 +218,7 @@ variable has."
 
 (defun inline-anki-dots-logarithmic (text)
   "Return TEXT replaced by dots.
-Longer TEXT means more dots, but follow a log-2 algorithm so it
+Longer TEXT means more dots, but along a log-2 algorithm so it
 doesn't get crazy-long in extreme cases."
   (make-string (max 3 (* 2 (round (log (length text) 2)))) ?\.))
 
@@ -214,7 +228,8 @@ doesn't get crazy-long in extreme cases."
 use in cloze.
 
 To get the Anki default of three dots, set this variable to nil."
-  :type 'function)
+  :type '(choice function
+          (const :tag "Anki default of three dots" nil)))
 
 (defconst inline-anki-rx:comment-glyph
   (rx bol (*? space) "# "))
@@ -248,6 +263,7 @@ To get the Anki default of three dots, set this variable to nil."
           nil ;; Nil signals that no clozes found
         (string-trim (buffer-string))))))
 
+;; TODO: make capable of basic flashcard
 (cl-defun inline-anki--push-note (&key field-beg field-end note-id)
   "Push a flashcard to Anki, identified by NOTE-ID.
 Use the buffer substring delimited by FIELD-BEG and FIELD-END.
@@ -511,11 +527,11 @@ Argument CALLED-INTERACTIVELY is automatically set."
   (when (equal (custom--standard-value 'inline-anki-ignore)
                (symbol-value 'inline-anki-ignore))
     (setq inline-anki-ignore nil))
-  (when-let ((use-tags (symbol-value 'inline-anki-use-tags)))
+  (when-let ((use-tags (bound-and-true-p inline-anki-use-tags)))
     (setq inline-anki-send-tags use-tags)
     (setq inline-anki-use-tags nil)
     (message "User option renamed: `inline-anki-use-tags' to `inline-anki-send-tags'"))
-  (when-let ((igno (symbol-value 'inline-anki-ignore)))
+  (when-let ((igno (bound-and-true-p inline-anki-ignore)))
     (setq inline-anki-ignore-file-regexps igno)
     (setq inline-anki-ignore nil)
     (message "User option renamed: `inline-anki-ignore' to `inline-anki-ignore-file-regexps'")))
