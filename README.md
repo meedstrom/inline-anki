@@ -69,7 +69,7 @@ This list expresses, among other things, three Anki cloze notes (totalling four 
 
 The block below expresses a **single** Anki cloze note (totalling three cloze deletions).
 
-If you're reading this in a web browser, note that this is what it'll look like in an Org-mode buffer.  I had to show it this way because upon export to the web, the block boundaries disappear and you'd never realize there was anything odd about these paragraphs.
+If you're reading this in a web browser, note that this is what it'll look like in an Org-mode buffer.  I had to show the snippet this way because upon export to the web, the block boundaries disappear and you'd never realize there was anything odd about these paragraphs.
 
     #+begin_flashcard 165193247510
     The _Litany of Tarski_ goes:
@@ -94,29 +94,34 @@ Since we avoid the underline on computer screens... it's free real estate to loa
 
 <img alt="Example in Emacs, of cloze text inside a box" src="box-example-source.png" width="600px" />
 
-and the [corresponding page on my website](https://edstrom.dev/sJt8/replacing-guilt#XjWh) looks like this:
+and the [corresponding page on my website](https://edstrom.dev/tsgpf/replacing-guilt#bjwfp) looks like this:
 
 <img alt="Example in web browser, of cloze text inside a box" src="box-example-web.png" width="600px" />
 
 See, no mistaking them for hyperlinks.  To recreate this appearance in Emacs, use this initfile snippet -- which must run before Org loads.
 
-    (defface my-cloze '((t . (:box t))) "Cloze face")
-    (setq org-emphasis-alist '(("*" bold)
-                               ("/" italic)
-                               ("_" my-cloze) ;; new
-                               ("=" org-verbatim verbatim)
-                               ("~" org-code verbatim)
-                               ("+" (:strike-through t))))
+``` cl
+(defface my-cloze '((t . (:box t))) "Cloze face for Inline-Anki")
+(setq org-emphasis-alist '(("*" bold)
+                           ("/" italic)
+                           ("_" my-cloze) ;; new
+                           ("=" org-verbatim verbatim)
+                           ("~" org-code verbatim)
+                           ("+" (:strike-through t))))
+```
 
-As for your own blog, Org exports underlines to HTML as `<span class="underline">`, so you can control how it ends up looking with a CSS rule on your blog such as the following.
+As for making a blog or epub, Org exports underlines to HTML as `<span class="underline">`, so you can control the final look with a CSS rule on your blog such as the following.
 
-    span.underline {
-        text-decoration: none;
-        background-color: #bbb;
-        padding: 2px;
-    }
+``` css
+span.underline {
+    text-decoration: none;
+    text-color: #111;
+    background-color: #bbb;
+    padding: 2px;
+}
+```
 
-### You can still use your chosen marker normally
+### You can still use your chosen emphasis normally
 
 Let's say you prefer to mark clozes with bold.  (That was my default for a while.)  Then you might worry that you can't use it in the usual way anymore?
 
