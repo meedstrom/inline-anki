@@ -12,7 +12,7 @@ File: inline-anki.info,  Node: Top,  Next: Installation,  Up: (dir)
 Inline Anki User Manual
 ***********************
 
-This manual is for Inline Anki version 0.3.4.
+This manual is for Inline Anki version 0.3.7.
 
      Copyright (C) 2023-2024 Martin Edström <meedstrom91@gmail.com>
 
@@ -223,7 +223,7 @@ File: inline-anki.info,  Node: Implementation notes,  Next: Q&A,  Prev: Usage,  
 * Menu:
 
 * Permanent limitations::
-* Limitations vs anki-editor/org-anki::
+* Limitations vs. anki-editor/org-anki: Limitations vs anki-editor/org-anki.
 * Syntax of a flashcard::
 
 
@@ -359,10 +359,10 @@ Node: Warning5737
 Node: Open in Emacs5982
 Node: Mass-editing6452
 Node: Implementation notes7246
-Node: Permanent limitations7486
-Node: Limitations vs anki-editor/org-anki9231
-Node: Syntax of a flashcard11450
-Node: Q&A12863
+Node: Permanent limitations7523
+Node: Limitations vs anki-editor/org-anki9268
+Node: Syntax of a flashcard11487
+Node: Q&A12900
 
 End Tag Table
 

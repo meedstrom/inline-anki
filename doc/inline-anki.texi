@@ -14,7 +14,7 @@
 @finalout
 @titlepage
 @title Inline Anki User Manual
-@subtitle for version 0.3.4
+@subtitle for version 0.3.7
 @author Martin Edström
 @end titlepage
 
@@ -24,7 +24,7 @@
 @node Top
 @top Inline Anki User Manual
 
-This manual is for Inline Anki version 0.3.4.
+This manual is for Inline Anki version 0.3.7.
 
 @quotation
 Copyright (C) 2023-2024 Martin Edström <meedstrom91@@gmail.com>
@@ -88,6 +88,14 @@ Below, you'll find a recommended config snippet.  It lets you quickly create a @
 
 @node Usage
 @chapter Usage
+
+@menu
+* To push cards::
+* Config variables::
+* Warning::
+* Open in Emacs::
+* Mass-editing::
+@end menu
 
 @node To push cards
 @section To push cards
@@ -224,6 +232,12 @@ The wgrep method won't cut it for multiline flashcards, as you'll see, but if yo
 
 @node Implementation notes
 @chapter Implementation notes
+
+@menu
+* Permanent limitations::
+* Limitations vs. anki-editor/org-anki: Limitations vs anki-editor/org-anki. 
+* Syntax of a flashcard::
+@end menu
 
 @node Permanent limitations
 @section Permanent limitations

@@ -7,9 +7,9 @@
 #+texinfo_dir_category: Emacs
 #+texinfo_dir_title: Inline Anki: (inline-anki).
 #+texinfo_dir_desc: Embed implicit flashcards in flowing text.
-#+subtitle: for version 0.3.4
+#+subtitle: for version 0.3.7
 
-This manual is for Inline Anki version 0.3.4.
+This manual is for Inline Anki version 0.3.7.
 
 #+BEGIN_QUOTE
 Copyright (C) 2023-2024 Martin Edström <meedstrom91@gmail.com>
