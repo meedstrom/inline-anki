@@ -346,7 +346,8 @@ Will be passed through `format-time-string'.  Cannot be nil."
                (save-match-data
                  (funcall input))))
             ((null input)
-             (warn "A cdr of `inline-anki-fields' appears to be nil")
+             (display-warning
+              'inline-anki "A cdr of `inline-anki-fields' appears to be nil")
              "")
             ((listp input)
              (eval input t))
