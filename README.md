@@ -69,7 +69,7 @@ This list expresses, among other things, three Anki cloze notes (totalling four 
 
 The block below expresses a **single** Anki cloze note (totalling three cloze deletions).
 
-If you're reading this in a web browser, note that this is what it'll look like in an Org-mode buffer.  I had to show the snippet this way because upon export to the web, the block boundaries disappear and you'd never realize there was anything odd about these paragraphs.
+If you're reading this in a web browser, note that this is what it'll look like in an Org-mode buffer.  I had to show the snippet in this raw form because upon export to the web, the block boundaries disappear and you'd never realize there was anything odd about these paragraphs.
 
     #+begin_flashcard 165193247510
     The _Litany of Tarski_ goes:
@@ -123,7 +123,7 @@ span.underline {
 
 ### You can still use your chosen emphasis normally
 
-Let's say you prefer to mark clozes with bold.  (That was my default for a while.)  Then you might worry that you can't use it in the usual way anymore?
+Let's say you prefer to mark clozes with bold.  (That was my default for a while.)  Then you might worry that you can't use bold for anything else?
 
 Don't worry -- whichever emphasis marker you choose, be it _, *, /, +, ~, or =, a paragraph needs a magic string like `@anki` to be parsed as a flashcard in the first place (see [user manual](doc/inline-anki.org)), without which the marker has no special meaning.
 
