@@ -21,12 +21,13 @@ This document is distributed in the hope that it will be useful, but WITHOUT ANY
 
 * Installation
 
-Not yet on (M)ELPA.  If you have [[https://github.com/raxod502/straight.el][straight.el]], you can install the package with this initfile snippet:
+Not yet on (M)ELPA.  If you have [[https://github.com/radian-software/straight.el][straight.el]], you can install the package with this initfile snippet:
 
 #+begin_src elisp
 (use-package inline-anki
   :straight (inline-anki :type git :host github :repo "meedstrom/inline-anki"))
 #+end_src
+
 
 Alternatively with Doom Emacs, this goes in =packages.el=:
 
@@ -34,7 +35,8 @@ Alternatively with Doom Emacs, this goes in =packages.el=:
 (package! inline-anki :recipe (:host github :repo "meedstrom/inline-anki"))
 #+end_src
 
-Below, you'll find a recommended config snippet.  It lets you quickly create a =#+begin_flashcard= block at point with the command at C-c , (=org-insert-structure-template=).
+
+Below, you'll find a recommended config snippet for Org-mode.  It lets you quickly create a =#+begin_flashcard= block at point with the C-c , key (=org-insert-structure-template=).
 
 #+begin_src elisp
 (with-eval-after-load 'org
@@ -55,6 +57,7 @@ To update the Anki database:
    - Or push from all Org files in the current directory and its subdirectories, by typing =M-x inline-anki-push-notes-in-directory RET=
 
 You may like to know that:
+
 - When you upload a note, it overwrites that note in Anki.  *Any edits made inside Anki will be forgotten!*  The only thing Anki gets to remember about a note is the review schedule.
 
 - As a convenience, if you comment-out a note expression, the next push will tell Anki to suspend all the cards for that note.
@@ -96,14 +99,16 @@ It would be convenient if you could click a link in Anki to open the correspondi
 By default, =inline-anki-fields= ships an extra field for the filename.  With addons such as https://ankiweb.net/shared/info/879473266, it should be possible to jump from Anki to Emacs using emacsclient.  Instructions TBD.
 
 ** Mass-editing
-If you switch =inline-anki-emphasis-type= to bold or italic, remember to *edit all your preexisting cards*.
+If you switch =inline-anki-emphasis-type= to bold or italic, remember to *edit all the cards you had written*!
 
 Tips:
 
-- To search the buffer for flashcards, try =M-x inline-anki-occur RET=.
-- To search the whole directory, try =M-x inline-anki-rgrep RET=.
-  - Then you can edit with [[http://github.com/mhayashi1120/Emacs-wgrep][wgrep]] or a keyboard macro, for example.
+- To search the current buffer for flashcards, type =M-x inline-anki-occur RET=.
+
+- To search every file in the directory, type =M-x inline-anki-rgrep RET=.
+  - Then you can edit all at once with [[http://github.com/mhayashi1120/Emacs-wgrep][wgrep]] or a keyboard macro, for example.
     - The wgrep method won't cut it for multiline flashcards, as you'll see, but if you don't have many of those, you could simply hand-edit each.  If you have many, learn to keyboard-macro.
+
 * Implementation notes
 ** Permanent limitations
 
