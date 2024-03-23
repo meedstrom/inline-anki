@@ -57,12 +57,12 @@ I find it more aesthetic to put the Anki note ID at the end of a list item, when
 
 This list expresses, among other things, three Anki cloze notes (totalling four deletions).  You'll note three of the six bullet points never get sent to Anki, since there is nothing to indicate them as Anki notes.
 
-> -   "The third virtue is lightness. Let the winds of evidence blow you about as though you are a leaf, with no direction of your own.  Beware lest you fight a rearguard retreat against the evidence, grudgingly conceding each foot of ground only when forced, feeling cheated.  Surrender to the truth as quickly as you can.  Do this the instant you realize what you are resisting, the instant you can see from which quarter the winds of evidence are blowing against you.  Be faithless to your cause and betray it to a stronger enemy."
-> -   Do not think that fairness to all sides means balancing yourself evenly between positions; truth is not handed out <ins>in equal portions</ins> before the start of a debate.<sup>1695193247566</sup>
-> -   If you are equally good at explaining <ins>any outcome</ins>, you have zero knowledge.<sup>1695193247617</sup>
-> -   That which can be destroyed by the truth should be.  (P. C. Hodgell)
->     -   Corollary: That which the truth nourishes should thrive.
->         -   If the multiverse is real, I desire to <ins>believe the multiverse is real</ins>, and if the multiverse is not real, I desire to believe the multiverse is not real.  Let me not become attached to beliefs I may not want. (application of the <ins>Litany of Tarski</ins>)<sup>1695193247518</sup>
+> - "The third virtue is lightness. Let the winds of evidence blow you about as though you are a leaf, with no direction of your own.  Beware lest you fight a rearguard retreat against the evidence, grudgingly conceding each foot of ground only when forced, feeling cheated.  Surrender to the truth as quickly as you can.  Do this the instant you realize what you are resisting, the instant you can see from which quarter the winds of evidence are blowing against you.  Be faithless to your cause and betray it to a stronger enemy."
+> - Do not think that fairness to all sides means balancing yourself evenly between positions; truth is not handed out <ins>in equal portions</ins> before the start of a debate.<sup>1695193247566</sup>
+> - If you are equally good at explaining <ins>any outcome</ins>, you have zero knowledge.<sup>1695193247617</sup>
+> - That which can be destroyed by the truth should be.  (P. C. Hodgell)
+>   - Corollary: That which the truth nourishes should thrive.
+>     - If the multiverse is real, I desire to <ins>believe the multiverse is real</ins>, and if the multiverse is not real, I desire to believe the multiverse is not real.  Let me not become attached to beliefs I may not want. (application of the <ins>Litany of Tarski</ins>)<sup>1695193247518</sup>
 
 
 ### Way 4: Multiline flashcards in a `#+begin_flashcard` block

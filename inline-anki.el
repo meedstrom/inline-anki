@@ -363,8 +363,9 @@ Will be passed through `format-time-string'.  Cannot be nil."
 
 (defun inline-anki-check ()
   "Check that everything is ready, else return nil."
-  (cl-assert
-   (member inline-anki-emphasis-type (mapcar #'car org-emphasis-alist)))
+  (cl-assert (member inline-anki-emphasis-type
+                     (mapcar #'car org-emphasis-alist)))
+  (cl-assert (executable-find "ps"))
   (if (not (string-empty-p (shell-command-to-string "ps -e | grep anki")))
       t
     (message "Anki doesn't seem to be running")
@@ -511,10 +512,10 @@ Argument CALLED-INTERACTIVELY sets itself."
       (pop inline-anki--file-list)
       ;; Repeat this function
       (push t (asyncloop-remainder loop))
-      (format "%d files to go; %s"
+      (format " %d files to go; %s"
               (length inline-anki--file-list)
               (if (= 0 pushed)
-                  (format "no cards in   %s" file)
+                  (format "  no cards in %s" file)
                 (format   "pushed %d from %s" pushed file))))))
 
 ;;;###autoload
