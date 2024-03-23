@@ -36,7 +36,6 @@
 ;;; Code:
 
 (require 'asyncloop)
-;; (require 'inline-anki-extras)
 
 (defgroup inline-anki nil
   "Customizations for inline-anki."
@@ -287,8 +286,7 @@ value of -1), create it."
         ;; in fundamental-mode. Switch to org-mode if we need to read tags.
         (and inline-anki-send-tags
              (not (derived-mode-p 'org-mode))
-             ;; Skip org-mode-hook since it's often slow.
-             (cl-letf ((org-mode-hook nil))
+             (delay-mode-hooks
                (org-mode)))
         (funcall
          (if (= -1 note-id)
@@ -444,7 +442,7 @@ Will be passed through `format-time-string'.  Cannot be nil."
 ;;;###autoload
 (defun inline-anki-push-notes-in-buffer (&optional called-interactively)
   "Push all flashcards in the buffer to Anki.
-Argument CALLED-INTERACTIVELY is automatically set."
+Argument CALLED-INTERACTIVELY sets itself."
   (interactive "p")
   (require 'org)
   (require 'inline-anki-anki-editor-fork)
@@ -470,13 +468,12 @@ Argument CALLED-INTERACTIVELY is automatically set."
 
 (defun inline-anki--prep-scanner (_)
   (setq inline-anki--file-list
-        (cl-loop
-         for path in (directory-files-recursively
-                      default-directory "\\.org$" nil t)
-         ;; Filter out ignores
-         unless (cl-find-if (lambda (ign) (string-match-p ign path))
-                            inline-anki-ignore-file-regexps)
-         collect path))
+        (cl-loop for path in (directory-files-recursively
+                              default-directory "\\.org$" nil t)
+                 ;; Filter out ignores
+                 unless (cl-find-if (lambda (re) (string-match-p re path))
+                                    inline-anki-ignore-file-regexps)
+                 collect path))
   (format "Will push from %d files in %s"
           (length inline-anki--file-list)
           default-directory))
@@ -505,6 +502,7 @@ Argument CALLED-INTERACTIVELY is automatically set."
                      "Not saving! "
                    ;; Switch from fundamental-mode to org-mode (probably)
                    ;; to avoid shocking user
+                   ;; REVIEW: Probably not necessary
                    (with-current-buffer buf
                      (normal-mode))
                    "")
@@ -514,8 +512,11 @@ Argument CALLED-INTERACTIVELY is automatically set."
       (pop inline-anki--file-list)
       ;; Repeat this function
       (push t (asyncloop-remainder loop))
-      (format "%d files to go; pushed %d from %s"
-              (length inline-anki--file-list) pushed file))))
+      (format "%d files to go; %s"
+              (length inline-anki--file-list)
+              (if (= 0 pushed)
+                  (format "no cards in   %s" file)
+                (format   "pushed %d from %s" pushed file))))))
 
 ;;;###autoload
 (defun inline-anki-push-notes-in-directory ()
