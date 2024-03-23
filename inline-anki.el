@@ -363,7 +363,6 @@ Will be passed through `format-time-string'.  Cannot be nil."
 
 (defun inline-anki-check ()
   "Check that everything is ready, else return nil."
-  (inline-anki-warn-renamed-options)
   (cl-assert
    (member inline-anki-emphasis-type (mapcar #'car org-emphasis-alist)))
   (if (not (string-empty-p (shell-command-to-string "ps -e | grep anki")))
@@ -530,30 +529,6 @@ Argument CALLED-INTERACTIVELY sets itself."
       :log-buffer-name "*inline-anki*")
     (unless (get-buffer-window "*inline-anki*" 'visible)
       (display-buffer "*inline-anki*"))))
-
-;;; Handle deprecations gracefully
-
-(defcustom inline-anki-ignore
-  '("/logseq/version-files/"
-    "/logseq/bak/"
-    "/.git/")
-  "This option has been renamed, use `inline-anki-ignore-file-regexps'."
-  :type '(repeat string))
-
-(defun inline-anki-warn-renamed-options ()
-  (require 'custom)
-  ;; If it's at the standard value, pretend there's no such variable
-  (when (equal (custom--standard-value 'inline-anki-ignore)
-               (symbol-value 'inline-anki-ignore))
-    (setq inline-anki-ignore nil))
-  (when-let ((use-tags (bound-and-true-p inline-anki-use-tags)))
-    (setq inline-anki-send-tags use-tags)
-    (setq inline-anki-use-tags nil)
-    (message "User option renamed: `inline-anki-use-tags' to `inline-anki-send-tags'"))
-  (when-let ((igno (bound-and-true-p inline-anki-ignore)))
-    (setq inline-anki-ignore-file-regexps igno)
-    (setq inline-anki-ignore nil)
-    (message "User option renamed: `inline-anki-ignore' to `inline-anki-ignore-file-regexps'")))
 
 (provide 'inline-anki)
 
