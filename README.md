@@ -1,23 +1,23 @@
-
+ 
 # Inline Anki
 
-For nearly a decade I've daydreamed of writing [SRS](https://en.wikipedia.org/wiki/Spaced_repetition#Software) flashcards in a way that flows together with longer "body text" in any of my files, so that the texts serve as a [single-source-of-truth](https://en.wikipedia.org/wiki/Single_source_of_truth).
+I've always daydreamed of writing [SRS](https://en.wikipedia.org/wiki/Spaced_repetition#Software) flashcards in a way that flows together with longer "body text" in any of my files, so that the texts serve as a [single-source-of-truth](https://en.wikipedia.org/wiki/Single_source_of_truth).
 
 The other SRS programs in the Emacs ecosystem ([org-fc](https://github.com/l3kn/org-fc), [org-drill](https://gitlab.com/phillord/org-drill), [org-anki](https://github.com/eyeinsky/org-anki), [pamparam](https://github.com/abo-abo/pamparam), [anki-editor](https://github.com/louietan/anki-editor)) all share a fatal flaw: **they separate the flashcards from normal text** by way of shoving them under a dedicated headline.
 
 I don't want to awkwardly append flashcards to the end of an Org section as a kind of paraphrasis or summary of that section, but to let the flashcards serve *as* paragraphs in their own right!
 
-## Set-up
+# Set-up
 
 See [the user manual](doc/inline-anki.org).  It's also available inside Emacs by typing `C-h i d m inline-anki RET`.
 
 
-## Demonstration
+# Demonstration
 
 We provide four ways to express flashcards.
 
 
-### Way 1: As list items
+## Way 1: As list items
 
 Here are five Anki cloze notes (totalling nine cloze deletions), expressed in just five list items:
 
@@ -41,7 +41,7 @@ The starting @<sup>number</sup> uniquely identifies the note.  Think of the @ gl
 As you've guessed, the underlined parts define cloze deletions.
 
 
-### Way 2: As running paragraphs
+## Way 2: As running paragraphs
 
 The following two paragraphs express two Anki cloze notes (totalling four cloze deletions).
 
@@ -51,7 +51,7 @@ The following two paragraphs express two Anki cloze notes (totalling four cloze 
 
 Note I omitted the @ glyph.  You can do that on line endings.
 
-### Way 3: As list items, with trailing ID
+## Way 3: As list items, with trailing ID
 
 I find it more aesthetic to put the Anki note ID at the end of a list item, when that list item is a member of a longer list of non-flashcard things.
 
@@ -65,7 +65,7 @@ This list expresses, among other things, three Anki cloze notes (totalling four 
 >     - If the multiverse is real, I desire to <ins>believe the multiverse is real</ins>, and if the multiverse is not real, I desire to believe the multiverse is not real.  Let me not become attached to beliefs I may not want. (application of the <ins>Litany of Tarski</ins>)<sup>1695193247518</sup>
 
 
-### Way 4: Multiline flashcards in a `#+begin_flashcard` block
+## Way 4: Multiline flashcards in a `#+begin_flashcard` block
 
 The block below expresses a **single** Anki cloze note (totalling three cloze deletions).
 
@@ -82,7 +82,7 @@ If you're reading this in a web browser, note that this is what it'll look like 
     #+end_flashcard
 
 
-## Why underlines?
+# Why underlines?
 
 Underlines are rare on the web for a reason: people easily mistake them for hyperlinks, so many style guides deprecate them.
 
@@ -129,7 +129,7 @@ Don't worry -- whichever emphasis marker you choose, be it _, *, /, +, ~, or =, 
 
 The reason I switched to underline was the idea of "*invisible*-anki", a future experiment that eliminates the note IDs in favour of heuristic recognition.  With the note IDs gone, it must reserve an emphasis marker that always means cloze.  I'm early-adopting it.
 
-## Roadmap
+# Roadmap
 
 -   [ ] Allow hard-wrapping
 -   [ ] Fix picture/media export
@@ -140,11 +140,11 @@ The reason I switched to underline was the idea of "*invisible*-anki", a future 
         -   [ ] Extend this so that if you have many rows, you can flag the whole table as a table of flashcards where each row is one flashcard.
             -   But that's mainly useful for vocabulary-type stuff, since so little text fits in one table cell.
 
-## Thanks
+# Thanks
 
 Thanks a lot to @louietan who wrote <https://github.com/louietan/anki-editor>.  I could reuse its AnkiConnect bindings, which lowered the barrier for me to get started.
 
 
-## Set-up
+# Set-up
 
-See [the user manual](doc/inline-anki.org).  It's also available inside Emacs by typing `C-h i d m inline-anki RET`.
+See [the user manual](doc/inline-anki.org).  It's also available inside Emacs (after installation) by typing `C-h i d m inline-anki RET`.
