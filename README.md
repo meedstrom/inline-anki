@@ -16,8 +16,17 @@ See [the user manual](doc/inline-anki.org).  It's also available inside Emacs by
 
 We provide four ways to express flashcards.
 
+## Way 1: As running paragraphs
 
-## Way 1: As list items
+The following two paragraphs express two Anki cloze notes (totalling four cloze deletions).
+
+> In English, we have the word-pair truth and lying.  We also have the word-pair <ins>rational</ins> and rationalization: it's as if lying was called <ins>truthization</ins>.<sup>16900030021</sup>
+> 
+> A gotcha for inline-anki: you must not <ins>hard-wrap</ins> paragraphs.  If you do, inline-anki will only grab <ins>the last line</ins> of the paragraph.<sup>1690986753420</sup>
+
+Note I omitted the @ glyph.  You can do that on line endings.
+
+## Way 2: As list items, with leading ID
 
 Here are five Anki cloze notes (totalling nine cloze deletions), expressed in just five list items:
 
@@ -40,17 +49,6 @@ The starting @<sup>number</sup> uniquely identifies the note.  Think of the @ gl
 
 As you've guessed, the underlined parts define cloze deletions.
 
-
-## Way 2: As running paragraphs
-
-The following two paragraphs express two Anki cloze notes (totalling four cloze deletions).
-
-> In English, we have the word-pair truth and lying.  We also have the word-pair <ins>rational</ins> and rationalization: it's as if lying was called <ins>truthization</ins>.<sup>16900030021</sup>
-> 
-> A gotcha for inline-anki: you must not <ins>hard-wrap</ins> paragraphs.  If you do, inline-anki will only grab <ins>the last line</ins> of the paragraph.<sup>1690986753420</sup>
-
-Note I omitted the @ glyph.  You can do that on line endings.
-
 ## Way 3: As list items, with trailing ID
 
 I find it more aesthetic to put the Anki note ID at the end of a list item, when that list item is a member of a longer list of non-flashcard things.
@@ -67,9 +65,11 @@ This list expresses, among other things, three Anki cloze notes (totalling four 
 
 ## Way 4: Multiline flashcards in a `#+begin_flashcard` block
 
+So far, the other ways demonstrated all operate on a single line.  To collect multiple lines into a one Anki note, use this Org structure template.
+
 The block below expresses a **single** Anki cloze note (totalling three cloze deletions).
 
-If you're reading this in a web browser, note that this is what it'll look like in an Org-mode buffer.  I had to show the snippet in this raw form because upon export to the web, the block boundaries disappear and you'd never realize there was anything odd about these paragraphs.
+If you're reading this in a web browser, note that this is how it looks in an Org-mode buffer.  I had to show the snippet in this raw form because upon export to the web, the block boundaries disappear and you'd never realize there was anything odd about these paragraphs.
 
     #+begin_flashcard 165193247510
     The _Litany of Tarski_ goes:
