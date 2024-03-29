@@ -71,16 +71,17 @@ The block below expresses a **single** Anki cloze note (totalling three cloze de
 
 If you're reading this in a web browser, note that this is how it looks in an Org-mode buffer.  I had to show the snippet in this raw form because upon export to the web, the block boundaries disappear and you'd never realize there was anything odd about these paragraphs.
 
-    #+begin_flashcard 165193247510
-    The _Litany of Tarski_ goes:
-    
-    1. If the box contains a diamond,
-    2. _I desire to believe that the box contains a diamond_;
-    3. _If the box does not contain a diamond_,
-    4. I desire to believe that the box does not contain a diamond;
-    5. Let me not become attached to beliefs I may not want.
-    #+end_flashcard
+``` org
+#+begin_flashcard 165193247510
+The _Litany of Tarski_ goes:
 
+1. If the box contains a diamond,
+2. _I desire to believe that the box contains a diamond_;
+3. _If the box does not contain a diamond_,
+4. I desire to believe that the box does not contain a diamond;
+5. Let me not become attached to beliefs I may not want.
+#+end_flashcard
+```
 
 ## Why underlines?
 
@@ -100,7 +101,7 @@ and the [corresponding page on my website](https://edstrom.dev/tsgpf/replacing-g
 
 See, no mistaking them for hyperlinks.  To recreate this appearance in Emacs, use this initfile snippet -- which must run before Org loads.
 
-``` cl
+``` elisp
 (defface my-cloze '((t . (:box t))) "Cloze face for Inline-Anki")
 (setq org-emphasis-alist '(("*" bold)
                            ("/" italic)
