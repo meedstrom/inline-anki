@@ -277,10 +277,14 @@ value of -1), create it."
       (push this-line inline-anki--known-flashcard-places)))
   (if-let* ((text (buffer-substring field-beg field-end))
             (clozed (inline-anki--convert-implicit-clozes text))
-            (html (org-export-string-as clozed
-                                        inline-anki--ox-anki-html-backend
-                                        t
-                                        '(:with-toc nil))))
+            (html
+             ;; REVIEW: Maybe empty these hooks? Can be source of user error.
+             ;; let ((org-export-before-parsing-functions nil)
+             ;;      (org-export-before-processing-functions nil))
+             (org-export-string-as clozed
+                                   inline-anki--ox-anki-html-backend
+                                   t
+                                   '(:with-toc nil))))
       (prog1 t
         ;; When `inline-anki-push-notes-in-directory' calls this, the buffer is
         ;; in fundamental-mode. Switch to org-mode if we need to read tags.

@@ -82,7 +82,7 @@ If you're reading this in a web browser, note that this is what it'll look like 
     #+end_flashcard
 
 
-# Why underlines?
+## Why underlines?
 
 Underlines are rare on the web for a reason: people easily mistake them for hyperlinks, so many style guides deprecate them.
 
@@ -129,7 +129,7 @@ Don't worry -- whichever emphasis marker you choose, be it _, *, /, +, ~, or =, 
 
 The reason I switched to underline was the idea of "*invisible*-anki", a future experiment that eliminates the note IDs in favour of heuristic recognition.  With the note IDs gone, it must reserve an emphasis marker that always means cloze.  I'm early-adopting it.
 
-# Roadmap
+## Roadmap
 
 -   [ ] Allow hard-wrapping
 -   [ ] Fix picture/media export
@@ -140,11 +140,11 @@ The reason I switched to underline was the idea of "*invisible*-anki", a future 
         -   [ ] Extend this so that if you have many rows, you can flag the whole table as a table of flashcards where each row is one flashcard.
             -   But that's mainly useful for vocabulary-type stuff, since so little text fits in one table cell.
 
-# Thanks
+## Thanks
 
 Thanks a lot to @louietan who wrote <https://github.com/louietan/anki-editor>.  I could reuse its AnkiConnect bindings, which lowered the barrier for me to get started.
 
 
-# Set-up
+## Set-up
 
 See [the user manual](doc/inline-anki.org).  It's also available inside Emacs (after installation) by typing `C-h i d m inline-anki RET`.
