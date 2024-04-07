@@ -111,7 +111,7 @@ See, no mistaking them for hyperlinks.  To recreate this appearance in Emacs, us
                            ("+" (:strike-through t))))
 ```
 
-As for making a blog or epub, Org exports underlines to HTML as `<span class="underline">`, so you can control the final look with a CSS rule on your blog such as the following.
+As for making a blog or epub, Org exports underlines to HTML as `<span class="underline">` (configurable in `org-html-text-markup-alist`), so you can control the final look with a CSS rule on your blog such as the following.
 
 ``` css
 span.underline {

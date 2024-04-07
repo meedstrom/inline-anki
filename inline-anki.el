@@ -288,10 +288,10 @@ value of -1), create it."
       (prog1 t
         ;; When `inline-anki-push-notes-in-directory' calls this, the buffer is
         ;; in fundamental-mode. Switch to org-mode if we need to read tags.
-        (and inline-anki-send-tags
-             (not (derived-mode-p 'org-mode))
-             (delay-mode-hooks
-               (org-mode)))
+        (when (and inline-anki-send-tags
+                   (not (derived-mode-p 'org-mode)))
+          (delay-mode-hooks
+            (org-mode)))
         (funcall
          (if (= -1 note-id)
              #'inline-anki--create-note
@@ -329,7 +329,7 @@ value of -1), create it."
                          collect (cons field expanded)))
           (cons 'suspend? (save-excursion
                             (goto-char (line-beginning-position))
-                            (looking-at-p "[[:space:]]*?# "))))))
+                            (looking-at-p inline-anki-rx:comment-glyph))))))
     (message "No implicit clozes found, skipping:  %s" text)
     nil))
 
