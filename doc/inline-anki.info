@@ -136,7 +136,7 @@ update the Anki database.
         • No surprise to experienced Anki-users, but the third field’s
           original scheduling will be attached to an empty card.
           Remember that you can clean up empty cards with the menu
-          option “Check database...”.
+          option "Check database...".
 
 
 File: inline-anki.info,  Node: Config variables,  Next: Warning,  Prev: To push cards,  Up: Usage
@@ -145,13 +145,13 @@ File: inline-anki.info,  Node: Config variables,  Next: Warning,  Prev: To push 
 ====================
 
    • ‘inline-anki-deck’
-        • Default “Default”.
+        • Default "Default".
 
    • ‘inline-anki-note-type’
-        • Default “Cloze from Outer Space”.
+        • Default "Cloze from Outer Space".
 
    • ‘inline-anki-emphasis-type’
-        • Default “_”, can be changed to “*”, “/” or other things you
+        • Default "_", can be changed to "*", "/" or other things you
           find in ‘org-emphasis-alist’.
 
    • ‘inline-anki-send-tags’
@@ -215,8 +215,8 @@ If you switch ‘inline-anki-emphasis-type’ to bold or italic, remember to
           macro, for example.
              • The wgrep method won’t cut it for multiline flashcards,
                as you’ll see, but if you don’t have many of those, you
-               could simply hand-edit each.  If you have many, learn to
-               keyboard-macro.
+               could simply hand-edit each.  If you have many, try a
+               keyboard macro.
 
 
 File: inline-anki.info,  Node: Implementation notes,  Next: Q&A,  Prev: Usage,  Up: Top
@@ -245,8 +245,8 @@ There are *three flaws* which will never go away:
         • To me this is a non-issue since the bus is the only place I
           want to review anyway.
 
-   • *Flaw 2:* Like with anki-editor, your Org files hold the “master
-     copy” of each flashcard: *you cannot edit the cards from within
+   • *Flaw 2:* Like with anki-editor, your Org files hold the "master
+     copy" of each flashcard: *you cannot edit the cards from within
      Anki*.  If you tried, such edits would be lost on next sync.
 
      You have to return to your computer and edit there, in Emacs.
@@ -301,14 +301,14 @@ Many traditional features are ABSENT in inline-anki.
                          deck
              • Finally, even if you leave ‘inline-anki-send-tags’ at
                nil, inline-anki always attaches one tag named after the
-               sync date, in this style: “from-emacs-2023-09-20”
+               sync date, in this style: "from-emacs-2023-09-20"
                   • This tag lets you separate inline-anki notes from
-                    your “handmade” notes
+                    your "handmade" notes
                   • This tag lets you see if you have stale inline-anki
                     notes that aren’t being updated (perhaps because you
                     deleted them from the source)
    • You get no indication in Emacs that Anki has flagged a card as
-     “Marked” or “Leech”
+     "Marked" or "Leech"
         • You can still see this in Anki’s own card browser, so you can
           still sit down and go through them manually every now and then
           – just like a normal Anki user, with the difference that when
@@ -352,8 +352,8 @@ File: inline-anki.info,  Node: Q&A,  Prev: Implementation notes,  Up: Top
 *****
 
    • Can I continue using my [org-drill/org-anki/...] cards?
-        • Yes!  Those packages treat whole Org subtrees as their “data
-          objects”, and this package does not.  You can even have an
+        • Yes!  Those packages treat whole Org subtrees as their "data
+          objects", and this package does not.  You can even have an
           inline-anki card _inside_ an org-anki subtree.
 
 
@@ -363,15 +363,15 @@ Node: Top222
 Node: Installation1308
 Node: Usage2140
 Node: To push cards2353
-Node: Config variables4677
-Node: Warning5899
-Node: Open in Emacs6144
-Node: Mass-editing6614
-Node: Implementation notes7447
-Node: Permanent limitations7724
-Node: Limitations vs anki-editor/org-anki9535
-Node: Syntax of a flashcard11901
-Node: Q&A13431
+Node: Config variables4673
+Node: Warning5875
+Node: Open in Emacs6120
+Node: Mass-editing6590
+Node: Implementation notes7420
+Node: Permanent limitations7697
+Node: Limitations vs anki-editor/org-anki9504
+Node: Syntax of a flashcard11854
+Node: Q&A13384
 
 End Tag Table
 

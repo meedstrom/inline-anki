@@ -107,7 +107,7 @@ Tips:
 
 - To search every file in the directory, type =M-x inline-anki-rgrep RET=.
   - Then you can edit all at once with [[http://github.com/mhayashi1120/Emacs-wgrep][wgrep]] or a keyboard macro, for example.
-    - The wgrep method won't cut it for multiline flashcards, as you'll see, but if you don't have many of those, you could simply hand-edit each.  If you have many, learn to keyboard-macro.
+    - The wgrep method won't cut it for multiline flashcards, as you'll see, but if you don't have many of those, you could simply hand-edit each.  If you have many, try a keyboard macro.
 
 * Implementation notes
 ** Permanent limitations

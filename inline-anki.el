@@ -470,7 +470,7 @@ Argument CALLED-INTERACTIVELY sets itself."
           (message "Pushed %d notes!" pushed)
         pushed))))
 
-(defun inline-anki--prep-scanner (_)
+(defun inline-anki--prep-file-list (_)
   (setq inline-anki--file-list
         (cl-loop for path in (directory-files-recursively
                               default-directory "\\.org$" nil t)
@@ -488,25 +488,26 @@ Argument CALLED-INTERACTIVELY sets itself."
     (let* ((path (car inline-anki--file-list))
            (buf (or (find-buffer-visiting path)
                     ;; Skip org-mode for speed
+                    ;; REVIEW: Maybe just let nil `auto-mode-alist'
                     (cl-letf (((symbol-function #'org-mode) #'ignore)
                               ((symbol-function #'after-find-file) #'ignore)
                               (find-file-hook nil))
                       (find-file-noselect path))))
-           (pushed
-            (with-current-buffer buf
-              (inline-anki-push-notes-in-buffer)))
+           (pushed (with-current-buffer buf
+                     (inline-anki-push-notes-in-buffer)))
            (file (buffer-name buf))
            (modified (buffer-modified-p buf)))
       (if (= 0 pushed)
           (progn
             (cl-assert (not modified))
             (kill-buffer buf))
+        ;; TODO: merge this with the final sexp in this function
         (message "%sPushed %d notes in %s"
                  (if modified
                      "Not saving! "
-                   ;; Switch from fundamental-mode to org-mode (probably)
-                   ;; to avoid shocking user
-                   ;; REVIEW: Probably not necessary
+                   ;; When cards were pushed, we left the buffer open for
+                   ;; inspection, so switch from fundamental-mode to org-mode to
+                   ;; avoid shocking user.
                    (with-current-buffer buf
                      (normal-mode))
                    "")
@@ -516,21 +517,20 @@ Argument CALLED-INTERACTIVELY sets itself."
       (pop inline-anki--file-list)
       ;; Repeat this function
       (push t (asyncloop-remainder loop))
-      (format " %d files to go; %s"
+      (format " %d files to go, %s"
               (length inline-anki--file-list)
               (if (= 0 pushed)
-                  (format "  no cards in %s" file)
-                (format   "pushed %d from %s" pushed file))))))
+                  (format "no cards in:   %s" file)
+                (format   "pushed %d from: %s" pushed file))))))
 
 ;;;###autoload
 (defun inline-anki-push-notes-in-directory ()
-  "Push notes from every file in current dir and all subdirs."
+  "Push notes from every file in current dir and nested subdirs."
   (interactive)
   (require 'org)
   (when (inline-anki-check)
-    (asyncloop-run
-      (list #'inline-anki--prep-scanner
-            #'inline-anki--next)
+    (asyncloop-run (list #'inline-anki--prep-file-list
+                         #'inline-anki--next)
       :log-buffer-name "*inline-anki*")
     (unless (get-buffer-window "*inline-anki*" 'visible)
       (display-buffer "*inline-anki*"))))
