@@ -81,8 +81,8 @@ You may like to know that:
   - Default "_", can be changed to "*", "/" or other things you find in =org-emphasis-alist=.
 
 - =inline-anki-send-tags=
-  - Default =nil=.  Controls whether or not to send Org tags to Anki.  Can also be a whitelist of valid tags like =("tag1" "tag2")= or a blacklist of invalid tags like =(not "tag1" "tag2")=.  Value =t= sends all tags.
-  - The benefit of a =nil= value is faster upload if you have hundreds of Org files.
+  - Default =nil=.  Controls whether or not to put a note's Org tags in the Anki note tags.  Can be an allowlist like =("tag1" "tag2")= or a blocklist like =(not "tag1" "tag2")=.  Value =t= sends all tags.
+  - A benefit with the =nil= value is faster upload if you have hundreds of Org files.
 
 - =inline-anki-ignore-file-regexps=
   - Helps the command =inline-anki-push-notes-in-directory= decide whether or not to visit a file.  If that file's full name matches one of the regular expressions in this list, skip the file.
@@ -91,12 +91,12 @@ You may like to know that:
   - See docstring.
 
 ** Warning
-You must not *hard-wrap* your text (e.g. with =fill-paragraph=) if you want Anki to receive the whole flashcard.
+You must not *hard-wrap* your text (e.g. with M-q, =fill-paragraph=) if you want Anki to receive the whole flashcard.
 
 ** Open in Emacs
 It would be convenient if you could click a link in Anki to open the corresponding Org file in Emacs.
 
-By default, =inline-anki-fields= ships an extra field for the filename.  With addons such as https://ankiweb.net/shared/info/879473266, it should be possible to jump from Anki to Emacs using emacsclient.  Instructions TBD.
+By default, =inline-anki-fields= ships an extra field that shows the filename the note came from.  With addons such as https://ankiweb.net/shared/info/879473266, it should be possible to jump from Anki to Emacs using emacsclient.  Instructions TBD.
 
 ** Mass-editing
 If you switch =inline-anki-emphasis-type= to bold or italic, remember to *edit all the cards you had written*!
@@ -114,9 +114,7 @@ Tips:
 
 There are *three flaws* which will never go away:
 
-- *Flaw 1:* Like anki-editor, inline-anki does not let you review inside Emacs.  You have to whip out your phone and review there, in your Anki app (or the desktop app, but who does that).
-
-  - To me this is a non-issue since the bus is the only place I want to review anyway.
+- *Flaw 1:* Like anki-editor, inline-anki does not let you review inside Emacs.  You have to review in your Anki app.
 
 - *Flaw 2:* Like with anki-editor, your Org files hold the "master copy" of each flashcard: *you cannot edit the cards from within Anki*.  If you tried, such edits would be lost on next sync.
 
@@ -126,11 +124,11 @@ There are *three flaws* which will never go away:
 
     Bit annoying, yes, but two-way sync is a notoriously finicky dev challenge so if such a feature was present, users would run into sync conflicts and nobody wants to deal with that.
 
-  - Fortunately, this is less of a problem for us than for regular Anki users, since the flashcards are serving double duty as body text.  You will be able to see and refine the text of the flashcard at your leisure, in contrast with other SRS when you only see it during review.
+  - Fortunately, this is less of a problem for us than for regular Anki users, since the flashcards are serving double duty as body text.  You will be able to see and refine the text of the flashcard at your leisure, /when not reviewing/, in contrast with other SRS when you only see it during review.
 
 - *Flaw 3:* The note format is constrained -- you can't express every kind of flashcard possible in Anki.
   
-  - For me this is a good trade, if that means the flashcards stay in my life.  Until now, they never stayed long due to clumsy workflows.   Better simple flashcards than no flashcards at all.
+  - For me this is a good trade, if that means the flashcards stay in my life.  Until now, they never stayed long because Anki was too separated from my notes.
 
 ** Limitations vs. anki-editor/org-anki
 
@@ -141,7 +139,7 @@ Many traditional features are ABSENT in inline-anki.
 - It clozes only one deletion at a time
 - You cannot set tags on a per-note basis
   - The note will still inherit tags from the Org subtree
-    - Note that Anki tags lose much of their organizational purpose if all your notes live in Org files anyway -- you'll be organizing from within [[https://github.com/org-roam/org-roam][org-roam]] or whichever system you have, not from within Anki.  However, at least two use-cases remain:
+    - Note that Anki tags lose much of their organizational purpose if your notes primarily live in Org files anyway -- you'll be organizing them from within [[https://github.com/meedstrom/org-node][org-node]] or whichever system you have for browsing Org files, not from within Anki.  However, at least two use-cases remain:
       - You can display the tags inside cards as a contextual hint, [[https://edstrom.dev/posts/qix2Q4W/how-to-display-tags-as-hint-in-all-anki-cards][if you code this in the card template]]
       - You can use the tags to set up Custom Study sessions on a filtered subset of notes
         - Invaluable since we dump all notes into one deck

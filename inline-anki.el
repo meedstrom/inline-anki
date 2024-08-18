@@ -35,6 +35,11 @@
 
 ;;; Code:
 
+;; TODO: dont pop to the debug buffer, jus make the buffer in background. use
+;; echo area progress message normally
+
+;;TODO:
+
 (require 'asyncloop)
 
 (defgroup inline-anki nil
@@ -230,7 +235,7 @@ use in cloze.
 
 To get the Anki default of three dots, set this variable to nil."
   :type '(choice function
-          (const :tag "Anki default of three dots" nil)))
+                 (const :tag "Anki default of three dots" nil)))
 
 (defconst inline-anki-rx:comment-glyph
   (rx bol (*? space) "# "))
@@ -470,17 +475,19 @@ Argument CALLED-INTERACTIVELY sets itself."
           (message "Pushed %d notes!" pushed)
         pushed))))
 
+(defvar inline-anki--directory nil)
+
 (defun inline-anki--prep-file-list (_)
   (setq inline-anki--file-list
         (cl-loop for path in (directory-files-recursively
-                              default-directory "\\.org$" nil t)
+                              inline-anki--directory "\\.org$" nil t)
                  ;; Filter out ignores
                  unless (cl-find-if (lambda (re) (string-match-p re path))
                                     inline-anki-ignore-file-regexps)
                  collect path))
   (format "Will push from %d files in %s"
           (length inline-anki--file-list)
-          default-directory))
+          inline-anki--directory))
 
 (defun inline-anki--next (loop)
   (if (null inline-anki--file-list)
@@ -488,10 +495,11 @@ Argument CALLED-INTERACTIVELY sets itself."
     (let* ((path (car inline-anki--file-list))
            (buf (or (find-buffer-visiting path)
                     ;; Skip org-mode for speed
-                    ;; REVIEW: Maybe just let nil `auto-mode-alist'
-                    (cl-letf (((symbol-function #'org-mode) #'ignore)
-                              ((symbol-function #'after-find-file) #'ignore)
-                              (find-file-hook nil))
+                    (let ((auto-mode-alist nil)
+                          (magic-mode-alist nil)
+                          (find-file-hook nil))
+                      ;; This really speeds things up but a bit breaky
+                      ;; cl-letf (((symbol-function #'after-find-file) #'ignore))
                       (find-file-noselect path))))
            (pushed (with-current-buffer buf
                      (inline-anki-push-notes-in-buffer)))
@@ -524,10 +532,11 @@ Argument CALLED-INTERACTIVELY sets itself."
                 (format   "pushed %d from: %s" pushed file))))))
 
 ;;;###autoload
-(defun inline-anki-push-notes-in-directory ()
+(defun inline-anki-push-notes-in-directory (dir)
   "Push notes from every file in current dir and nested subdirs."
-  (interactive)
+  (interactive "DSend flashcards from all files in directory: ")
   (require 'org)
+  (setq inline-anki--directory dir)
   (when (inline-anki-check)
     (asyncloop-run (list #'inline-anki--prep-file-list
                          #'inline-anki--next)
