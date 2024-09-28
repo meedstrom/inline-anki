@@ -177,9 +177,9 @@ Default "_", can be changed to "*", "/" or other things you find in @samp{org-em
 @samp{inline-anki-send-tags}
 @itemize
 @item
-Default @samp{nil}.  Controls whether or not to send Org tags to Anki.  Can also be a whitelist of valid tags like @samp{("tag1" "tag2")} or a blacklist of invalid tags like @samp{(not "tag1" "tag2")}.  Value @samp{t} sends all tags.
+Default @samp{nil}.  Controls whether or not to put a note's Org tags in the Anki note tags.  Can be an allowlist like @samp{("tag1" "tag2")} or a blocklist like @samp{(not "tag1" "tag2")}.  Value @samp{t} sends all tags.
 @item
-The benefit of a @samp{nil} value is faster upload if you have hundreds of Org files.
+A benefit with the @samp{nil} value is faster upload if you have hundreds of Org files.
 @end itemize
 
 @item
@@ -200,14 +200,14 @@ See docstring.
 @node Warning
 @section Warning
 
-You must not @strong{hard-wrap} your text (e.g. with @samp{fill-paragraph}) if you want Anki to receive the whole flashcard.
+You must not @strong{hard-wrap} your text (e.g. with M-q, @samp{fill-paragraph}) if you want Anki to receive the whole flashcard.
 
 @node Open in Emacs
 @section Open in Emacs
 
 It would be convenient if you could click a link in Anki to open the corresponding Org file in Emacs.
 
-By default, @samp{inline-anki-fields} ships an extra field for the filename.  With addons such as @uref{https://ankiweb.net/shared/info/879473266}, it should be possible to jump from Anki to Emacs using emacsclient.  Instructions TBD@.
+By default, @samp{inline-anki-fields} ships an extra field that shows the filename the note came from.  With addons such as @uref{https://ankiweb.net/shared/info/879473266}, it should be possible to jump from Anki to Emacs using emacsclient.  Instructions TBD@.
 
 @node Mass-editing
 @section Mass-editing
@@ -248,12 +248,7 @@ There are @strong{three flaws} which will never go away:
 
 @itemize
 @item
-@strong{Flaw 1:} Like anki-editor, inline-anki does not let you review inside Emacs.  You have to whip out your phone and review there, in your Anki app (or the desktop app, but who does that).
-
-@itemize
-@item
-To me this is a non-issue since the bus is the only place I want to review anyway.
-@end itemize
+@strong{Flaw 1:} Like anki-editor, inline-anki does not let you review inside Emacs.  You have to review in your Anki app.
 
 @item
 @strong{Flaw 2:} Like with anki-editor, your Org files hold the "master copy" of each flashcard: @strong{you cannot edit the cards from within Anki}.  If you tried, such edits would be lost on next sync.
@@ -267,7 +262,7 @@ This means you can't make small corrections on-the-fly while reviewing.
 Bit annoying, yes, but two-way sync is a notoriously finicky dev challenge so if such a feature was present, users would run into sync conflicts and nobody wants to deal with that.
 
 @item
-Fortunately, this is less of a problem for us than for regular Anki users, since the flashcards are serving double duty as body text.  You will be able to see and refine the text of the flashcard at your leisure, in contrast with other SRS when you only see it during review.
+Fortunately, this is less of a problem for us than for regular Anki users, since the flashcards are serving double duty as body text.  You will be able to see and refine the text of the flashcard at your leisure, @emph{when not reviewing}, in contrast with other SRS when you only see it during review.
 @end itemize
 
 @item
@@ -275,7 +270,7 @@ Fortunately, this is less of a problem for us than for regular Anki users, since
 
 @itemize
 @item
-For me this is a good trade, if that means the flashcards stay in my life.  Until now, they never stayed long due to clumsy workflows.   Better simple flashcards than no flashcards at all.
+For me this is a good trade, if that means the flashcards stay in my life.  Until now, they never stayed long because Anki was too separated from my notes.
 @end itemize
 @end itemize
 
@@ -298,7 +293,7 @@ You cannot set tags on a per-note basis
 The note will still inherit tags from the Org subtree
 @itemize
 @item
-Note that Anki tags lose much of their organizational purpose if all your notes live in Org files anyway -- you'll be organizing from within @uref{https://github.com/org-roam/org-roam, org-roam} or whichever system you have, not from within Anki.  However, at least two use-cases remain:
+Note that Anki tags lose much of their organizational purpose if your notes primarily live in Org files anyway -- you'll be organizing them from within @uref{https://github.com/meedstrom/org-node, org-node} or whichever system you have for browsing Org files, not from within Anki.  However, at least two use-cases remain:
 @itemize
 @item
 You can display the tags inside cards as a contextual hint, @uref{https://edstrom.dev/posts/qix2Q4W/how-to-display-tags-as-hint-in-all-anki-cards, if you code this in the card template}

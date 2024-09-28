@@ -1,4 +1,4 @@
-This is inline-anki.info, produced by makeinfo version 7.0.3 from
+This is inline-anki.info, produced by makeinfo version 7.1 from
 inline-anki.texi.
 
 INFO-DIR-SECTION Emacs
@@ -33,7 +33,7 @@ This manual is for Inline Anki version 0.3.7.
 * Implementation notes::
 * Q&A::
 
-— The Detailed Node Listing —
+-- The Detailed Node Listing --
 
 Usage
 
@@ -67,7 +67,7 @@ package with this initfile snippet:
 
      (package! inline-anki :recipe (:host github :repo "meedstrom/inline-anki"))
 
-   Below, you’ll find a recommended config snippet for Org-mode.  It
+   Below, you'll find a recommended config snippet for Org-mode.  It
 lets you quickly create a ‘#+begin_flashcard’ block at point with the
 C-c , key (‘org-insert-structure-template’).
 
@@ -125,15 +125,15 @@ update the Anki database.
              • Just remember to look up the suspends inside Anki but
                edit in the corresponding source Org file.
 
-   • There’s a bit of a gimmick: if a note has 3 clozes, and you study
+   • There's a bit of a gimmick: if a note has 3 clozes, and you study
      it a bit, and later you remove the first cloze, the second and
      third cloze cards will *inherit the scheduling of the first and
-     second*.  So technically, you can have cards that aren’t scheduled
+     second*.  So technically, you can have cards that aren't scheduled
      faithfully to the algorithm, and failure statistics _may_ be
-     referring to a cloze card that you’ve removed.
+     referring to a cloze card that you've removed.
         • Up to you whether to care, but in my opinion, it changes
           nothing in practice.
-        • No surprise to experienced Anki-users, but the third field’s
+        • No surprise to experienced Anki-users, but the third field's
           original scheduling will be attached to an empty card.
           Remember that you can clean up empty cards with the menu
           option "Check database...".
@@ -155,16 +155,16 @@ File: inline-anki.info,  Node: Config variables,  Next: Warning,  Prev: To push 
           find in ‘org-emphasis-alist’.
 
    • ‘inline-anki-send-tags’
-        • Default ‘nil’.  Controls whether or not to send Org tags to
-          Anki.  Can also be a whitelist of valid tags like ‘("tag1"
-          "tag2")’ or a blacklist of invalid tags like ‘(not "tag1"
-          "tag2")’.  Value ‘t’ sends all tags.
-        • The benefit of a ‘nil’ value is faster upload if you have
+        • Default ‘nil’.  Controls whether or not to put a note's Org
+          tags in the Anki note tags.  Can be an allowlist like ‘("tag1"
+          "tag2")’ or a blocklist like ‘(not "tag1" "tag2")’.  Value ‘t’
+          sends all tags.
+        • A benefit with the ‘nil’ value is faster upload if you have
           hundreds of Org files.
 
    • ‘inline-anki-ignore-file-regexps’
         • Helps the command ‘inline-anki-push-notes-in-directory’ decide
-          whether or not to visit a file.  If that file’s full name
+          whether or not to visit a file.  If that file's full name
           matches one of the regular expressions in this list, skip the
           file.
 
@@ -177,8 +177,8 @@ File: inline-anki.info,  Node: Warning,  Next: Open in Emacs,  Prev: Config vari
 2.3 Warning
 ===========
 
-You must not *hard-wrap* your text (e.g.  with ‘fill-paragraph’) if you
-want Anki to receive the whole flashcard.
+You must not *hard-wrap* your text (e.g.  with M-q, ‘fill-paragraph’) if
+you want Anki to receive the whole flashcard.
 
 
 File: inline-anki.info,  Node: Open in Emacs,  Next: Mass-editing,  Prev: Warning,  Up: Usage
@@ -189,8 +189,8 @@ File: inline-anki.info,  Node: Open in Emacs,  Next: Mass-editing,  Prev: Warnin
 It would be convenient if you could click a link in Anki to open the
 corresponding Org file in Emacs.
 
-   By default, ‘inline-anki-fields’ ships an extra field for the
-filename.  With addons such as
+   By default, ‘inline-anki-fields’ ships an extra field that shows the
+filename the note came from.  With addons such as
 <https://ankiweb.net/shared/info/879473266>, it should be possible to
 jump from Anki to Emacs using emacsclient.  Instructions TBD.
 
@@ -213,8 +213,8 @@ If you switch ‘inline-anki-emphasis-type’ to bold or italic, remember to
         • Then you can edit all at once with wgrep
           (http://github.com/mhayashi1120/Emacs-wgrep) or a keyboard
           macro, for example.
-             • The wgrep method won’t cut it for multiline flashcards,
-               as you’ll see, but if you don’t have many of those, you
+             • The wgrep method won't cut it for multiline flashcards,
+               as you'll see, but if you don't have many of those, you
                could simply hand-edit each.  If you have many, try a
                keyboard macro.
 
@@ -239,11 +239,7 @@ File: inline-anki.info,  Node: Permanent limitations,  Next: Limitations vs anki
 There are *three flaws* which will never go away:
 
    • *Flaw 1:* Like anki-editor, inline-anki does not let you review
-     inside Emacs.  You have to whip out your phone and review there, in
-     your Anki app (or the desktop app, but who does that).
-
-        • To me this is a non-issue since the bus is the only place I
-          want to review anyway.
+     inside Emacs.  You have to review in your Anki app.
 
    • *Flaw 2:* Like with anki-editor, your Org files hold the "master
      copy" of each flashcard: *you cannot edit the cards from within
@@ -251,7 +247,7 @@ There are *three flaws* which will never go away:
 
      You have to return to your computer and edit there, in Emacs.
 
-        • This means you can’t make small corrections on-the-fly while
+        • This means you can't make small corrections on-the-fly while
           reviewing.
 
           Bit annoying, yes, but two-way sync is a notoriously finicky
@@ -261,16 +257,15 @@ There are *three flaws* which will never go away:
         • Fortunately, this is less of a problem for us than for regular
           Anki users, since the flashcards are serving double duty as
           body text.  You will be able to see and refine the text of the
-          flashcard at your leisure, in contrast with other SRS when you
-          only see it during review.
+          flashcard at your leisure, _when not reviewing_, in contrast
+          with other SRS when you only see it during review.
 
-   • *Flaw 3:* The note format is constrained – you can’t express every
+   • *Flaw 3:* The note format is constrained - you can't express every
      kind of flashcard possible in Anki.
 
         • For me this is a good trade, if that means the flashcards stay
-          in my life.  Until now, they never stayed long due to clumsy
-          workflows.  Better simple flashcards than no flashcards at
-          all.
+          in my life.  Until now, they never stayed long because Anki
+          was too separated from my notes.
 
 
 File: inline-anki.info,  Node: Limitations vs anki-editor/org-anki,  Next: Syntax of a flashcard,  Prev: Permanent limitations,  Up: Implementation notes
@@ -286,11 +281,11 @@ Many traditional features are ABSENT in inline-anki.
    • You cannot set tags on a per-note basis
         • The note will still inherit tags from the Org subtree
              • Note that Anki tags lose much of their organizational
-               purpose if all your notes live in Org files anyway –
-               you’ll be organizing from within org-roam
-               (https://github.com/org-roam/org-roam) or whichever
-               system you have, not from within Anki.  However, at least
-               two use-cases remain:
+               purpose if your notes primarily live in Org files anyway
+               - you'll be organizing them from within org-node
+               (https://github.com/meedstrom/org-node) or whichever
+               system you have for browsing Org files, not from within
+               Anki.  However, at least two use-cases remain:
                   • You can display the tags inside cards as a
                     contextual hint, if you code this in the card
                     template
@@ -305,13 +300,13 @@ Many traditional features are ABSENT in inline-anki.
                   • This tag lets you separate inline-anki notes from
                     your "handmade" notes
                   • This tag lets you see if you have stale inline-anki
-                    notes that aren’t being updated (perhaps because you
+                    notes that aren't being updated (perhaps because you
                     deleted them from the source)
    • You get no indication in Emacs that Anki has flagged a card as
      "Marked" or "Leech"
-        • You can still see this in Anki’s own card browser, so you can
+        • You can still see this in Anki's own card browser, so you can
           still sit down and go through them manually every now and then
-          – just like a normal Anki user, with the difference that when
+          - just like a normal Anki user, with the difference that when
           you see something that needs to change, you have to open the
           source file in Emacs and edit there.
 
@@ -339,8 +334,8 @@ File: inline-anki.info,  Node: Syntax of a flashcard,  Prev: Limitations vs anki
 
    • Clozes are marked by underline text.  If you prefer bold or italic,
      configure ‘inline-anki-emphasis-type’.
-        • If necessary, you can write Anki’s own ‘{{c1::}}’ syntax
-          directly.  Best I can tell, it’s mainly useful for writing
+        • If necessary, you can write Anki's own ‘{{c1::}}’ syntax
+          directly.  Best I can tell, it's mainly useful for writing
           math equations.  However that makes the source
           unreadable/ugly, so you may as well do math in Anki only for
           now.
@@ -359,19 +354,19 @@ File: inline-anki.info,  Node: Q&A,  Prev: Implementation notes,  Up: Top
 
 
 Tag Table:
-Node: Top222
-Node: Installation1308
-Node: Usage2140
-Node: To push cards2353
-Node: Config variables4673
-Node: Warning5875
-Node: Open in Emacs6120
-Node: Mass-editing6590
-Node: Implementation notes7420
-Node: Permanent limitations7697
-Node: Limitations vs anki-editor/org-anki9504
-Node: Syntax of a flashcard11854
-Node: Q&A13384
+Node: Top220
+Node: Installation1304
+Node: Usage2134
+Node: To push cards2347
+Node: Config variables4659
+Node: Warning5849
+Node: Open in Emacs6099
+Node: Mass-editing6595
+Node: Implementation notes7419
+Node: Permanent limitations7696
+Node: Limitations vs anki-editor/org-anki9295
+Node: Syntax of a flashcard11670
+Node: Q&A13196
 
 End Tag Table
 
