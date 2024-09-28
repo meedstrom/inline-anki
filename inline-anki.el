@@ -4,9 +4,8 @@
 
 ;; Description: Embed implicit flashcards in flowing text
 ;; Author: Martin Edström
-;; Version: 0.3.8-pre
 ;; Created: 2023-09-19
-;; Package-Requires: ((emacs "28") (asyncloop "0.5") (pcre2el "1.12") (request "0.3.3") (dash "2.19.1"))
+;; Package-Requires: ((emacs "29.1") (asyncloop "0.5") (pcre2el "1.12") (request "0.3.3") (dash "2.19.1"))
 ;; URL: https://github.com/meedstrom/inline-anki
 
 ;; This file is not part of GNU Emacs.
@@ -101,7 +100,7 @@ that fact."
   :type '(repeat string))
 
 (defcustom inline-anki-fields
-  '(("Source" . inline-anki-field:filename-link)
+  '(("Source" . inline-anki-filename-as-link)
     ("Text" . t))
   "Alist specifying note fields and how to populate them.
 The cdrs may be either t, a string or a function.  The symbol t
@@ -124,43 +123,26 @@ fields than this variable has, they will not be edited."
                               (const :tag "The full HTML content" t)
                               sexp)))
 
-(defconst inline-anki-rx:list-bullet
+(defconst inline-anki-list-bullet-re
   (rx (or (any "-+*") (seq (*? digit) (any ").") " "))))
 
-(defconst inline-anki-rx:item-start-new
-  (rx bol (*? space) (regexp inline-anki-rx:list-bullet) (*? space) "@anki "))
+(defconst inline-anki-rx-item-start-new
+  (rx bol (*? space) (regexp inline-anki-list-bullet-re) (*? space) "@anki "))
 
-(defconst inline-anki-rx:item-start
-  (rx bol (*? space) (?? "# ") (*? space) (regexp inline-anki-rx:list-bullet) (*? space) "@^{" (group (= 13 digit)) "}"))
+(defconst inline-anki-rx-item-start
+  (rx bol (*? space) (?? "# ") (*? space) (regexp inline-anki-list-bullet-re) (*? space) "@^{" (group (= 13 digit)) "}"))
 
-(defconst inline-anki-rx:eol-new
+(defconst inline-anki-rx-eol-new
   (rx (or "@anki" "^{anki}") (*? space) eol))
 
-(defconst inline-anki-rx:eol
+(defconst inline-anki-rx-eol
   (rx (?? "@") "^{" (group (= 13 digit)) "}" (*? space) eol))
 
-(defconst inline-anki-rx:struct-new
+(defconst inline-anki-rx-struct-new
   (rx bol (*? space) "#+begin_flashcard" (*? space) eol))
 
-(defconst inline-anki-rx:struct
+(defconst inline-anki-rx-struct
   (rx bol (*? space) (?? "# ") (*? space) "#+begin_flashcard " (group (= 13 digit)) (or eol (not digit))))
-
-(defconst inline-anki-rx:new-struct-new
-  (rx bol (*? space) "#+begin_anki " (*? space) (+? word) (*? space) eol))
-
-(defconst inline-anki-rx:new-struct
-  (rx bol (*? space) (?? "# ") (*? space) "#+begin_anki " (*? space)
-      (= 5 word) (+? space) (group (= 13 digit)) (or eol (not digit))))
-
-;; Reason I didn't go with anki or cloze is there are already hotkeys a and c
-;; (defvar inline-anki-structure-name "anki")
-;; (defvar inline-anki-structure-name "fc")
-;; (defvar inline-anki-structure-name "cloze")
-;; but now I know a good way: "begin_anki cloze", "begin_anki basic", using
-;; hotkeys f c and f b, respectively.
-
-(defvar inline-anki--file-list nil
-  "Internal use only.")
 
 (defvar inline-anki--known-flashcard-places nil
   "Internal use only.")
@@ -170,12 +152,12 @@ fields than this variable has, they will not be edited."
 (defun inline-anki-occur ()
   "Use `occur' to show all flashcards in the buffer."
   (interactive)
-  (occur (rx (or (regexp inline-anki-rx:struct)
-                 (regexp inline-anki-rx:struct-new)
-                 (regexp inline-anki-rx:eol)
-                 (regexp inline-anki-rx:eol-new)
-                 (regexp inline-anki-rx:item-start)
-                 (regexp inline-anki-rx:item-start-new)))))
+  (occur (rx (or (regexp inline-anki-rx-struct)
+                 (regexp inline-anki-rx-struct-new)
+                 (regexp inline-anki-rx-eol)
+                 (regexp inline-anki-rx-eol-new)
+                 (regexp inline-anki-rx-item-start)
+                 (regexp inline-anki-rx-item-start-new)))))
 
 ;;;###autoload
 (defun inline-anki-rgrep ()
@@ -185,12 +167,12 @@ fields than this variable has, they will not be edited."
   ;; Override rgrep's command to add -P for PCRE
   (let ((grep-find-template "find -H <D> <X> -type f <F> -exec grep <C> -nH -P --null -e <R> \\{\\} +"))
     (rgrep (rxt-elisp-to-pcre
-            (rx (or (regexp inline-anki-rx:struct)
-                    (regexp inline-anki-rx:struct-new)
-                    (regexp inline-anki-rx:eol)
-                    (regexp inline-anki-rx:eol-new)
-                    (regexp inline-anki-rx:item-start)
-                    (regexp inline-anki-rx:item-start-new))))
+            (rx (or (regexp inline-anki-rx-struct)
+                    (regexp inline-anki-rx-struct-new)
+                    (regexp inline-anki-rx-eol)
+                    (regexp inline-anki-rx-eol-new)
+                    (regexp inline-anki-rx-item-start)
+                    (regexp inline-anki-rx-item-start-new))))
            "*.org")))
 
 ;; This does its own regexp searches because it's used as a callback with no
@@ -208,17 +190,14 @@ fields than this variable has, they will not be edited."
    ((search-forward "@anki" (line-end-position) t)
     (delete-char -4)
     (insert "^{" (number-to-string id) "}"))
-
    ;; Replace "^{anki}" with ID
    ((re-search-forward (rx "^{" (group "anki") "}" (*? space) eol)
                        (line-end-position)
                        t)
     (replace-match (number-to-string id) nil nil nil 1))
-
    ;; Insert ID after "#+begin_flashcard"
    ((re-search-forward (rx (*? space) "#+begin_flashcard") (line-end-position) t)
     (insert " " (number-to-string id)))
-
    (t
     (error "No inline-anki magic string found"))))
 
@@ -230,14 +209,14 @@ doesn't get crazy-long in extreme cases."
 
 (defcustom inline-anki-occluder
   #'inline-anki-dots-logarithmic
-  "Function that takes a string and returns an occluded string, for
-use in cloze.
+  "Function that occludes a string, for use in cloze.
+Takes the string to be occluded \(replaced by dots or whatever).
 
 To get the Anki default of three dots, set this variable to nil."
   :type '(choice function
                  (const :tag "Anki default of three dots" nil)))
 
-(defconst inline-anki-rx:comment-glyph
+(defconst inline-anki-rx-comment-glyph
   (rx bol (*? space) "# "))
 
 (defun inline-anki--convert-implicit-clozes (text)
@@ -248,7 +227,7 @@ To get the Anki default of three dots, set this variable to nil."
     (insert " ")
     (goto-char (point-min))
     ;; comment means suspend card, but don't also blank-out the html
-    (while (re-search-forward inline-anki-rx:comment-glyph nil t)
+    (while (re-search-forward inline-anki-rx-comment-glyph nil t)
       (delete-char -2))
     (let ((n 0))
       (goto-char (point-min))
@@ -327,14 +306,14 @@ value of -1), create it."
                                        :test #'string-equal-ignore-case)))))))
           (cons 'fields (cl-loop
                          for (field . value) in inline-anki-fields
-                         as expanded = (inline-anki--expand value)
+                         as string = (inline-anki--instantiate value)
                          if (eq t value)
                          collect (cons field html)
-                         else unless (null expanded)
-                         collect (cons field expanded)))
+                         else unless (null string)
+                         collect (cons field string)))
           (cons 'suspend? (save-excursion
                             (goto-char (line-beginning-position))
-                            (looking-at-p inline-anki-rx:comment-glyph))))))
+                            (looking-at-p inline-anki-rx-comment-glyph))))))
     (message "No implicit clozes found, skipping:  %s" text)
     nil))
 
@@ -343,7 +322,7 @@ value of -1), create it."
 Will be passed through `format-time-string'.  Cannot be nil."
   :type 'string)
 
-(defun inline-anki--expand (input)
+(defun inline-anki--instantiate (input)
   "Return INPUT if it's a string, else funcall or eval it."
   (condition-case signal
       (cond ((stringp input)
@@ -366,7 +345,7 @@ Will be passed through `format-time-string'.  Cannot be nil."
             input
             signal))))
 
-(defun inline-anki-field:filename-link ()
+(defun inline-anki-filename-as-link ()
   "Return the buffer filename wrapped in <a href>."
   (concat "<a href=\"file://" buffer-file-name "\">" buffer-file-name "</a>"))
 
@@ -387,49 +366,49 @@ Will be passed through `format-time-string'.  Cannot be nil."
   (save-mark-and-excursion
     (+
      (cl-loop initially (goto-char (point-min))
-              while (re-search-forward inline-anki-rx:item-start nil t)
+              while (re-search-forward inline-anki-rx-item-start nil t)
               count (inline-anki--push-note
                      :field-beg (point)
                      :field-end (line-end-position)
                      :note-id (string-to-number (match-string 1))))
 
      (cl-loop initially (goto-char (point-min))
-              while (re-search-forward inline-anki-rx:item-start-new nil t)
+              while (re-search-forward inline-anki-rx-item-start-new nil t)
               count (inline-anki--push-note
                      :field-beg (point)
                      :field-end (line-end-position)
                      :note-id -1))
 
      (cl-loop initially (goto-char (point-min))
-              while (re-search-forward inline-anki-rx:eol nil t)
+              while (re-search-forward inline-anki-rx-eol nil t)
               count (inline-anki--push-note
                      :field-beg (save-excursion
                                   (save-match-data
                                     (goto-char (line-beginning-position))
                                     (re-search-forward (rx bol (* space))
                                                        (line-end-position) t)
-                                    (if (looking-at inline-anki-rx:list-bullet)
+                                    (if (looking-at inline-anki-list-bullet-re)
                                         (match-end 0)
                                       (point))))
                      :field-end (match-beginning 0)
                      :note-id (string-to-number (match-string 1))))
 
      (cl-loop initially (goto-char (point-min))
-              while (re-search-forward inline-anki-rx:eol-new nil t)
+              while (re-search-forward inline-anki-rx-eol-new nil t)
               count (inline-anki--push-note
                      :field-beg (save-excursion
                                   (save-match-data
                                     (goto-char (line-beginning-position))
                                     (re-search-forward (rx bol (* space))
                                                        (line-end-position) t)
-                                    (if (looking-at inline-anki-rx:list-bullet)
+                                    (if (looking-at inline-anki-list-bullet-re)
                                         (match-end 0)
                                       (point))))
                      :field-end (match-beginning 0)
                      :note-id -1))
 
      (cl-loop initially (goto-char (point-min))
-              while (re-search-forward inline-anki-rx:struct nil t)
+              while (re-search-forward inline-anki-rx-struct nil t)
               count (inline-anki--push-note
                      :field-beg (1+ (line-end-position))
                      :field-end (save-excursion
@@ -439,7 +418,7 @@ Will be passed through `format-time-string'.  Cannot be nil."
                      :note-id (string-to-number (match-string 1))))
 
      (cl-loop initially (goto-char (point-min))
-              while (re-search-forward inline-anki-rx:struct-new nil t)
+              while (re-search-forward inline-anki-rx-struct-new nil t)
               count (inline-anki--push-note
                      :field-beg (1+ (line-end-position))
                      :field-end (save-excursion
@@ -475,9 +454,16 @@ Argument CALLED-INTERACTIVELY sets itself."
           (message "Pushed %d notes!" pushed)
         pushed))))
 
-(defvar inline-anki--directory nil)
+(defvar inline-anki--directory nil
+  "Directory in which to look for Org files.
+Set by `inline-anki-push-notes-in-directory'.")
+
+(defvar inline-anki--file-list nil
+  "Internal use only.")
 
 (defun inline-anki--prep-file-list (_)
+  "Populate `inline-anki--file-list'.
+Do so with files found in `inline-anki--directory'."
   (setq inline-anki--file-list
         (cl-loop for path in (directory-files-recursively
                               inline-anki--directory "\\.org$" nil t)
@@ -490,6 +476,9 @@ Argument CALLED-INTERACTIVELY sets itself."
           inline-anki--directory))
 
 (defun inline-anki--next (loop)
+  "Visit the next file and maybe push notes.
+Next file is taken off `inline-anki--file-list'. If called by an
+asyncloop LOOP, repeat until the file list is empty."
   (if (null inline-anki--file-list)
       "All done"
     (let* ((path (car inline-anki--file-list))
@@ -514,8 +503,8 @@ Argument CALLED-INTERACTIVELY sets itself."
                  (if modified
                      "Not saving! "
                    ;; When cards were pushed, we left the buffer open for
-                   ;; inspection, so switch from fundamental-mode to org-mode to
-                   ;; avoid shocking user.
+                   ;; inspection, so switch from fundamental-mode to org-mode
+                   ;; to avoid shocking user.
                    (with-current-buffer buf
                      (normal-mode))
                    "")
@@ -533,7 +522,7 @@ Argument CALLED-INTERACTIVELY sets itself."
 
 ;;;###autoload
 (defun inline-anki-push-notes-in-directory (dir)
-  "Push notes from every file in current dir and nested subdirs."
+  "Push notes from every file in DIR and nested subdirs."
   (interactive "DSend flashcards from all files in directory: ")
   (require 'org)
   (setq inline-anki--directory dir)
