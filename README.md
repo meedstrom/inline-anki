@@ -24,8 +24,6 @@ The following two paragraphs express two Anki cloze notes (totalling four cloze 
 > 
 > A gotcha for inline-anki: you must not <ins>hard-wrap</ins> paragraphs.  If you do, inline-anki will only grab <ins>the last line</ins> of the paragraph.<sup>1690986753420</sup>
 
-Note I omitted the @ glyph.  You can do that on line endings.
-
 ## Way 2: As list items, with leading ID
 
 Here are five Anki cloze notes (totalling nine cloze deletions), expressed in just five list items:
