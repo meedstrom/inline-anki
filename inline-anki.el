@@ -147,6 +147,22 @@ fields than this variable has, they will not be edited."
 (defvar inline-anki--known-flashcard-places nil
   "Internal use only.")
 
+
+;; unused
+;; Reason I didn't originally go with anki or cloze: there are already hotkeys
+;; a and c.  But maybe a good way: "begin_anki cloze", "begin_anki basic",
+;; using hotkeys f c and f b, respectively.
+(defconst inline-anki-new-struct-new-re
+  (rx bol (*? space) "#+begin_anki " (*? space) (+? word) (*? space) eol))
+
+(defconst inline-anki-new-struct-re
+  (rx bol (*? space) (?? "# ") (*? space) "#+begin_anki " (*? space)
+      (= 5 word) (+? space) (group (= 13 digit)) (or eol (not digit))))
+;; (defvar inline-anki-structure-name "anki")
+;; (defvar inline-anki-structure-name "fc")
+;; (defvar inline-anki-structure-name "cloze")
+
+
 ;; TODO: make a version that Vertico/Helm can make interactive
 ;;;###autoload
 (defun inline-anki-occur ()
