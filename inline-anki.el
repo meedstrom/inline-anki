@@ -273,52 +273,54 @@ value of -1), create it."
              (org-export-string-as clozed
                                    inline-anki--ox-anki-html-backend
                                    t
-                                   '(:with-toc nil))))
-      (prog1 t
+                                   '(:with-toc nil)))
+            (data
+             (list
+              (cons 'deck inline-anki-deck)
+              (cons 'note-type inline-anki-note-type)
+              (cons 'note-id note-id)
+              (cons 'tags
+                    (delq nil
+                          (cons
+                           (when inline-anki-extra-tag
+                             (format-time-string inline-anki-extra-tag))
+                           (mapcar #'substring-no-properties
+                                   (cond ((eq t inline-anki-send-tags)
+                                          (org-get-tags))
+                                         ((null inline-anki-send-tags)
+                                          nil)
+                                         ((eq (car inline-anki-send-tags) 'not)
+                                          (cl-set-difference
+                                           (org-get-tags)
+                                           (cdr inline-anki-send-tags)
+                                           :test #'string-equal-ignore-case))
+                                         (t
+                                          (cl-set-difference
+                                           inline-anki-send-tags
+                                           (org-get-tags)
+                                           :test #'string-equal-ignore-case)))))))
+              (cons 'fields (cl-loop
+                             for (field . value) in inline-anki-fields
+                             as string = (inline-anki--instantiate value)
+                             if (eq t value)
+                             collect (cons field html)
+                             else unless (null string)
+                             collect (cons field string)))
+              (cons 'suspend? (save-excursion
+                                (goto-char (line-beginning-position))
+                                (looking-at-p inline-anki-rx-comment-glyph))))))
+      (progn
         ;; When `inline-anki-push-notes-in-directory' calls this, the buffer is
         ;; in fundamental-mode. Switch to org-mode if we need to read tags.
         (when (and inline-anki-send-tags
                    (not (derived-mode-p 'org-mode)))
           (delay-mode-hooks
             (org-mode)))
-        (funcall
-         (if (= -1 note-id)
-             'inline-anki--create-note
-           'inline-anki--update-note)
-         (list
-          (cons 'deck inline-anki-deck)
-          (cons 'note-type inline-anki-note-type)
-          (cons 'note-id note-id)
-          (cons 'tags
-                (delq nil
-                      (cons
-                       (when inline-anki-extra-tag
-                         (format-time-string inline-anki-extra-tag))
-                       (mapcar #'substring-no-properties
-                               (cond ((eq t inline-anki-send-tags)
-                                      (org-get-tags))
-                                     ((null inline-anki-send-tags)
-                                      nil)
-                                     ((eq (car inline-anki-send-tags) 'not)
-                                      (cl-set-difference
-                                       (org-get-tags)
-                                       (cdr inline-anki-send-tags)
-                                       :test #'string-equal-ignore-case))
-                                     (t
-                                      (cl-set-difference
-                                       inline-anki-send-tags
-                                       (org-get-tags)
-                                       :test #'string-equal-ignore-case)))))))
-          (cons 'fields (cl-loop
-                         for (field . value) in inline-anki-fields
-                         as string = (inline-anki--instantiate value)
-                         if (eq t value)
-                         collect (cons field html)
-                         else unless (null string)
-                         collect (cons field string)))
-          (cons 'suspend? (save-excursion
-                            (goto-char (line-beginning-position))
-                            (looking-at-p inline-anki-rx-comment-glyph))))))
+        (if (= -1 note-id)
+            (unless (alist-get 'suspend? data) ;; Small nicety
+              (inline-anki--create-note data))
+          (inline-anki--update-note data))
+        t)
     (message "No implicit clozes found, skipping:  %s" text)
     nil))
 
