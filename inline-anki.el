@@ -37,9 +37,9 @@
 ;; TODO: dont pop to the debug buffer, jus make the buffer in background. use
 ;; echo area progress message normally
 
-;;TODO:
-
 (require 'asyncloop)
+(require 'org)
+(require 'ox)
 
 (defgroup inline-anki nil
   "Customizations for inline-anki."
@@ -63,20 +63,20 @@ can only be one character long."
 
 (defcustom inline-anki-send-tags nil
   "List of tags to include when sending flashcards to Anki.
-This doesn't mean extra tags injected into every flashcard, but
+This doesn\\='t mean extra tags injected into every flashcard, but
 rather that if the subtree has a tag in this list, then to
 send the tag.  Special value t means include all tags.
 
 Defaults to nil because users may be distraught to find a load of
 new tags in their Anki database.  Also, the nil value lets the
-command `inline-anki-push-notes-in-directory' work faster, since it won't
-have to turn on Org-mode for each file visited.
+command `inline-anki-push-notes-in-directory' work faster, since it
+won\\='t have to turn on Org-mode for each file visited.
 
-A list of strings means include the tag only if it's in this
+A list of strings means include the tag only if it\\='s in this
 list.  Or if the first element is the symbol `not', then include
-the tag only if it's NOT in this list.
+the tag only if it\\='s NOT in this list.
 
-A reasonable value is '\(not \"noexport\" \"archive\"\).
+A reasonable value is \\='\(not \"noexport\" \"archive\"\).
 
 Case-insensitive.
 
@@ -248,6 +248,11 @@ To get the Anki default of three dots, set this variable to nil."
           nil ;; Nil signals that no clozes found
         (string-trim (buffer-string))))))
 
+(defcustom inline-anki-extra-tag "from-emacs-%F"
+  "Tag added to every note sent to Anki.
+Will be passed through `format-time-string'.  Cannot be nil."
+  :type 'string)
+
 ;; TODO: make capable of basic flashcard
 (cl-defun inline-anki--push-note (&key field-beg field-end note-id)
   "Push a flashcard to Anki, identified by NOTE-ID.
@@ -278,8 +283,8 @@ value of -1), create it."
             (org-mode)))
         (funcall
          (if (= -1 note-id)
-             #'inline-anki--create-note
-           #'inline-anki--update-note)
+             'inline-anki--create-note
+           'inline-anki--update-note)
          (list
           (cons 'deck inline-anki-deck)
           (cons 'note-type inline-anki-note-type)
@@ -316,11 +321,6 @@ value of -1), create it."
                             (looking-at-p inline-anki-rx-comment-glyph))))))
     (message "No implicit clozes found, skipping:  %s" text)
     nil))
-
-(defcustom inline-anki-extra-tag "from-emacs-%F"
-  "Tag added to every note sent to Anki.
-Will be passed through `format-time-string'.  Cannot be nil."
-  :type 'string)
 
 (defun inline-anki--instantiate (input)
   "Return INPUT if it's a string, else funcall or eval it."
@@ -444,9 +444,9 @@ Argument CALLED-INTERACTIVELY sets itself."
           (already-modified (buffer-modified-p)))
       (unwind-protect
           (progn
-            (advice-add 'org-html-link :around #'inline-anki--ox-html-link)
+            (advice-add 'org-html-link :around 'inline-anki--ox-html-link)
             (setq pushed (inline-anki-push-notes-in-buffer-1)))
-        (advice-remove 'org-html-link #'inline-anki--ox-html-link))
+        (advice-remove 'org-html-link 'inline-anki--ox-html-link))
       (if already-modified
           (message "Not saving buffer %s" (current-buffer))
         (save-buffer))
