@@ -41,6 +41,10 @@
 (require 'org)
 (require 'ox)
 
+(declare-function inline-anki--update-note "inline-anki-anki-editor-fork")
+(declare-function inline-anki--create-note "inline-anki-anki-editor-fork")
+(declare-function rxt-elisp-to-pcre "pcre2el")
+
 (defgroup inline-anki nil
   "Customizations for inline-anki."
   :group 'org)
