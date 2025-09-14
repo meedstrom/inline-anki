@@ -224,7 +224,9 @@ To get the Anki default of three dots, set this variable to nil."
   (rx bol (*? space) "# "))
 
 (defun inline-anki--convert-implicit-clozes (text)
-  "Return TEXT with emphasis replaced by Anki {{c::}} syntax."
+  "Return TEXT with emphasis replaced by Anki {{c::}} syntax.
+If TEXT contains no emphases, look for existing {{c::}} syntax and
+return TEXT unmodified if so."
   (with-temp-buffer
     (insert " ") ;; workaround bug where the regexp misses emph @ BoL
     (insert (substring-no-properties text))
@@ -248,7 +250,7 @@ To get the Anki default of three dots, set this variable to nil."
                                       (funcall inline-anki-occluder truth)))
                                    "}}")
                            nil nil nil 2))))
-      (if (= n 0)
+      (if (and (= n 0) (not (string-match-p "{{c[12367890]+::" text)))
           nil ;; Nil signals that no clozes found
         (string-trim (buffer-string))))))
 
