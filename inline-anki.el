@@ -273,13 +273,12 @@ value of -1), create it."
   (if-let* ((text (buffer-substring field-beg field-end))
             (clozed (inline-anki--convert-implicit-clozes text))
             (html
-             ;; REVIEW: Maybe empty these hooks? Can be source of user error.
-             ;; let ((org-export-before-parsing-functions nil)
-             ;;      (org-export-before-processing-functions nil))
-             (org-export-string-as clozed
-                                   inline-anki--ox-anki-html-backend
-                                   t
-                                   '(:with-toc nil)))
+             (let ((org-export-before-parsing-functions nil)
+                   (org-export-before-processing-functions nil))
+               (org-export-string-as clozed
+                                     inline-anki--ox-anki-html-backend
+                                     t
+                                     '(:with-toc nil))))
             (data
              (list
               (cons 'deck inline-anki-deck)
