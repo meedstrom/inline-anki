@@ -362,7 +362,8 @@ value of -1), create it."
   (cl-assert (member inline-anki-emphasis-type
                      (mapcar #'car org-emphasis-alist)))
   (cl-assert (executable-find "ps"))
-  (if (not (string-empty-p (shell-command-to-string "ps -e | grep anki")))
+  ;; Since Anki 25 and anki-launcher, the process can be called "python"
+  (if (not (string-empty-p (shell-command-to-string "ps -ef | grep '[aA]nki'")))
       t
     (message "Anki doesn't seem to be running")
     nil))
