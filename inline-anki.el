@@ -419,8 +419,8 @@ value of -1), create it."
               while (re-search-forward inline-anki-rx-struct nil t)
               count (inline-anki--push-note
                      :field-beg (1+ (line-end-position))
-                     :field-end (save-excursion
-                                  (save-match-data
+                     :field-end (save-match-data
+                                  (save-excursion
                                     (search-forward "#+end_flashcard")
                                     (1- (line-beginning-position))))
                      :note-id (string-to-number (match-string 1))))
