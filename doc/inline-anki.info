@@ -1,4 +1,4 @@
-This is inline-anki.info, produced by makeinfo version 7.1 from
+This is inline-anki.info, produced by makeinfo version 7.1.1 from
 inline-anki.texi.
 
 INFO-DIR-SECTION Emacs
@@ -354,19 +354,19 @@ File: inline-anki.info,  Node: Q&A,  Prev: Implementation notes,  Up: Top
 
 
 Tag Table:
-Node: Top220
-Node: Installation1304
-Node: Usage2134
-Node: To push cards2347
-Node: Config variables4659
-Node: Warning5849
-Node: Open in Emacs6099
-Node: Mass-editing6595
-Node: Implementation notes7419
-Node: Permanent limitations7696
-Node: Limitations vs anki-editor/org-anki9295
-Node: Syntax of a flashcard11670
-Node: Q&A13196
+Node: Top222
+Node: Installation1306
+Node: Usage2136
+Node: To push cards2349
+Node: Config variables4661
+Node: Warning5851
+Node: Open in Emacs6101
+Node: Mass-editing6597
+Node: Implementation notes7421
+Node: Permanent limitations7698
+Node: Limitations vs anki-editor/org-anki9297
+Node: Syntax of a flashcard11672
+Node: Q&A13198
 
 End Tag Table
 

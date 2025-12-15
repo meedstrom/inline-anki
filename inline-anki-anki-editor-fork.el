@@ -32,7 +32,9 @@
 (require 'ox)
 (require 'ox-html)
 (require 'request)
+(declare-function inline-anki--dangerously-write-id "inline-anki")
 
+;; TODO: Deprecate
 (defcustom inline-anki-break-consecutive-braces-in-latex
   nil
   "If non-nil, consecutive `}' will be automatically separated by spaces to prevent early-closing of cloze.
@@ -64,6 +66,7 @@ See https://apps.ankiweb.net/docs/manual.html#latex-conflicts."
   :type 'string
   :group 'inline-anki)
 
+;; TODO: Deprecate, making it always on (?)
 (defcustom inline-anki-use-math-jax nil
   "Use Anki's built in MathJax support instead of LaTeX."
   :type 'boolean
@@ -112,6 +115,7 @@ See https://apps.ankiweb.net/docs/manual.html#latex-conflicts."
       ;; might not be called right away but at a later time, that's
       ;; why here we manually invoke callbacks to receive the result.
       (unless (request-response-done-p response)
+        ;; FIXME: Wrong number of arguments (2, should be 3)
         (request--curl-callback (get-buffer-process (request-response--buffer response)) "finished\n")))
 
     (when err (error "Error communicating with AnkiConnect using cURL: %s" err))
@@ -125,8 +129,8 @@ See https://apps.ankiweb.net/docs/manual.html#latex-conflicts."
 
 (defun inline-anki--anki-connect-invoke-multi (&rest actions)
   (-zip-with (lambda (result handler)
-               (when-let ((_ (listp result))
-                          (err (alist-get 'error result)))
+               (when-let* ((_ (listp result))
+                           (err (alist-get 'error result)))
                  (error err))
                (and handler (funcall handler result)))
              (inline-anki--anki-connect-invoke-result

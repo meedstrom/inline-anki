@@ -141,7 +141,7 @@ The reason I switched to underline was the idea of "*invisible*-anki", a future 
 
 ## Thanks
 
-Thanks a lot to @louietan who wrote <https://github.com/louietan/anki-editor>.  I could reuse its AnkiConnect bindings, which lowered the barrier for me to get started.
+Thanks a lot to @louietan who wrote <https://github.com/anki-editor/anki-editor>.  I could reuse its AnkiConnect bindings, which lowered the barrier for me to get started.
 
 
 ## Set-up

@@ -40,10 +40,12 @@
 (require 'asyncloop)
 (require 'org)
 (require 'ox)
+(require 'inline-anki-anki-editor-fork)
 
 (declare-function inline-anki--update-note "inline-anki-anki-editor-fork")
 (declare-function inline-anki--create-note "inline-anki-anki-editor-fork")
 (declare-function rxt-elisp-to-pcre "pcre2el")
+(defvar grep-find-template)
 
 (defgroup inline-anki nil
   "Customizations for inline-anki."
@@ -54,9 +56,10 @@
   :type 'string)
 
 (defcustom inline-anki-note-type "Cloze from Outer Space"
+;; TODO: Check if the note type exists, as a nicety. See API:
+;; https://git.sr.ht/~foosoft/anki-connect
   "Name of your cloze note type.
-Will fail silently if the note type doesn't exist, so get it
-right!"
+Will fail silently if the note type doesn't exist, so get it right!"
   :type 'string)
 
 (defcustom inline-anki-emphasis-type "_"
@@ -116,10 +119,10 @@ buffer set as current, with point on the first line of the
 flashcard expression.  (In the case of a #+begin_flashcard
 template, point is on that line.)
 
-You have to create a field with the same name in Anki's \"Manage
-note types\" before it will work.  Fields unknown to Anki will
-not be filled in.  Conversely, it's OK if Anki defines more
-fields than this variable has, they will not be edited."
+You have to create a field with the same name in Anki's \"Manage note
+types\" before it will work.  The order of fields is irrelevant.  Fields
+unknown to Anki will not be filled in.  Conversely, it's OK if Anki
+defines more fields than this variable has, they will not be edited."
   :type '(alist
           :key-type string
           :value-type (choice function
@@ -188,19 +191,19 @@ fields than this variable has, they will not be edited."
   (unless id
     (error "Note creation failed for unknown reason (no ID returned)"))
   ;; Point is already on the correct line, at least
-  (goto-char (line-beginning-position))
+  (goto-char (pos-bol))
   (cond
    ;; Replace "@anki" with ID
-   ((search-forward "@anki" (line-end-position) t)
+   ((search-forward "@anki" (pos-eol) t)
     (delete-char -4)
     (insert "^{" (number-to-string id) "}"))
    ;; Replace "^{anki}" with ID
    ((re-search-forward (rx "^{" (group "anki") "}" (*? space) eol)
-                       (line-end-position)
+                       (pos-eol)
                        t)
     (replace-match (number-to-string id) nil nil nil 1))
    ;; Insert ID after "#+begin_flashcard"
-   ((re-search-forward (rx (*? space) "#+begin_flashcard") (line-end-position) t)
+   ((re-search-forward (rx (*? space) "#+begin_flashcard") (pos-eol) t)
     (insert " " (number-to-string id)))
    (t
     (error "No inline-anki magic string found"))))
@@ -226,7 +229,8 @@ To get the Anki default of three dots, set this variable to nil."
 (defun inline-anki--convert-implicit-clozes (text)
   "Return TEXT with emphasis replaced by Anki {{c::}} syntax.
 If TEXT contains no emphases, look for existing {{c::}} syntax and
-return TEXT unmodified if so."
+return TEXT unmodified if so.
+Otherwise, return nil."
   (with-temp-buffer
     (insert " ") ;; workaround bug where the regexp misses emph @ BoL
     (insert (substring-no-properties text))
@@ -463,15 +467,14 @@ Argument CALLED-INTERACTIVELY sets itself."
         pushed))))
 
 (defvar inline-anki--directory nil
-  "Directory in which to look for Org files.
-Set by `inline-anki-push-notes-in-directory'.")
+  "Directory in which to look recursively for Org files.
+For internal use by `inline-anki-push-notes-in-directory'.")
 
 (defvar inline-anki--file-list nil
   "Internal use only.")
 
 (defun inline-anki--prep-file-list (_)
-  "Populate `inline-anki--file-list'.
-Do so with files found in `inline-anki--directory'."
+  "Populate `inline-anki--file-list'."
   (setq inline-anki--file-list
         (cl-loop for path in (directory-files-recursively
                               inline-anki--directory "\\.org$" nil t)
@@ -485,8 +488,8 @@ Do so with files found in `inline-anki--directory'."
 
 (defun inline-anki--next (loop)
   "Visit the next file and maybe push notes.
-Next file is taken off `inline-anki--file-list'. If called by an
-asyncloop LOOP, repeat until the file list is empty."
+Next file is taken off `inline-anki--file-list'.
+If called by an asyncloop LOOP, repeat until the file list is empty."
   (if (null inline-anki--file-list)
       "All done"
     (let* ((path (car inline-anki--file-list))
@@ -512,7 +515,7 @@ asyncloop LOOP, repeat until the file list is empty."
                      "Not saving! "
                    ;; When cards were pushed, we left the buffer open for
                    ;; inspection, so switch from fundamental-mode to org-mode
-                   ;; to avoid shocking user.
+                   ;; to avoid shocking the user.
                    (with-current-buffer buf
                      (normal-mode))
                    "")
