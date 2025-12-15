@@ -14,7 +14,7 @@ See [the user manual](doc/inline-anki.org).  It's also available inside Emacs by
 
 # Demonstration
 
-We provide four ways to express flashcards.
+We provide five ways to express flashcards.
 
 ## Way 1: As running paragraphs
 
@@ -79,6 +79,23 @@ The _Litany of Tarski_ goes:
 4. I desire to believe that the box does not contain a diamond;
 5. Let me not become attached to beliefs I may not want.
 #+end_flashcard
+```
+
+## Way 5: Multiline flashcards contained in a `:anki:` drawer
+
+Unfortunately, Org has limitations regarding nested `#+begin...` statements. You may want to create a flashcard that contains source code or a quote (using `#+begin_src` or `#+begin_quote` blocks) and find that Org doesn't employ any formatting for nested blocks.
+
+This can be worked around by using the provided `:anki:` drawer:
+
+``` org
+:anki-1765799027213:
+This prints _Hello, world!_
+#+begin_src elisp
+  (defun hello-world ()
+    (message "Hello, world!"))
+  (hello-world)
+#+end_src
+:end:
 ```
 
 ## Why underlines?
