@@ -254,7 +254,7 @@ Otherwise, return nil."
                                       (funcall inline-anki-occluder truth)))
                                    "}}")
                            nil nil nil 2))))
-      (if (and (= n 0) (not (string-match-p "{{c[12367890]+::" text)))
+      (if (and (= n 0) (not (string-match-p "{{c[1234567890]+::" text)))
           nil ;; Nil signals that no clozes found
         (string-trim (buffer-string))))))
 
