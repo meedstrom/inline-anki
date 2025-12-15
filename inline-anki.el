@@ -151,6 +151,12 @@ defines more fields than this variable has, they will not be edited."
 (defconst inline-anki-rx-struct
   (rx bol (*? space) (?? "# ") (*? space) "#+begin_flashcard " (group (= 13 digit)) (or eol (not digit))))
 
+(defconst inline-anki-rx-drawer-new
+  (rx bol (*? space) ":anki:" (*? space) eol))
+
+(defconst inline-anki-rx-drawer
+  (rx bol (*? space) (?? "# ") (*? space) ":anki-" (group (= 13 digit)) ":" (*? space) eol))
+
 (defvar inline-anki--known-flashcard-places nil
   "Internal use only.")
 
@@ -164,7 +170,9 @@ defines more fields than this variable has, they will not be edited."
                  (regexp inline-anki-rx-eol)
                  (regexp inline-anki-rx-eol-new)
                  (regexp inline-anki-rx-item-start)
-                 (regexp inline-anki-rx-item-start-new)))))
+                 (regexp inline-anki-rx-item-start-new)
+                 (regexp inline-anki-rx-drawer)
+                 (regexp inline-anki-rx-drawer-new)))))
 
 ;;;###autoload
 (defun inline-anki-rgrep ()
@@ -179,7 +187,9 @@ defines more fields than this variable has, they will not be edited."
                     (regexp inline-anki-rx-eol)
                     (regexp inline-anki-rx-eol-new)
                     (regexp inline-anki-rx-item-start)
-                    (regexp inline-anki-rx-item-start-new))))
+                    (regexp inline-anki-rx-item-start-new)
+                    (regexp inline-anki-rx-drawer)
+                    (regexp inline-anki-rx-drawer-new))))
            "*.org")))
 
 ;; This does its own regexp searches because it's used as a callback with no
@@ -205,6 +215,10 @@ defines more fields than this variable has, they will not be edited."
    ;; Insert ID after "#+begin_flashcard"
    ((re-search-forward (rx (*? space) "#+begin_flashcard") (pos-eol) t)
     (insert " " (number-to-string id)))
+   ;; Insert ID after ":anki"
+   ((re-search-forward (rx (*? space) ":anki:" (*? space) eol) (pos-eol) t)
+    (search-backward ":")
+    (insert "-" (number-to-string id)))
    (t
     (error "No inline-anki magic string found"))))
 
@@ -417,6 +431,26 @@ value of -1), create it."
                                         (match-end 0)
                                       (point))))
                      :field-end (match-beginning 0)
+                     :note-id -1))
+
+     (cl-loop initially (goto-char (point-min))
+              while (re-search-forward inline-anki-rx-drawer nil t)
+              count (inline-anki--push-note
+                     :field-beg (1+ (pos-eol))
+                     :field-end (save-match-data
+                                  (save-excursion
+                                    (re-search-forward "^[ 	]*:end:")
+                                    (1- (pos-bol))))
+                     :note-id (string-to-number (match-string 1))))
+
+     (cl-loop initially (goto-char (point-min))
+              while (re-search-forward inline-anki-rx-drawer-new nil t)
+              count (inline-anki--push-note
+                     :field-beg (1+ (pos-eol))
+                     :field-end (save-excursion
+                                  (save-match-data
+                                    (re-search-forward "^[ 	]*:end:")
+                                    (1- (pos-bol))))
                      :note-id -1))
 
      (cl-loop initially (goto-char (point-min))
