@@ -540,7 +540,8 @@ If called by an asyncloop LOOP, repeat until the file list is empty."
                     ;; Skip org-mode for speed
                     (let ((auto-mode-alist nil)
                           (magic-mode-alist nil)
-                          (find-file-hook nil))
+                          (find-file-hook nil)
+                          (enable-local-variables :safe))
                       ;; This really speeds things up but a bit breaky
                       ;; cl-letf (((symbol-function #'after-find-file) #'ignore))
                       (find-file-noselect path))))
