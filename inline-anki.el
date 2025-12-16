@@ -500,7 +500,8 @@ Argument CALLED-INTERACTIVELY sets itself."
           (progn
             (advice-add 'org-html-link :around 'inline-anki--ox-html-link)
             (setq pushed (inline-anki-push-notes-in-buffer-1)))
-        (advice-remove 'org-html-link 'inline-anki--ox-html-link))
+        (advice-remove 'org-html-link 'inline-anki--ox-html-link)
+        (font-lock-ensure))
       (if already-modified
           (message "Not saving buffer %s" (current-buffer))
         (save-buffer))
