@@ -306,25 +306,8 @@ value of -1), create it."
               (cons 'note-type inline-anki-note-type)
               (cons 'note-id note-id)
               (cons 'tags
-                    (delq nil
-                          (cons
-                           (when inline-anki-extra-tag
-                             (format-time-string inline-anki-extra-tag))
-                           (mapcar #'substring-no-properties
-                                   (cond ((eq t inline-anki-send-tags)
-                                          (org-get-tags))
-                                         ((null inline-anki-send-tags)
-                                          nil)
-                                         ((eq (car inline-anki-send-tags) 'not)
-                                          (cl-set-difference
-                                           (org-get-tags)
-                                           (cdr inline-anki-send-tags)
-                                           :test #'string-equal-ignore-case))
-                                         (t
-                                          (cl-set-difference
-                                           inline-anki-send-tags
-                                           (org-get-tags)
-                                           :test #'string-equal-ignore-case)))))))
+                    (append (inline-anki--get-tags-here)
+                            (list (format-time-string inline-anki-extra-tag))))
               (cons 'fields (cl-loop
                              for (field . value) in inline-anki-fields
                              as string = (inline-anki--instantiate value)
@@ -349,6 +332,28 @@ value of -1), create it."
         t)
     (message "No implicit clozes found, skipping:  %s" text)
     nil))
+
+(defun inline-anki--get-tags-here ()
+  (if (null inline-anki-send-tags)
+      nil
+    (unless (derived-mode-p 'org-mode)
+      ;; Buffers opened by `inline-anki-push-notes-in-directory' are in
+      ;; fundamental-mode.  Switch to org-mode so we can read tags.
+      (let ((org-agenda-files nil)
+            (org-inhibit-startup t)
+            (delay-mode-hooks t))
+        (org-mode)))
+    (mapcar #'substring-no-properties
+            (cond ((eq t inline-anki-send-tags)
+                   (org-get-tags))
+                  ((eq (car inline-anki-send-tags) 'not)
+                   (cl-set-difference (org-get-tags)
+                                      (cdr inline-anki-send-tags)
+                                      :test #'string-equal-ignore-case))
+                  (t
+                   (cl-set-difference inline-anki-send-tags
+                                      (org-get-tags)
+                                      :test #'string-equal-ignore-case))))))
 
 (defun inline-anki--instantiate (input)
   "Return INPUT if it's a string, else funcall or eval it."
