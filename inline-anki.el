@@ -98,7 +98,8 @@ global tags, that cannot be expressed here; you need
 (defcustom inline-anki-ignore-file-regexps
   '("/logseq/version-files/"
     "/logseq/bak/"
-    "/.git/")
+    "/.git/"
+    "/.#")
   "List of regexps that bar a file-path from being visited.
 Used by the command `inline-anki-push-notes-in-directory'.  Note
 that the command only considers file-paths ending in .org, so
@@ -246,9 +247,8 @@ If TEXT contains no emphases, look for existing {{c::}} syntax and
 return TEXT unmodified if so.
 Otherwise, return nil."
   (with-temp-buffer
-    (insert " ") ;; workaround bug where the regexp misses emph @ BoL
-    (insert (substring-no-properties text))
-    (insert " ")
+    ;; workaround bug where the regexp misses emph @ BoL
+    (insert " " (substring-no-properties text) " ")
     (goto-char (point-min))
     ;; comment means suspend card, but don't also blank-out the html
     (while (re-search-forward inline-anki-rx-comment-glyph nil t)
@@ -274,7 +274,9 @@ Otherwise, return nil."
 
 (defcustom inline-anki-extra-tag "from-emacs-%F"
   "Tag added to every note sent to Anki.
-Will be passed through `format-time-string'.  Cannot be nil."
+Will be passed through `format-time-string'.
+Cannot be nil, as it provides a way to discover stale notes \(stale in
+the sense of having since been erased from your Org files\)."
   :type 'string)
 
 ;; TODO: make capable of basic flashcard
@@ -286,7 +288,8 @@ If a flashcard doesn't exist (indicated by a NOTE-ID
 value of -1), create it."
   (let ((this-line (line-number-at-pos)))
     (if (member this-line inline-anki--known-flashcard-places)
-        (error "Two magic strings on same line: %d" this-line)
+        (error "Two magic strings on same line: %d in %S"
+               this-line (current-buffer))
       (push this-line inline-anki--known-flashcard-places)))
   (if-let* ((text (buffer-substring field-beg field-end))
             (clozed (inline-anki--convert-implicit-clozes text))
@@ -371,7 +374,7 @@ value of -1), create it."
             signal))))
 
 (defun inline-anki-filename-as-link ()
-  "Return the buffer filename wrapped in <a href>."
+  "Return the buffer file name, wrapped in <a href=\"file:...\">."
   (concat "<a href=\"file://" buffer-file-name "\">" buffer-file-name "</a>"))
 
 (defun inline-anki-check ()
@@ -379,7 +382,8 @@ value of -1), create it."
   (cl-assert (member inline-anki-emphasis-type
                      (mapcar #'car org-emphasis-alist)))
   (cl-assert (executable-find "ps"))
-  ;; Since Anki 25 and anki-launcher, the process can be called "python"
+  ;; Since Anki 25 and anki-launcher, the process may be called "python"
+  ;; rather than "anki", but the full commandline has matches for "Anki"
   (if (not (string-empty-p (shell-command-to-string "ps -ef | grep '[aA]nki'")))
       t
     (message "Anki doesn't seem to be running")
@@ -389,20 +393,20 @@ value of -1), create it."
   "Push notes in buffer, and return the count of pushes made."
   ;; NOTE: Scan for new flashcards last, otherwise you waste compute
   ;; cycles because you submit the new ones twice
-  (save-mark-and-excursion
+  (save-excursion
     (+
      (cl-loop initially (goto-char (point-min))
               while (re-search-forward inline-anki-rx-item-start nil t)
               count (inline-anki--push-note
                      :field-beg (point)
-                     :field-end (line-end-position)
+                     :field-end (pos-eol)
                      :note-id (string-to-number (match-string 1))))
 
      (cl-loop initially (goto-char (point-min))
               while (re-search-forward inline-anki-rx-item-start-new nil t)
               count (inline-anki--push-note
                      :field-beg (point)
-                     :field-end (line-end-position)
+                     :field-end (pos-eol)
                      :note-id -1))
 
      (cl-loop initially (goto-char (point-min))
@@ -410,9 +414,10 @@ value of -1), create it."
               count (inline-anki--push-note
                      :field-beg (save-excursion
                                   (save-match-data
-                                    (goto-char (line-beginning-position))
+                                    (goto-char (pos-bol))
                                     (re-search-forward (rx bol (* space))
-                                                       (line-end-position) t)
+                                                       (pos-eol)
+                                                       t)
                                     (if (looking-at inline-anki-list-bullet-re)
                                         (match-end 0)
                                       (point))))
@@ -424,9 +429,9 @@ value of -1), create it."
               count (inline-anki--push-note
                      :field-beg (save-excursion
                                   (save-match-data
-                                    (goto-char (line-beginning-position))
+                                    (goto-char (pos-bol))
                                     (re-search-forward (rx bol (* space))
-                                                       (line-end-position) t)
+                                                       (pos-eol) t)
                                     (if (looking-at inline-anki-list-bullet-re)
                                         (match-end 0)
                                       (point))))
@@ -456,21 +461,21 @@ value of -1), create it."
      (cl-loop initially (goto-char (point-min))
               while (re-search-forward inline-anki-rx-struct nil t)
               count (inline-anki--push-note
-                     :field-beg (1+ (line-end-position))
+                     :field-beg (1+ (pos-eol))
                      :field-end (save-match-data
                                   (save-excursion
                                     (search-forward "#+end_flashcard")
-                                    (1- (line-beginning-position))))
+                                    (1- (pos-bol))))
                      :note-id (string-to-number (match-string 1))))
 
      (cl-loop initially (goto-char (point-min))
               while (re-search-forward inline-anki-rx-struct-new nil t)
               count (inline-anki--push-note
-                     :field-beg (1+ (line-end-position))
+                     :field-beg (1+ (pos-eol))
                      :field-end (save-excursion
                                   (save-match-data
                                     (search-forward "#+end_flashcard")
-                                    (1- (line-beginning-position))))
+                                    (1- (pos-bol))))
                      :note-id -1)))))
 
 ;;;###autoload
@@ -478,8 +483,6 @@ value of -1), create it."
   "Push all flashcards in the buffer to Anki.
 Argument CALLED-INTERACTIVELY sets itself."
   (interactive "p")
-  (require 'org)
-  (require 'inline-anki-anki-editor-fork)
   (when (or (not called-interactively)
             (inline-anki-check))
     (setq inline-anki--known-flashcard-places nil)
