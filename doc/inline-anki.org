@@ -7,9 +7,9 @@
 #+texinfo_dir_category: Emacs
 #+texinfo_dir_title: Inline Anki: (inline-anki).
 #+texinfo_dir_desc: Embed implicit flashcards in flowing text.
-#+subtitle: for version 0.3.7
+#+subtitle: for version 0.4.0
 
-This manual is for Inline Anki version 0.3.7.
+This manual is for Inline Anki version 0.4.0.
 
 #+BEGIN_QUOTE
 Copyright (C) 2023-2025 Martin Edström <meedstrom91@gmail.com>
@@ -139,8 +139,8 @@ Many traditional features are ABSENT in inline-anki.
 - It clozes only one deletion at a time
 - You cannot set tags on a per-note basis
   - The note will still inherit tags from the Org subtree
-    - Note that Anki tags lose much of their organizational purpose if your notes primarily live in Org files anyway -- you'll be organizing them from within [[https://github.com/meedstrom/org-node][org-node]] or whichever system you have for browsing Org files, not from within Anki.  However, at least two use-cases remain:
-      - You can display the tags inside cards as a contextual hint, [[https://edstrom.dev/posts/qix2Q4W/how-to-display-tags-as-hint-in-all-anki-cards][if you code this in the card template]]
+    - Note that Anki tags lose much of their organizational purpose if your notes primarily live in Org files anyway -- you'll be organizing them from within [[https://github.com/meedstrom/org-node][org-node]], org-roam or whichever system you have for browsing Org files, not from within Anki.  However, at least two use-cases remain:
+      - You can display the tags inside cards as a contextual hint, [[https://edstrom.dev/grwhs/show-tags-as-helpful-hint-in-anki-cards][if you code this in the card template]]
       - You can use the tags to set up Custom Study sessions on a filtered subset of notes
         - Invaluable since we dump all notes into one deck
     - Finally, even if you leave =inline-anki-send-tags= at nil, inline-anki always attaches one tag named after the sync date, in this style: "from-emacs-2023-09-20"
@@ -155,10 +155,12 @@ Many traditional features are ABSENT in inline-anki.
   - A magic string at the *start of a list item*: =@anki=.
     - When Anki assigns it an ID, this will become a @ glyph followed by a 13-digit number in superscript, such as =@^{1693535436701}=.
   - A magic string at the *end of a line*: =@anki= OR =^{anki}=.
-    - Same as above, except that you can omit the @ glyph.
+    - In this case, you can omit the @ glyph.
       - Since the =@anki= form is easier to remember and easier to type, I suggest you just always type that and remove the glyph later where you think its absence looks better.
   - A structure template named =#+begin_flashcard=.
     - When Anki assigns it an ID, it becomes something like =#+begin_flashcard 1693535436702=.
+  - A drawer named =:anki:=
+    - When Anki assigns it an ID, it's renamed to something like =:anki-1693535436702:=.
 
 - Clozes are marked by _underline_ text.  If you prefer bold or italic, configure =inline-anki-emphasis-type=.
   - If necessary, you can write Anki's own ={{c1::}}= syntax directly.  Best I can tell, it's mainly useful for writing math equations.  However that makes the source unreadable/ugly, so you may as well do math in Anki only for now.

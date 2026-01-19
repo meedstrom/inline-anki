@@ -3,7 +3,7 @@
 
 I've always daydreamed of writing [SRS](https://en.wikipedia.org/wiki/Spaced_repetition#Software) flashcards in a way that flows together with longer "body text" in any of my files, so that the texts serve as a [single-source-of-truth](https://en.wikipedia.org/wiki/Single_source_of_truth).
 
-The other SRS programs in the Emacs ecosystem ([org-fc](https://github.com/l3kn/org-fc), [org-drill](https://gitlab.com/phillord/org-drill), [org-anki](https://github.com/eyeinsky/org-anki), [pamparam](https://github.com/abo-abo/pamparam), [anki-editor](https://github.com/louietan/anki-editor)) all share a fatal flaw: **they separate the flashcards from normal text** by way of shoving them under a dedicated headline.
+The other SRS programs in the Emacs ecosystem ([org-fc](https://github.com/l3kn/org-fc), [org-drill](https://gitlab.com/phillord/org-drill), [org-anki](https://github.com/eyeinsky/org-anki), [pamparam](https://github.com/abo-abo/pamparam), [anki-editor](https://github.com/anki-editor/anki-editor)) all share a fatal flaw: **they separate the flashcards from normal text** by way of shoving them under a dedicated headline.
 
 I don't want to awkwardly append flashcards to the end of an Org section as a kind of paraphrasis or summary of that section, but to let the flashcards serve *as* paragraphs in their own right!
 

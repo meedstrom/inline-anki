@@ -14,7 +14,7 @@
 @finalout
 @titlepage
 @title Inline Anki User Manual
-@subtitle for version 0.3.7
+@subtitle for version 0.4.0
 @author Martin Edström
 @end titlepage
 
@@ -22,14 +22,14 @@
 @node Top
 @top Inline Anki User Manual
 
-This manual is for Inline Anki version 0.3.7.
+This manual is for Inline Anki version 0.4.0.
 
 @quotation
-Copyright (C) 2023-2024 Martin Edström <meedstrom91@@gmail.com>
+Copyright (C) 2023-2025 Martin Edström <meedstrom91@@gmail.com>
 
-You can redistribute this document and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+You can redistribute this document and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation@comma{} either version 3 of the License@comma{} or (at your option) any later version.
 
-This document is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE@.  See the GNU General Public License for more details.
+This document is distributed in the hope that it will be useful@comma{} but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE@.  See the GNU General Public License for more details.
 
 @end quotation
 
@@ -64,7 +64,7 @@ Implementation notes
 @node Installation
 @chapter Installation
 
-Not yet on (M)ELPA@.  If you have @uref{https://github.com/radian-software/straight.el, straight.el}, you can install the package with this initfile snippet:
+Not yet on (M)ELPA@.  If you have @uref{https://github.com/radian-software/straight.el, straight.el}@comma{} you can install the package with this initfile snippet:
 
 @lisp
 (use-package inline-anki
@@ -72,14 +72,14 @@ Not yet on (M)ELPA@.  If you have @uref{https://github.com/radian-software/strai
 @end lisp
 
 
-Alternatively with Doom Emacs, this goes in @samp{packages.el}:
+Alternatively with Doom Emacs@comma{} this goes in @samp{packages.el}:
 
 @lisp
 (package! inline-anki :recipe (:host github :repo "meedstrom/inline-anki"))
 @end lisp
 
 
-Below, you'll find a recommended config snippet for Org-mode.  It lets you quickly create a @samp{#+begin_flashcard} block at point with the C-c , key (@samp{org-insert-structure-template}).
+Below@comma{} you'll find a recommended config snippet for Org-mode.  It lets you quickly create a @samp{#+begin_flashcard} block at point with the C-c @comma{} key (@samp{org-insert-structure-template}).
 
 @lisp
 (with-eval-after-load 'org
@@ -112,10 +112,10 @@ Make sure you have @samp{curl} installed
 @item
 Start Anki
 @item
-From your Org file, type @samp{M-x inline-anki-push-notes-in-buffer RET}
+From your Org file@comma{} type @samp{M-x inline-anki-push-notes-in-buffer RET}
 @itemize
 @item
-Or push from all Org files in the current directory and its subdirectories, by typing @samp{M-x inline-anki-push-notes-in-directory RET}
+Or push from all Org files in the current directory and its subdirectories@comma{} by typing @samp{M-x inline-anki-push-notes-in-directory RET}
 @end itemize
 @end enumerate
 
@@ -123,15 +123,15 @@ You may like to know that:
 
 @itemize
 @item
-When you upload a note, it overwrites that note in Anki.  @strong{Any edits made inside Anki will be forgotten!}  The only thing Anki gets to remember about a note is the review schedule.
+When you upload a note@comma{} it overwrites that note in Anki.  @strong{Any edits made inside Anki will be forgotten!}  The only thing Anki gets to remember about a note is the review schedule.
 
 @item
-As a convenience, if you comment-out a note expression, the next push will tell Anki to suspend all the cards for that note.
+As a convenience@comma{} if you comment-out a note expression@comma{} the next push will tell Anki to suspend all the cards for that note.
 @itemize
 @item
-If you later uncomment it, the next push will unsuspend them.
+If you later uncomment it@comma{} the next push will unsuspend them.
 @item
-Note that you can still follow a workflow of suspending cards during your review sessions.  I consider it a psychological boon that Anki will forget these suspends on the next push, forcing you to revise all the bad notes you found before you can push again.
+Note that you can still follow a workflow of suspending cards during your review sessions.  I consider it a psychological boon that Anki will forget these suspends on the next push@comma{} forcing you to revise all the bad notes you found before you can push again.
 @itemize
 @item
 Just remember to look up the suspends inside Anki but edit in the corresponding source Org file.
@@ -139,12 +139,12 @@ Just remember to look up the suspends inside Anki but edit in the corresponding 
 @end itemize
 
 @item
-There's a bit of a gimmick: if a note has 3 clozes, and you study it a bit, and later you remove the first cloze, the second and third cloze cards will @strong{inherit the scheduling of the first and second}.  So technically, you can have cards that aren't scheduled faithfully to the algorithm, and failure statistics @emph{may} be referring to a cloze card that you've removed.
+There's a bit of a gimmick: if a note has 3 clozes@comma{} and you study it a bit@comma{} and later you remove the first cloze@comma{} the second and third cloze cards will @strong{inherit the scheduling of the first and second}.  So technically@comma{} you can have cards that aren't scheduled faithfully to the algorithm@comma{} and failure statistics @emph{may} be referring to a cloze card that you've removed.
 @itemize
 @item
-Up to you whether to care, but in my opinion, it changes nothing in practice.
+Up to you whether to care@comma{} but in my opinion@comma{} it changes nothing in practice.
 @item
-No surprise to experienced Anki-users, but the third field's original scheduling will be attached to an empty card.  Remember that you can clean up empty cards with the menu option "Check database@dots{}".
+No surprise to experienced Anki-users@comma{} but the third field's original scheduling will be attached to an empty card.  Remember that you can clean up empty cards with the menu option "Check database@dots{}".
 @end itemize
 @end itemize
 
@@ -170,7 +170,7 @@ Default "Cloze from Outer Space".
 @samp{inline-anki-emphasis-type}
 @itemize
 @item
-Default "_", can be changed to "*", "/" or other things you find in @samp{org-emphasis-alist}.
+Default "_"@comma{} can be changed to "*"@comma{} "/" or other things you find in @samp{org-emphasis-alist}.
 @end itemize
 
 @item
@@ -186,7 +186,7 @@ A benefit with the @samp{nil} value is faster upload if you have hundreds of Org
 @samp{inline-anki-ignore-file-regexps}
 @itemize
 @item
-Helps the command @samp{inline-anki-push-notes-in-directory} decide whether or not to visit a file.  If that file's full name matches one of the regular expressions in this list, skip the file.
+Helps the command @samp{inline-anki-push-notes-in-directory} decide whether or not to visit a file.  If that file's full name matches one of the regular expressions in this list@comma{} skip the file.
 @end itemize
 
 @item
@@ -200,34 +200,34 @@ See docstring.
 @node Warning
 @section Warning
 
-You must not @strong{hard-wrap} your text (e.g. with M-q, @samp{fill-paragraph}) if you want Anki to receive the whole flashcard.
+You must not @strong{hard-wrap} your text (e.g. with M-q@comma{} @samp{fill-paragraph}) if you want Anki to receive the whole flashcard.
 
 @node Open in Emacs
 @section Open in Emacs
 
 It would be convenient if you could click a link in Anki to open the corresponding Org file in Emacs.
 
-By default, @samp{inline-anki-fields} ships an extra field that shows the filename the note came from.  With addons such as @uref{https://ankiweb.net/shared/info/879473266}, it should be possible to jump from Anki to Emacs using emacsclient.  Instructions TBD@.
+By default@comma{} @samp{inline-anki-fields} ships an extra field that shows the filename the note came from.  With addons such as @uref{https://ankiweb.net/shared/info/879473266}@comma{} it should be possible to jump from Anki to Emacs using emacsclient.  Instructions TBD@.
 
 @node Mass-editing
 @section Mass-editing
 
-If you switch @samp{inline-anki-emphasis-type} to bold or italic, remember to @strong{edit all the cards you had written}!
+If you switch @samp{inline-anki-emphasis-type} to bold or italic@comma{} remember to @strong{edit all the cards you had written}!
 
 Tips:
 
 @itemize
 @item
-To search the current buffer for flashcards, type @samp{M-x inline-anki-occur RET}.
+To search the current buffer for flashcards@comma{} type @samp{M-x inline-anki-occur RET}.
 
 @item
-To search every file in the directory, type @samp{M-x inline-anki-rgrep RET}.
+To search every file in the directory@comma{} type @samp{M-x inline-anki-rgrep RET}.
 @itemize
 @item
-Then you can edit all at once with @uref{http://github.com/mhayashi1120/Emacs-wgrep, wgrep} or a keyboard macro, for example.
+Then you can edit all at once with @uref{http://github.com/mhayashi1120/Emacs-wgrep, wgrep} or a keyboard macro@comma{} for example.
 @itemize
 @item
-The wgrep method won't cut it for multiline flashcards, as you'll see, but if you don't have many of those, you could simply hand-edit each.  If you have many, try a keyboard macro.
+The wgrep method won't cut it for multiline flashcards@comma{} as you'll see@comma{} but if you don't have many of those@comma{} you could simply hand-edit each.  If you have many@comma{} try a keyboard macro.
 @end itemize
 @end itemize
 @end itemize
@@ -248,21 +248,21 @@ There are @strong{three flaws} which will never go away:
 
 @itemize
 @item
-@strong{Flaw 1:} Like anki-editor, inline-anki does not let you review inside Emacs.  You have to review in your Anki app.
+@strong{Flaw 1:} Like anki-editor@comma{} inline-anki does not let you review inside Emacs.  You have to review in your Anki app.
 
 @item
-@strong{Flaw 2:} Like with anki-editor, your Org files hold the "master copy" of each flashcard: @strong{you cannot edit the cards from within Anki}.  If you tried, such edits would be lost on next sync.
+@strong{Flaw 2:} Like with anki-editor@comma{} your Org files hold the "master copy" of each flashcard: @strong{you cannot edit the cards from within Anki}.  If you tried@comma{} such edits would be lost on next sync.
 
-You have to return to your computer and edit there, in Emacs.
+You have to return to your computer and edit there@comma{} in Emacs.
 
 @itemize
 @item
 This means you can't make small corrections on-the-fly while reviewing.
 
-Bit annoying, yes, but two-way sync is a notoriously finicky dev challenge so if such a feature was present, users would run into sync conflicts and nobody wants to deal with that.
+Bit annoying@comma{} yes@comma{} but two-way sync is a notoriously finicky dev challenge so if such a feature was present@comma{} users would run into sync conflicts and nobody wants to deal with that.
 
 @item
-Fortunately, this is less of a problem for us than for regular Anki users, since the flashcards are serving double duty as body text.  You will be able to see and refine the text of the flashcard at your leisure, @emph{when not reviewing}, in contrast with other SRS when you only see it during review.
+Fortunately@comma{} this is less of a problem for us than for regular Anki users@comma{} since the flashcards are serving double duty as body text.  You will be able to see and refine the text of the flashcard at your leisure@comma{} @emph{when not reviewing}@comma{} in contrast with other SRS when you only see it during review.
 @end itemize
 
 @item
@@ -270,7 +270,7 @@ Fortunately, this is less of a problem for us than for regular Anki users, since
 
 @itemize
 @item
-For me this is a good trade, if that means the flashcards stay in my life.  Until now, they never stayed long because Anki was too separated from my notes.
+For me this is a good trade@comma{} if that means the flashcards stay in my life.  Until now@comma{} they never stayed long because Anki was too separated from my notes.
 @end itemize
 @end itemize
 
@@ -293,10 +293,10 @@ You cannot set tags on a per-note basis
 The note will still inherit tags from the Org subtree
 @itemize
 @item
-Note that Anki tags lose much of their organizational purpose if your notes primarily live in Org files anyway -- you'll be organizing them from within @uref{https://github.com/meedstrom/org-node, org-node} or whichever system you have for browsing Org files, not from within Anki.  However, at least two use-cases remain:
+Note that Anki tags lose much of their organizational purpose if your notes primarily live in Org files anyway -- you'll be organizing them from within @uref{https://github.com/meedstrom/org-node, org-node}@comma{} org-roam or whichever system you have for browsing Org files@comma{} not from within Anki.  However@comma{} at least two use-cases remain:
 @itemize
 @item
-You can display the tags inside cards as a contextual hint, @uref{https://edstrom.dev/posts/qix2Q4W/how-to-display-tags-as-hint-in-all-anki-cards, if you code this in the card template}
+You can display the tags inside cards as a contextual hint@comma{} @uref{https://edstrom.dev/grwhs/show-tags-as-helpful-hint-in-anki-cards, if you code this in the card template}
 @item
 You can use the tags to set up Custom Study sessions on a filtered subset of notes
 @itemize
@@ -305,7 +305,7 @@ Invaluable since we dump all notes into one deck
 @end itemize
 @end itemize
 @item
-Finally, even if you leave @samp{inline-anki-send-tags} at nil, inline-anki always attaches one tag named after the sync date, in this style: "from-emacs-2023-09-20"
+Finally@comma{} even if you leave @samp{inline-anki-send-tags} at nil@comma{} inline-anki always attaches one tag named after the sync date@comma{} in this style: "from-emacs-2023-09-20"
 @itemize
 @item
 This tag lets you separate inline-anki notes from your "handmade" notes
@@ -318,7 +318,7 @@ This tag lets you see if you have stale inline-anki notes that aren't being upda
 You get no indication in Emacs that Anki has flagged a card as "Marked" or "Leech"
 @itemize
 @item
-You can still see this in Anki's own card browser, so you can still sit down and go through them manually every now and then -- just like a normal Anki user, with the difference that when you see something that needs to change, you have to open the source file in Emacs and edit there.
+You can still see this in Anki's own card browser@comma{} so you can still sit down and go through them manually every now and then -- just like a normal Anki user@comma{} with the difference that when you see something that needs to change@comma{} you have to open the source file in Emacs and edit there.
 @end itemize
 @end itemize
 
@@ -327,37 +327,43 @@ You can still see this in Anki's own card browser, so you can still sit down and
 
 @itemize
 @item
-To identify a flashcard, inline-anki looks for one of the following things:
+To identify a flashcard@comma{} inline-anki looks for one of the following things:
 @itemize
 @item
 A magic string at the @strong{start of a list item}: @samp{@@anki}.
 @itemize
 @item
-When Anki assigns it an ID, this will become a @@ glyph followed by a 13-digit number in superscript, such as @samp{@@^@{1693535436701@}}.
+When Anki assigns it an ID@comma{} this will become a @@ glyph followed by a 13-digit number in superscript@comma{} such as @samp{@@^@{1693535436701@}}.
 @end itemize
 @item
 A magic string at the @strong{end of a line}: @samp{@@anki} OR @samp{^@{anki@}}.
 @itemize
 @item
-Same as above, except that you can omit the @@ glyph.
+In this case@comma{} you can omit the @@ glyph.
 @itemize
 @item
-Since the @samp{@@anki} form is easier to remember and easier to type, I suggest you just always type that and remove the glyph later where you think its absence looks better.
+Since the @samp{@@anki} form is easier to remember and easier to type@comma{} I suggest you just always type that and remove the glyph later where you think its absence looks better.
 @end itemize
 @end itemize
 @item
 A structure template named @samp{#+begin_flashcard}.
 @itemize
 @item
-When Anki assigns it an ID, it becomes something like @samp{#+begin_flashcard 1693535436702}.
+When Anki assigns it an ID@comma{} it becomes something like @samp{#+begin_flashcard 1693535436702}.
+@end itemize
+@item
+A drawer named @samp{:anki:}
+@itemize
+@item
+When Anki assigns it an ID@comma{} it's renamed to something like @samp{:anki-1693535436702:}.
 @end itemize
 @end itemize
 
 @item
-Clozes are marked by underline text.  If you prefer bold or italic, configure @samp{inline-anki-emphasis-type}.
+Clozes are marked by underline text.  If you prefer bold or italic@comma{} configure @samp{inline-anki-emphasis-type}.
 @itemize
 @item
-If necessary, you can write Anki's own @samp{@{@{c1::@}@}} syntax directly.  Best I can tell, it's mainly useful for writing math equations.  However that makes the source unreadable/ugly, so you may as well do math in Anki only for now.
+If necessary@comma{} you can write Anki's own @samp{@{@{c1::@}@}} syntax directly.  Best I can tell@comma{} it's mainly useful for writing math equations.  However that makes the source unreadable/ugly@comma{} so you may as well do math in Anki only for now.
 @end itemize
 @end itemize
 
@@ -369,7 +375,7 @@ If necessary, you can write Anki's own @samp{@{@{c1::@}@}} syntax directly.  Bes
 Can I continue using my [org-drill/org-anki/@dots{}] cards?
 @itemize
 @item
-Yes!  Those packages treat whole Org subtrees as their "data objects", and this package does not.  You can even have an inline-anki card @emph{inside} an org-anki subtree.
+Yes!  Those packages treat whole Org subtrees as their "data objects"@comma{} and this package does not.  You can even have an inline-anki card @emph{inside} an org-anki subtree.
 @end itemize
 @end itemize
 

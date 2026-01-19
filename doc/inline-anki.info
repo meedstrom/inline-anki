@@ -12,9 +12,9 @@ File: inline-anki.info,  Node: Top,  Next: Installation,  Up: (dir)
 Inline Anki User Manual
 ***********************
 
-This manual is for Inline Anki version 0.3.7.
+This manual is for Inline Anki version 0.4.0.
 
-     Copyright (C) 2023-2024 Martin Edström <meedstrom91@gmail.com>
+     Copyright (C) 2023-2025 Martin Edström <meedstrom91@gmail.com>
 
      You can redistribute this document and/or modify it under the terms
      of the GNU General Public License as published by the Free Software
@@ -283,13 +283,14 @@ Many traditional features are ABSENT in inline-anki.
              • Note that Anki tags lose much of their organizational
                purpose if your notes primarily live in Org files anyway
                - you'll be organizing them from within org-node
-               (https://github.com/meedstrom/org-node) or whichever
-               system you have for browsing Org files, not from within
-               Anki.  However, at least two use-cases remain:
+               (https://github.com/meedstrom/org-node), org-roam or
+               whichever system you have for browsing Org files, not
+               from within Anki.  However, at least two use-cases
+               remain:
                   • You can display the tags inside cards as a
                     contextual hint, if you code this in the card
                     template
-                    (https://edstrom.dev/posts/qix2Q4W/how-to-display-tags-as-hint-in-all-anki-cards)
+                    (https://edstrom.dev/grwhs/show-tags-as-helpful-hint-in-anki-cards)
                   • You can use the tags to set up Custom Study sessions
                     on a filtered subset of notes
                        • Invaluable since we dump all notes into one
@@ -323,7 +324,7 @@ File: inline-anki.info,  Node: Syntax of a flashcard,  Prev: Limitations vs anki
                followed by a 13-digit number in superscript, such as
                ‘@^{1693535436701}’.
         • A magic string at the *end of a line*: ‘@anki’ OR ‘^{anki}’.
-             • Same as above, except that you can omit the @ glyph.
+             • In this case, you can omit the @ glyph.
                   • Since the ‘@anki’ form is easier to remember and
                     easier to type, I suggest you just always type that
                     and remove the glyph later where you think its
@@ -331,6 +332,9 @@ File: inline-anki.info,  Node: Syntax of a flashcard,  Prev: Limitations vs anki
         • A structure template named ‘#+begin_flashcard’.
              • When Anki assigns it an ID, it becomes something like
                ‘#+begin_flashcard 1693535436702’.
+        • A drawer named ‘:anki:’
+             • When Anki assigns it an ID, it's renamed to something
+               like ‘:anki-1693535436702:’.
 
    • Clozes are marked by underline text.  If you prefer bold or italic,
      configure ‘inline-anki-emphasis-type’.
@@ -365,8 +369,8 @@ Node: Mass-editing6597
 Node: Implementation notes7421
 Node: Permanent limitations7698
 Node: Limitations vs anki-editor/org-anki9297
-Node: Syntax of a flashcard11672
-Node: Q&A13198
+Node: Syntax of a flashcard11683
+Node: Q&A13355
 
 End Tag Table
 
