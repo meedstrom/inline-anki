@@ -153,7 +153,7 @@ The reason I switched to underline was the idea of "*invisible*-anki", a future 
   - IDK what broke it, but our AnkiConnect bindings are forked from the archived https://github.com/louietan/anki-editor in which it did work, so it should not be too difficult to track down.
 - [ ] Define some expressions for a traditional front-back note-type (instead of cloze-deletion)
     - [ ] As description-lists i.e. `- @anki Front Side :: Back Side`
-      - Already working in a private branch 2026-01-19.  Still considering the syntax for a reversed card, however.
+      - Already working in a private branch 2026-01-19.  Still considering the syntax for a reversed card, however. Thoughts welcome! https://github.com/meedstrom/inline-anki/issues/9
     - [ ] As a parameter for `#+begin_flashcard`? Interpret the last paragraph as the back side?
       - Will probably never happen, because I currently favor `:anki:` drawers.  May revisit when Org implements support for nested `#+begin_...` blocks.
     - [ ] As a 1x2 or 2x1 table.
