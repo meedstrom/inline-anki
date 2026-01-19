@@ -147,18 +147,28 @@ The reason I switched to underline was the idea of "*invisible*-anki", a future 
 
 ## Roadmap
 
--   [ ] Allow hard-wrapping
--   [ ] Fix picture/media export
--   [ ] Define some expressions for a traditional front-back note-type (instead of cloze-deletion)
-    -   [ ] As a parameter for `#+begin_flashcard` &#x2013; interpret the last paragraph as the back side.
-    -   [ ] As a single-column or single-row 2-cell table.
-        -   Very compact: no need for `#+begin_flashcard` nor a blank line in between the fields
-        -   [ ] Extend this so that if you have many rows, you can flag the whole table as a table of flashcards where each row is one flashcard.
-            -   But that's mainly useful for vocabulary-type stuff, since so little text fits in one table cell.
+- [ ] Allow hard-wrapping
+  - This will necessitate a **breaking change** to disallow nesting note expressions in a list: we will take an entire list bullet *plus its children* for the note text.
+- [ ] Fix picture/media export
+  - IDK what broke it, but our AnkiConnect bindings are forked from the archived https://github.com/louietan/anki-editor in which it did work, so it should not be too difficult to track down.
+- [ ] Define some expressions for a traditional front-back note-type (instead of cloze-deletion)
+    - [ ] As description-lists i.e. `- @anki Front Side :: Back Side`
+      - Already working in a private branch 2026-01-19.  Still considering the syntax for a reversed card, however.
+    - [ ] As a parameter for `#+begin_flashcard`? Interpret the last paragraph as the back side?
+      - Will probably never happen, because I currently favor `:anki:` drawers.  May revisit when Org implements support for nested `#+begin_...` blocks.
+    - [ ] As a 1x2 or 2x1 table.
+      - Very compact: no need for `#+begin_flashcard` nor a blank line in between the fields
+      - [ ] Extend this so that if you have many rows, you can flag the whole table as a table of flashcards where each row is one flashcard.
+        - But that's mainly useful for vocabulary-type stuff, since so little text fits in one table cell.
+      - FWIW, more text fits in a 2x1 table (one column, two cells) than 1x2, and that's still compact compared to a drawer for every note.
+- [ ] Speed up pushing many notes
+  - [ ] For the case of very many files, make use of grep or org-mem instead of a file-visiting loop.
+  - [ ] For the case of many notes in one buffer, push all notes at once through AnkiConnect instead of one at a time (bundle `updateNote` requests in a [multi](https://git.sr.ht/~foosoft/anki-connect#codemulticode) request).
+    - [ ] First, refactor `inline-anki-push-notes-in-buffer-1` to make no changes to the buffer until after the loop is done
 
 ## Thanks
 
-Thanks a lot to @louietan who wrote <https://github.com/anki-editor/anki-editor>.  I could reuse its AnkiConnect bindings, which lowered the barrier for me to get started.
+Thanks a lot to [louietan](https://github.com/louietan) who wrote <https://github.com/anki-editor/anki-editor>.  I could reuse its AnkiConnect bindings, which lowered the barrier for me to get started.
 
 
 ## Set-up
